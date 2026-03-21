@@ -152,7 +152,6 @@ export default function ModeSelection({ avatarId, onContinue }) {
             </div>
 
             {/* HUD labels */}
-            <div className="ms-hud-label ms-hud-l">STEP 2 OF 2</div>
             <div className="ms-hud-label ms-hud-r">TRAINING PROTOCOL</div>
 
             {/* Card wrap */}
@@ -160,6 +159,7 @@ export default function ModeSelection({ avatarId, onContinue }) {
 
                 {/* Header */}
                 <div className="ms-header">
+                    <div className="ms-step-tag">STEP 2 OF 2</div>
                     <h1 className="ms-title">CHOOSE YOUR LEARNING PATH</h1>
                     <p className="ms-subtitle">How do you want to learn cybersecurity?</p>
                 </div>

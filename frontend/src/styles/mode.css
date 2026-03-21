@@ -72,13 +72,13 @@
     position: relative;
     z-index: 2;
     width: 100%;
-    max-width: 780px;
+    max-width: 960px;
     background: rgba(12, 18, 36, 0.82);
     backdrop-filter: blur(28px);
     -webkit-backdrop-filter: blur(28px);
     border: 1px solid rgba(77, 158, 255, 0.2);
     border-radius: 28px;
-    padding: 2.8rem 2.4rem 2rem;
+    padding: 3.5rem 3.5rem 2.8rem;
     box-shadow: 0 0 60px rgba(77, 158, 255, 0.08), 0 40px 80px rgba(0, 0, 0, 0.5);
     opacity: 0;
     transform: translateY(40px) scale(0.97);
@@ -97,10 +97,23 @@
     margin-bottom: 2rem;
 }
 
+.ms-step-tag {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: #4D9EFF;
+    opacity: 0.7;
+    border: 1px solid rgba(77, 158, 255, 0.25);
+    border-radius: 99px;
+    padding: 6px 16px;
+    margin-bottom: 16px;
+}
+
 .ms-title {
     font-family: 'Orbitron', monospace;
     font-weight: 900;
-    font-size: clamp(17px, 2.4vw, 24px);
+    font-size: clamp(22px, 3.5vw, 34px);
     letter-spacing: 4px;
     background: linear-gradient(90deg, #00FF9D, #4D9EFF, #9D4DFF, #00FF9D);
     background-size: 300%;
@@ -111,7 +124,7 @@
 }
 
 .ms-subtitle {
-    font-size: 13px;
+    font-size: 16px;
     color: #B0B8CC;
     letter-spacing: 0.5px;
 }
@@ -145,7 +158,7 @@
 .ms-card {
     position: relative;
     border-radius: 20px;
-    padding: 1.8rem 1.4rem 1.4rem;
+    padding: 2.4rem 2rem 2rem;
     border: 1.5px solid rgba(255, 255, 255, 0.07);
     background: rgba(18, 24, 42, 0.8);
     cursor: pointer;
@@ -174,9 +187,9 @@
     display: inline-block;
     margin-bottom: 14px;
     font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 2px;
-    padding: 3px 12px;
+    font-size: 11px;
+    letter-spacing: 2.5px;
+    padding: 5px 14px;
     border-radius: 99px;
     border: 1px solid rgba(255, 255, 255, 0.12);
     color: #B0B8CC;
@@ -240,8 +253,8 @@
 
 /* Icon */
 .ms-icon {
-    font-size: 3.2rem;
-    margin-bottom: 10px;
+    font-size: 4.5rem;
+    margin-bottom: 16px;
     line-height: 1;
 }
 
@@ -249,7 +262,7 @@
 .ms-card-title {
     font-family: 'Orbitron', monospace;
     font-weight: 900;
-    font-size: 16px;
+    font-size: 22px;
     letter-spacing: 3px;
     margin-bottom: 6px;
     transition: color 0.2s;
@@ -257,7 +270,7 @@
 
 /* Card desc */
 .ms-card-desc {
-    font-size: 12px;
+    font-size: 15px;
     color: #B0B8CC;
     margin-bottom: 14px;
     line-height: 1.5;
@@ -282,14 +295,15 @@
 .ms-feature-item {
     display: flex;
     align-items: center;
-    gap: 9px;
-    font-size: 12px;
+    gap: 12px;
+    font-size: 15px;
     color: #B0B8CC;
+    line-height: 1.4;
 }
 
 .ms-feature-dot {
-    width: 6px;
-    height: 6px;
+    width: 8px;
+    height: 8px;
     border-radius: 50%;
     flex-shrink: 0;
 }
@@ -297,10 +311,10 @@
 /* Select chip */
 .ms-select-chip {
     display: inline-block;
-    font-size: 10px;
+    font-size: 12px;
     font-weight: 700;
     letter-spacing: 1.5px;
-    padding: 5px 14px;
+    padding: 8px 18px;
     border-radius: 99px;
     border: 1px solid rgba(255, 255, 255, 0.1);
     color: #B0B8CC;
@@ -318,13 +332,13 @@
 }
 
 .ms-btn {
-    padding: 15px 40px;
+    padding: 18px 48px;
     border-radius: 999px;
     border: none;
     background: linear-gradient(90deg, #00FF9D, #4D9EFF);
     color: #0A0F1F;
     font-weight: 800;
-    font-size: 14px;
+    font-size: 18px;
     letter-spacing: 2px;
     cursor: pointer;
     transition: all 0.22s ease;
@@ -357,8 +371,8 @@
 }
 
 .ms-footnote {
-    margin-top: 12px;
-    font-size: 11px;
+    margin-top: 16px;
+    font-size: 14px;
     color: #B0B8CC;
     opacity: 0.45;
     letter-spacing: 0.3px;
