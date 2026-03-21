@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { initBackground } from "./background.js";
 import AvatarSelection from "./AvatarSelection.jsx";
 import ModeSelection from "./ModeSelection.jsx";
+import Dashboard from "./Dashboard.jsx";
 
 // ═══════════════════════════════════════════════════════════
 // BACKGROUND CANVAS COMPONENT
@@ -443,7 +444,7 @@ function SignInForm({ onSuccess }) {
         // Simulate API call — replace with real axios call
         setTimeout(() => {
             setLoading(false);
-            onSuccess && onSuccess();
+            onSuccess && onSuccess({ username: email.split("@")[0], email });
         }, 900);
     };
 
@@ -479,7 +480,7 @@ function SignInForm({ onSuccess }) {
                 ].map(b => (
                     <button key={b.label} type="button" className="social-btn"
                         style={{ background: b.bg, color: b.fg }}
-                        onClick={() => onSuccess && onSuccess()}
+                        onClick={() => onSuccess && onSuccess({ username: "operative", email: "" })}
                     >
                         <span style={{ fontWeight: 900 }}>{b.icon}</span>
                         {b.label}
@@ -645,7 +646,10 @@ function SignUpForm({ onSuccess }) {
                     <NeonButton
                         onClick={() => {
                             setDone(true);
-                            setTimeout(() => onSuccess && onSuccess(), 1400);
+                            setTimeout(() => onSuccess && onSuccess({
+                                username: username || name.toLowerCase().replace(/\s/g, "_"),
+                                email,
+                            }), 1400);
                         }}
                         gradient="linear-gradient(90deg,#00FF9D,#9D4DFF)"
                     >
@@ -678,6 +682,8 @@ export default function CyberDuo({ onLoginSuccess }) {
     const [screen, setScreen] = useState("login");
     const [avatarId, setAvatarId] = useState(null);
     const [gameMode, setGameMode] = useState(null);
+    const [username, setUsername] = useState("");
+    const [userEmail, setUserEmail] = useState("");
 
     const doneIntro = useCallback(() => {
         setShowIntro(false);
@@ -685,7 +691,9 @@ export default function CyberDuo({ onLoginSuccess }) {
     }, []);
 
     // Auth success → go to avatar selection
-    const handleAuthSuccess = useCallback(() => {
+    const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
+        if (u) setUsername(u);
+        if (e) setUserEmail(e);
         setScreen("avatar");
     }, []);
 
@@ -696,15 +704,33 @@ export default function CyberDuo({ onLoginSuccess }) {
         setScreen("mode");
     }, []);
 
-    // Mode confirmed → hand off to parent (dashboard comes later)
+    // Mode confirmed → go to dashboard
     const handleModeDone = useCallback((mode) => {
         console.log("Mode saved:", mode);
         setGameMode(mode);
+        setScreen("dashboard");
         if (onLoginSuccess) onLoginSuccess({ avatarId, mode });
     }, [onLoginSuccess, avatarId]);
 
     if (screen === "avatar") return <AvatarSelection onContinue={handleAvatarDone} />;
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
+    if (screen === "dashboard") return (
+        <Dashboard
+            avatarId={avatarId}
+            username={username}
+            email={userEmail}
+            mode={gameMode}
+            onLogout={() => {
+                setScreen("login");
+                setAvatarId(null);
+                setGameMode(null);
+                setUsername("");
+                setUserEmail("");
+                setVisible(false);
+                setTimeout(() => setVisible(true), 60);
+            }}
+        />
+    );
 
     return (
         <>
