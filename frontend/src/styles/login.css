@@ -1,0 +1,508 @@
+/* ═══════════════════════════════════════════════════
+   CYBERDUO — Global Styles & Animations
+   ═══════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600;700;800&display=swap');
+
+/* ── Reset ────────────────────────────────────────── */
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* ── Base ─────────────────────────────────────────── */
+body {
+    background: #0A0F1F;
+    font-family: 'Exo 2', sans-serif;
+    overflow-x: hidden;
+    color: #ffffff;
+}
+
+input,
+select,
+button {
+    font-family: 'Exo 2', sans-serif;
+}
+
+/* ── Scrollbar ────────────────────────────────────── */
+::-webkit-scrollbar {
+    width: 3px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #00FF9D44;
+    border-radius: 2px;
+}
+
+/* ═══════════════════════════════════════════════════
+   KEYFRAME ANIMATIONS
+   ═══════════════════════════════════════════════════ */
+
+/* Floating shapes */
+@keyframes floatShape {
+
+    0%,
+    100% {
+        transform: translateY(0px) rotate(0deg) scale(1);
+    }
+
+    33% {
+        transform: translateY(-18px) rotate(5deg) scale(1.05);
+    }
+
+    66% {
+        transform: translateY(-8px) rotate(-3deg) scale(0.97);
+    }
+}
+
+/* Login card float */
+@keyframes floatCard {
+
+    0%,
+    100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-7px);
+    }
+}
+
+/* Cursor blink */
+@keyframes blink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+}
+
+/* Button shimmer sweep */
+@keyframes shimmer {
+    0% {
+        left: -60%;
+    }
+
+    100% {
+        left: 120%;
+    }
+}
+
+/* Staggered fade-up for form fields */
+@keyframes fadeSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Card slide up on page load */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(70px) scale(0.96);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Intro logo zoom */
+@keyframes zoomIn {
+    from {
+        opacity: 0;
+        transform: scale(0.5);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Gradient text flow */
+@keyframes gradientFlow {
+    0% {
+        background-position: 0% 50%;
+    }
+
+    100% {
+        background-position: 300% 50%;
+    }
+}
+
+/* Glitch channel splits */
+@keyframes glitch1 {
+
+    0%,
+    90%,
+    100% {
+        opacity: 0;
+    }
+
+    92% {
+        opacity: 0.6;
+        transform: translateX(-3px);
+    }
+
+    94% {
+        opacity: 0;
+    }
+
+    96% {
+        opacity: 0.4;
+        transform: translateX(3px);
+    }
+}
+
+@keyframes glitch2 {
+
+    0%,
+    93%,
+    100% {
+        opacity: 0;
+    }
+
+    95% {
+        opacity: 0.5;
+        transform: translateX(3px);
+    }
+
+    97% {
+        opacity: 0;
+    }
+}
+
+/* HUD status blink */
+@keyframes hudBlink {
+
+    0%,
+    100% {
+        opacity: 1;
+    }
+
+    49% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0;
+    }
+
+    99% {
+        opacity: 0;
+    }
+}
+
+/* Card border glow pulse */
+@keyframes borderGlow {
+
+    0%,
+    100% {
+        box-shadow:
+            0 0 30px rgba(0, 255, 157, 0.15),
+            inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    }
+
+    50% {
+        box-shadow:
+            0 0 60px rgba(0, 255, 157, 0.30),
+            0 0 120px rgba(77, 158, 255, 0.10),
+            inset 0 1px 0 rgba(255, 255, 255, 0.08);
+    }
+}
+
+/* ═══════════════════════════════════════════════════
+   UTILITY CLASSES  (used by React inline-style backups)
+   ═══════════════════════════════════════════════════ */
+
+/* Full-screen canvas layer */
+.bg-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+/* Floating HUD shape wrapper */
+.hud-shape {
+    position: fixed;
+    opacity: 0.22;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Glassmorphism login card */
+.login-card {
+    width: 100%;
+    max-width: 620px;
+    background: rgba(14, 20, 38, 0.75);
+    backdrop-filter: blur(28px);
+    -webkit-backdrop-filter: blur(28px);
+    border: 1px solid rgba(0, 255, 157, 0.35);
+    border-radius: 28px;
+    padding: 3rem;
+}
+
+/* Tab switcher rail */
+.tab-rail {
+    display: flex;
+    background: rgba(10, 15, 31, 0.70);
+    border-radius: 12px;
+    padding: 4px;
+    margin-bottom: 24px;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 12px;
+    border-radius: 9px;
+    border: none;
+    cursor: pointer;
+    font-size: 19px;
+    letter-spacing: 1.5px;
+    transition: all 0.25s ease;
+}
+
+.tab-btn.active {
+    background: rgba(0, 255, 157, 0.12);
+    color: #00FF9D;
+    font-weight: 700;
+    border-bottom: 2px solid #00FF9D;
+    box-shadow: 0 0 16px rgba(0, 255, 157, 0.25);
+}
+
+.tab-btn.inactive {
+    background: transparent;
+    color: #B0B8CC;
+    font-weight: 400;
+    border-bottom: 2px solid transparent;
+}
+
+/* Neon gradient button */
+.neon-btn {
+    width: 100%;
+    padding: 18px;
+    border-radius: 999px;
+    border: none;
+    font-weight: 800;
+    font-size: 19px;
+    cursor: pointer;
+    letter-spacing: 2px;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.2s ease;
+}
+
+.neon-btn:hover {
+    transform: scale(1.04);
+    box-shadow: 0 0 35px rgba(0, 255, 157, 0.70), 0 0 70px rgba(0, 255, 157, 0.25);
+}
+
+.neon-btn:active {
+    transform: scale(0.97);
+}
+
+/* Floating label input wrapper */
+.input-wrap {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+/* Boot terminal box (intro) */
+.boot-terminal {
+    max-width: 500px;
+    width: 90%;
+    background: rgba(10, 15, 31, 0.85);
+    border: 1px solid rgba(0, 255, 157, 0.27);
+    border-radius: 8px;
+    padding: 1.5rem;
+    box-shadow: 0 0 40px rgba(0, 255, 157, 0.20);
+    z-index: 2;
+}
+
+/* Selection grid (profession / role / interests) */
+.select-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.select-card {
+    border-radius: 10px;
+    padding: 12px 6px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 15px;
+    transition: all 0.2s ease;
+}
+
+.select-card.on {
+    background: rgba(0, 255, 157, 0.12);
+    border: 1px solid #00FF9D;
+    color: #00FF9D;
+    font-weight: 600;
+    transform: scale(1.06);
+    box-shadow: 0 0 16px rgba(0, 255, 157, 0.35);
+}
+
+.select-card.off {
+    background: rgba(10, 15, 31, 0.80);
+    border: 1px solid rgba(255, 255, 255, 0.10);
+    color: #B0B8CC;
+}
+
+/* Pill toggle (age / reason) */
+.pill {
+    padding: 8px 14px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 17px;
+    transition: all 0.2s ease;
+}
+
+/* Step progress dots */
+.step-dots {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 24px;
+}
+
+.step-dot {
+    height: 10px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+/* Password strength bar row */
+.strength-row {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 6px;
+    align-items: center;
+}
+
+.strength-bar {
+    flex: 1;
+    height: 3px;
+    border-radius: 2px;
+    transition: background 0.3s ease;
+}
+
+/* Social auth buttons */
+.social-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.social-btn {
+    padding: 14px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: transform 0.15s ease;
+}
+
+.social-btn:hover {
+    transform: scale(1.05);
+}
+
+/* Divider OR line */
+.divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 24px 0;
+    color: #B0B8CC;
+    font-size: 14px;
+}
+
+.divider-line-l {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 255, 157, 0.20));
+}
+
+.divider-line-r {
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(0, 255, 157, 0.20), transparent);
+}
+
+/* Animated checkbox */
+.cyber-checkbox {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    flex-shrink: 0;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+}
+
+/* HUD corner status */
+.hud-status {
+    position: fixed;
+    top: 20px;
+    right: 72px;
+    z-index: 5;
+    color: #00FF9D;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    opacity: 0.5;
+    text-align: right;
+    line-height: 1.8;
+    pointer-events: none;
+}
+
+/* ── Responsive ───────────────────────────────────── */
+@media (max-width: 520px) {
+    .login-card {
+        padding: 1.5rem;
+        border-radius: 20px;
+    }
+
+    .select-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .social-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hud-status {
+        display: none;
+    }
+}

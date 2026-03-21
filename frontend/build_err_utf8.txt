@@ -1,0 +1,137 @@
+﻿node.exe : [31mx[39m 
+Build failed in 523ms
+At line:1 char:1
++ & "C:\Program 
+Files\nodejs/node.exe" 
+"C:\Program 
+Files\nodejs/node_mo 
+...
++ ~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~
+~~
+    + CategoryInfo     
+         : NotSpecifi  
+  ed: ([31mx[39m B   
+ uild failed in 523    
+ms:String) [], Rem    
+oteException
+    + FullyQualifiedEr 
+   rorId : NativeComm  
+  andError
+ 
+[31merror during 
+build:
+[31msrc/components/Ava
+tarSelection.jsx 
+(2:9): 
+"initBackground" is 
+not exported by "src/co
+mponents/background.js"
+, imported by "src/comp
+onents/AvatarSelection.
+jsx".[31m
+file: [36mC:/Users/Div
+ya/OneDrive/Desktop/CYB
+ERDUO_ALL CONTENT/Cyber
+Duo_AllContent/frontend
+/src/components/AvatarS
+election.jsx:2:9[31m
+[33m
+1: import { useState, 
+useEffect, useRef } 
+from "react";
+2: import { 
+initBackground } from 
+"./background.js";
+            ^
+3: 
+4: /* ΓöÇΓöÇ Canvas 
+(reuses existing 
+background.js) 
+ΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇΓöÇ 
+*/
+[31m
+    at getRollupError (
+file:///C:/Users/Divya/
+OneDrive/Desktop/CYBERD
+UO_ALL%20CONTENT/CyberD
+uo_AllContent/frontend/
+node_modules/rollup/dis
+t/es/shared/parseAst.js
+:402:41)
+    at error (file:///C
+:/Users/Divya/OneDrive/
+Desktop/CYBERDUO_ALL%20
+CONTENT/CyberDuo_AllCon
+tent/frontend/node_modu
+les/rollup/dist/es/shar
+ed/parseAst.js:398:42)
+    at Module.error (fi
+le:///C:/Users/Divya/On
+eDrive/Desktop/CYBERDUO
+_ALL%20CONTENT/CyberDuo
+_AllContent/frontend/no
+de_modules/rollup/dist/
+es/shared/node-entry.js
+:17040:16)
+    at 
+Module.traceVariable (f
+ile:///C:/Users/Divya/O
+neDrive/Desktop/CYBERDU
+O_ALL%20CONTENT/CyberDu
+o_AllContent/frontend/n
+ode_modules/rollup/dist
+/es/shared/node-entry.j
+s:17452:29)
+    at ModuleScope.find
+Variable (file:///C:/Us
+ers/Divya/OneDrive/Desk
+top/CYBERDUO_ALL%20CONT
+ENT/CyberDuo_AllContent
+/frontend/node_modules/
+rollup/dist/es/shared/n
+ode-entry.js:15070:39)
+    at FunctionScope.fi
+ndVariable (file:///C:/
+Users/Divya/OneDrive/De
+sktop/CYBERDUO_ALL%20CO
+NTENT/CyberDuo_AllConte
+nt/frontend/node_module
+s/rollup/dist/es/shared
+/node-entry.js:5673:38)
+    at FunctionBodyScop
+e.findVariable (file://
+/C:/Users/Divya/OneDriv
+e/Desktop/CYBERDUO_ALL%
+20CONTENT/CyberDuo_AllC
+ontent/frontend/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:5673
+:38)
+    at ReturnValueScope
+.findVariable (file:///
+C:/Users/Divya/OneDrive
+/Desktop/CYBERDUO_ALL%2
+0CONTENT/CyberDuo_AllCo
+ntent/frontend/node_mod
+ules/rollup/dist/es/sha
+red/node-entry.js:5673:
+38)
+    at FunctionBodyScop
+e.findVariable (file://
+/C:/Users/Divya/OneDriv
+e/Desktop/CYBERDUO_ALL%
+20CONTENT/CyberDuo_AllC
+ontent/frontend/node_mo
+dules/rollup/dist/es/sh
+ared/node-entry.js:5673
+:38)
+    at Identifier.bind 
+(file:///C:/Users/Divya
+/OneDrive/Desktop/CYBER
+DUO_ALL%20CONTENT/Cyber
+Duo_AllContent/frontend
+/node_modules/rollup/di
+st/es/shared/node-entry
+.js:5447:40)[39m
