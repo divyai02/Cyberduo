@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { initBackground } from "./background.js";
 import AvatarSelection from "./AvatarSelection.jsx";
+import ModeSelection from "./ModeSelection.jsx";
 
 // ═══════════════════════════════════════════════════════════
 // BACKGROUND CANVAS COMPONENT
@@ -232,8 +233,8 @@ function FloatInput({ label, type = "text", value, onChange, error }) {
         <div className="input-wrap">
             <label style={{
                 position: "absolute", left: 16,
-                top: active ? -12 : 19,
-                fontSize: active ? 13 : 17,
+                top: active ? -10 : 17,
+                fontSize: active ? 11 : 15,
                 color: active ? (error ? "#FF4D4D" : "#00FF9D") : "#B0B8CC",
                 transition: "all 0.2s ease", pointerEvents: "none", zIndex: 2,
                 background: active ? "rgba(10,15,31,0.95)" : "transparent",
@@ -247,10 +248,10 @@ function FloatInput({ label, type = "text", value, onChange, error }) {
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 style={{
-                    width: "100%", padding: "18px 44px 18px 16px",
+                    width: "100%", padding: "16px 44px 16px 16px",
                     background: "rgba(10,15,31,0.85)",
                     border: `1px solid ${error ? "#FF4D4D" : focused ? "#00FF9D" : "rgba(255,255,255,0.1)"}`,
-                    borderRadius: 12, color: "#fff", fontSize: 17,
+                    borderRadius: 12, color: "#fff", fontSize: 15,
                     outline: "none", boxSizing: "border-box",
                     boxShadow: focused
                         ? `0 0 20px ${error ? "rgba(255,77,77,0.3)" : "rgba(0,255,157,0.3)"}`
@@ -265,7 +266,7 @@ function FloatInput({ label, type = "text", value, onChange, error }) {
                     position: "absolute", right: 14, top: "50%",
                     transform: "translateY(-50%)",
                     background: "none", border: "none",
-                    cursor: "pointer", color: "#B0B8CC", fontSize: 20,
+                    cursor: "pointer", color: "#B0B8CC", fontSize: 18,
                 }}>
                     {show ? "🙈" : "👁️"}
                 </button>
@@ -452,13 +453,13 @@ function SignInForm({ onSuccess }) {
             <FloatInput label="Password" type="password" value={password} onChange={setPassword} />
 
             {error && (
-                <div style={{ color: "#FF4D4D", fontSize: 14, marginTop: -12, marginBottom: 12, paddingLeft: 4 }}>
+                <div style={{ color: "#FF4D4D", fontSize: 12, marginTop: -12, marginBottom: 12, paddingLeft: 4 }}>
                     ⚠ {error}
                 </div>
             )}
 
             <div style={{ textAlign: "right", marginTop: -4, marginBottom: 20 }}>
-                <a href="#" style={{ color: "#4D9EFF", fontSize: 14, textDecoration: "none" }}>
+                <a href="#" style={{ color: "#4D9EFF", fontSize: 12, textDecoration: "none" }}>
                     Forgot password?
                 </a>
             </div>
@@ -673,30 +674,37 @@ export default function CyberDuo({ onLoginSuccess }) {
     const [showIntro, setShowIntro] = useState(true);
     const [visible, setVisible] = useState(false);
     const [tab, setTab] = useState("signin");
-    const [showAvatarPick, setShowAvatarPick] = useState(false);
+    // screen: "login" | "avatar" | "mode" | "dashboard"
+    const [screen, setScreen] = useState("login");
+    const [avatarId, setAvatarId] = useState(null);
+    const [gameMode, setGameMode] = useState(null);
 
     const doneIntro = useCallback(() => {
         setShowIntro(false);
         setTimeout(() => setVisible(true), 60);
     }, []);
 
-    // After sign-in/sign-up succeeds → show avatar selection
+    // Auth success → go to avatar selection
     const handleAuthSuccess = useCallback(() => {
-        setShowAvatarPick(true);
+        setScreen("avatar");
     }, []);
 
-    // Avatar confirmed → pass avatar id up to parent (main.jsx)
-    const handleAvatarDone = useCallback((avatarId) => {
-        setShowAvatarPick(false);
-        console.log("Avatar saved:", avatarId);
-        alert("Avatar saved: " + avatarId);
-        if (onLoginSuccess) onLoginSuccess(avatarId);
-    }, [onLoginSuccess]);
+    // Avatar confirmed → go to mode selection
+    const handleAvatarDone = useCallback((id) => {
+        console.log("Avatar saved:", id);
+        setAvatarId(id);
+        setScreen("mode");
+    }, []);
 
-    // Render avatar selection on top of everything else
-    if (showAvatarPick) {
-        return <AvatarSelection onContinue={handleAvatarDone} />;
-    }
+    // Mode confirmed → hand off to parent (dashboard comes later)
+    const handleModeDone = useCallback((mode) => {
+        console.log("Mode saved:", mode);
+        setGameMode(mode);
+        if (onLoginSuccess) onLoginSuccess({ avatarId, mode });
+    }, [onLoginSuccess, avatarId]);
+
+    if (screen === "avatar") return <AvatarSelection onContinue={handleAvatarDone} />;
+    if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
 
     return (
         <>
@@ -755,7 +763,7 @@ export default function CyberDuo({ onLoginSuccess }) {
 
                         <GlitchText text="WELCOME, RECRUIT" style={{
                             display: "block",
-                            fontSize: 26, fontWeight: 900, letterSpacing: 5,
+                            fontSize: 22, fontWeight: 900, letterSpacing: 5,
                             background: "linear-gradient(90deg,#00FF9D,#4D9EFF,#9D4DFF,#00FF9D)",
                             backgroundSize: "300%",
                             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
@@ -763,7 +771,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                             fontFamily: "'Orbitron', monospace",
                         }} />
 
-                        <div style={{ color: "#B0B8CC", fontSize: 14, marginTop: 8, letterSpacing: 2 }}>
+                        <div style={{ color: "#B0B8CC", fontSize: 12, marginTop: 8, letterSpacing: 2 }}>
                             BEGIN YOUR CYBERSECURITY JOURNEY
                         </div>
                     </div>
@@ -793,7 +801,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                     </div>
 
                     {/* Footer link */}
-                    <div style={{ textAlign: "center", marginTop: 18, fontSize: 14, color: "#B0B8CC" }}>
+                    <div style={{ textAlign: "center", marginTop: 18, fontSize: 12, color: "#B0B8CC" }}>
                         {tab === "signin" ? (
                             <>No account?{" "}
                                 <button type="button" onClick={() => setTab("signup")}
