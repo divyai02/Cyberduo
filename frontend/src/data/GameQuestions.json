@@ -1,0 +1,95 @@
+{
+  "phishing": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "click_flags",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "There are 3 indicators of phishing in this email. Click them to highlight them red.",
+        "emailParts": [
+          { "id": "sender", "text": "From: HR Dept <hr-update44@gmail.com>", "isFlag": true },
+          { "id": "subject", "text": "Subject: URGENT: Mandatory Employee Update", "isFlag": true },
+          { "id": "greeting", "text": "Dear Value Employee,", "isFlag": true },
+          { "id": "body", "text": "Please review the attached mandatory handbook update immediately.", "isFlag": false },
+          { "id": "signoff", "text": "Thanks,\nHuman Resources", "isFlag": false }
+        ],
+        "concept": "The \"Red Flag\" Highlighter (Visual & Tactile)",
+        "hint": "Check the sender's domain, the extreme tone of the subject, and the impersonal greeting.",
+        "explain": "Expert analysts scan for basic errors first. A company won't use @gmail.com for internal HR emails. Subjects won't use extreme urgency to panic you. Legitimate corporate emails use your real name, not 'Value Employee'.",
+        "reveal": "The 3 flags are:\n1. The Sender address using a generic '@gmail.com' instead of a company domain.\n2. The overly dramatic Subject line screaming 'URGENT'.\n3. The generic Greeting 'Dear Value Employee' instead of your real name."
+      },
+      {
+        "id": 2,
+        "format": "inbox_triage",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "You have 45 seconds to sort your morning inbox. Mark each as Keep (Safe) or Delete (Phish).",
+        "emails": [
+          { "id": "e1", "subject": "Meeting: Q3 Planning", "sender": "calendar-invite@google.com", "isPhish": false },
+          { "id": "e2", "subject": "Account Suspended: Verify Now", "sender": "security@paypa1-update.com", "isPhish": true },
+          { "id": "e3", "subject": "Your meeting recording is available", "sender": "no-reply@zoom.us", "isPhish": false },
+          { "id": "e4", "subject": "Payment Failed: Update Card", "sender": "support@netfiix-billing.net", "isPhish": true }
+        ],
+        "concept": "Inbox Triage (Speed & Sorting)",
+        "hint": "Look closely at the spelling of the sender domains. 'paypal' vs 'paypa1' and 'netflix' vs 'netfiix'.",
+        "explain": "Scammers buy domains that look almost identical to real popular services (like spelling PayPal with a '1' or Netflix with two 'i's). They rely on you reading quickly and panicking.",
+        "reveal": "Email 2 is Phishing (notice the '1' in paypa1). Email 4 is Phishing (notice the double 'i' in netfiix). Emails 1 and 3 are Safe, using exact official domains (google.com and zoom.us)."
+      },
+      {
+        "id": 3,
+        "format": "link_inspector",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Hover your mouse over the button below. Is this link safe?",
+        "displayedLink": "RESET PASSWORD",
+        "actualDestination": "http://www.micros0ft-security-update.com",
+        "options": ["Safe", "Phishing"],
+        "correctAnswer": "Phishing",
+        "concept": "The Hover Detective (Hidden Information)",
+        "hint": "Look very closely at the spelling of 'Microsoft' in the hidden URL tooltip.",
+        "explain": "Teaching the #1 rule of phishing: Check the link before you click. Scammers hide malicious domains behind legitimate-looking buttons, using sneaky typos to trick your eyes.",
+        "reveal": "This is Phishing. Notice the '0' instead of an 'o' in 'micros0ft-security-update.com'."
+      },
+      {
+        "id": 4,
+        "format": "build_phish",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Build an email that will trick the Finance Manager.",
+        "lures": [
+          { "text": "Annual Policy Update Available", "correct": false },
+          { "text": "URGENT: Unpaid Vendor Invoice", "correct": true }
+        ],
+        "urgencies": [
+          { "text": "Please review this when you have time next week.", "correct": false },
+          { "text": "Immediate Action Required: Wire transfer failing.", "correct": true }
+        ],
+        "concept": "Build-a-Phish (Role Reversal)",
+        "hint": "Finance managers care heavily about money and invoices, and they react to extreme business urgency.",
+        "explain": "To catch a criminal, you must think like one! Phishers use highly targeted lures (like invoices for Finance departments) combined with intense urgency to force their victims to make mistakes.",
+        "reveal": "The correct answer is targeting the Finance Manager with an 'Unpaid Vendor Invoice' lure, combined with the 'Immediate Action' wire transfer urgency."
+      },
+      {
+        "id": 5,
+        "format": "chat_sim",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Message from: 'IT_Support' on your corporate messenger.",
+        "chatHistory": [
+          { "sender": "IT_Support", "message": "Hi, we detect irregular login activity on your account from Russia." },
+          { "sender": "IT_Support", "message": "Please send us the 6-digit MFA code you just received on your phone to secure your account immediately." }
+        ],
+        "options": [
+          "Okay, the code is 849-210.",
+          "I will not share MFA codes over chat. I will call the official IT Helpdesk number."
+        ],
+        "correctAnswer": "I will not share MFA codes over chat. I will call the official IT Helpdesk number.",
+        "concept": "Chat Simulator (Smishing/Vishing)",
+        "hint": "Would real IT ever ask you to send them your secret MFA code?",
+        "explain": "This is an MFA Fatigue / Bypass attack. The attacker already has your password and triggered the MFA code themselves. They are messaging you pretending to be IT to trick you into bypassing your own security.",
+        "reveal": "The correct response is to refuse and call the official IT number. Real IT will NEVER ask you to give them your MFA code."
+      }
+    ]
+  }
+}

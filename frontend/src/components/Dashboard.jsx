@@ -4,7 +4,7 @@
 // ============================================
 import { useEffect, useRef, useState } from "react";
 import { initBackground } from "./background.js";
-import { getGameProgress, checkUnlockStatus } from "../utils/gameProgress.js";
+import { getGameProgress, checkUnlockStatus, updateGameProgress } from "../utils/gameProgress.js";
 import GameScreen from "./GameScreen.jsx";
 import "../styles/dashboard.css";
 import "../styles/home.css";
@@ -105,6 +105,9 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
 
     const handleNavClick = (id) => {
         setActiveNav(id);
+        if (id === "home") {
+            setActiveGame(null);
+        }
         setSidebarExpanded(false);
     };
 
@@ -113,9 +116,19 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
         if (activeGame) {
             return (
                 <GameScreen 
+                    gameKey={activeGame.key}
                     gameName={activeGame.name} 
                     level={activeGame.level} 
-                    difficulty={activeGame.difficulty} 
+                    onComplete={() => {
+                        const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
+                        setProgress(newProg);
+                        setActiveGame(null);
+                        setSelectedMission(null);
+                    }}
+                    onProgressUpdate={(completedQuestions) => {
+                        const newProg = updateGameProgress(activeGame.level, activeGame.key, completedQuestions);
+                        setProgress(newProg);
+                    }}
                     onBack={() => setActiveGame(null)} 
                 />
             );
