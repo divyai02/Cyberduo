@@ -4,7 +4,10 @@
 // ============================================
 import { useEffect, useRef, useState } from "react";
 import { initBackground } from "./background.js";
+import { getGameProgress, checkUnlockStatus } from "../utils/gameProgress.js";
+import GameScreen from "./GameScreen.jsx";
 import "../styles/dashboard.css";
+import "../styles/home.css";
 
 // ---- Avatar map (matches AvatarSelection.jsx IDs exactly) ----
 const AVATAR_MAP = {
@@ -52,6 +55,14 @@ const GAME_PLACEHOLDERS = [
     "🔐", "🕵️", "🛡️", "🔍", "💻", "🧩", "⚙️", "🔒"
 ];
 
+const BRIEFING_TEXTS = {
+    phishing: "Identify deceptive emails and malicious links designed to steal classified data. Watch out for urgent requests and unmatched URLs.",
+    password: "Learn to crack weak credentials and build impenetrable defense protocols using entropy analysis.",
+    malware: "Analyze and neutralize virus payloads before system corruption spreads entirely through the network.",
+    firewall: "Configure rapid network defenses and access control lists to block unauthorized infiltration attempts.",
+    scams: "Detect social engineering tactics and psychological manipulation used by modern cybercriminals."
+};
+
 // ============================================
 export default function Dashboard({ avatarId, username, email, mode, onLogout }) {
     const canvasRef = useRef(null);
@@ -61,6 +72,13 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
     const [activeNav, setActiveNav] = useState("home");
     const [dropdownOpen, setDropdownOpen] = useState(false);
     const [themeLight, setThemeLight] = useState(false);
+    const [activeGame, setActiveGame] = useState(null);
+    const [progress, setProgress] = useState(null);
+    const [selectedMission, setSelectedMission] = useState(null);
+
+    useEffect(() => {
+        setProgress(getGameProgress());
+    }, []);
 
     const avatar = AVATAR_MAP[avatarId] || DEFAULT_AVATAR;
     const displayName = username || "Operative";
@@ -92,6 +110,16 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
 
     // ---- Render main content ----
     const renderMain = () => {
+        if (activeGame) {
+            return (
+                <GameScreen 
+                    gameName={activeGame.name} 
+                    level={activeGame.level} 
+                    difficulty={activeGame.difficulty} 
+                    onBack={() => setActiveGame(null)} 
+                />
+            );
+        }
         if (activeNav === "home") return renderHome();
         const meta = FEATURE_META[activeNav];
         const nav = NAV_ITEMS.find(n => n.id === activeNav);
@@ -105,48 +133,139 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
         );
     };
 
+    const renderGameCircle = (levelStr, gameKey, gameData, index) => {
+        if (!progress) return null;
+        
+        const isLocked = !checkUnlockStatus(mode, progress, levelStr, gameKey);
+        const { questionsDone, totalQuestions, name, icon } = gameData;
+        const progressPercent = (questionsDone / totalQuestions) * 100;
+        
+        const radius = 65;
+        const circumference = 2 * Math.PI * radius;
+        const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
+
+        const handleGameClick = () => {
+            if (isLocked) {
+                if (mode === "free") {
+                    alert("Complete at least 3 games from previous level to unlock for Free Mode.");
+                } else {
+                    alert("Complete all previous games first for Path Mode.");
+                }
+                return;
+            }
+            setSelectedMission({ name, level: levelStr, difficulty: levelStr, key: gameKey, questionsDone, totalQuestions });
+        };
+
+        return (
+            <div 
+                className={`db-game-circle-wrapper db-node-${index} ${isLocked ? "locked" : ""}`} 
+                key={gameKey}
+                onClick={handleGameClick}
+                title={name}
+            >
+                <div className="db-game-circle">
+                    <svg className="db-progress-ring">
+                        <circle className="db-progress-ring-bg" cx="75" cy="75" r={radius} />
+                        <circle 
+                            className="db-progress-ring-path" 
+                            cx="75" cy="75" r={radius}
+                            strokeDasharray={circumference}
+                            strokeDashoffset={strokeDashoffset}
+                        />
+                    </svg>
+                    <div className="db-game-icon">{icon}</div>
+                    {isLocked && <div className="db-lock-overlay">🔒</div>}
+                </div>
+                <div className="db-game-info">
+                    <div className="db-game-name">{name}</div>
+                    <div className="db-game-progress-text">{questionsDone} / {totalQuestions}</div>
+                </div>
+            </div>
+        );
+    };
+
     const renderHome = () => (
         <div className="db-home">
-            {/* Welcome */}
-            <div className="db-welcome-row">
-                <div className="db-welcome-text">
-                    <div className="db-welcome-sup">// OPERATIVE STATUS: ONLINE</div>
-                    <div className="db-welcome-heading">
-                        Welcome back,<br /><span>{displayName}</span>
-                    </div>
-                    <div className="db-welcome-sub">
-                        Your cybersecurity training continues. Stay sharp, stay secure.
-                    </div>
-                </div>
-                <div className="db-mode-chip">
-                    {mode === "free" ? "🎮" : "🗺️"} &nbsp;{modeLabel}
-                </div>
-            </div>
-
-            {/* Stats */}
-            <div className="db-stats-row">
-                {HOME_STATS.map(s => (
-                    <div className="db-stat-card" key={s.label}>
-                        <div className="db-stat-icon">{s.icon}</div>
-                        <div className="db-stat-value">{s.value}</div>
-                        <div className="db-stat-label">{s.label}</div>
-                    </div>
-                ))}
-            </div>
-
-            {/* Games placeholder */}
-            <div className="db-games-section">
-                <div className="db-section-header">
-                    <div className="db-section-title">GAME LIBRARY</div>
-                </div>
-                <div className="db-coming-soon-grid">
-                    {GAME_PLACEHOLDERS.map((icon, i) => (
-                        <div className="db-game-placeholder" key={i}>
-                            <div className="db-game-placeholder-icon">{icon}</div>
-                            LOADING...
+            <div className="db-home-left">
+                {/* Welcome */}
+                <div className="db-welcome-row">
+                    <div className="db-welcome-text">
+                        <div className="db-welcome-sup">// OPERATIVE STATUS: ONLINE</div>
+                        <div className="db-welcome-heading">
+                            Welcome back,<br /><span>{displayName}</span>
                         </div>
-                    ))}
+                        <div className="db-welcome-sub">
+                            Your cybersecurity training continues. Stay sharp, stay secure.
+                        </div>
+                    </div>
+                    <div className="db-mode-chip">
+                        {mode === "free" ? "🎮" : "🗺️"} &nbsp;{modeLabel}
+                    </div>
                 </div>
+
+                {/* Game Circles Layout */}
+                <div className="db-games-section">
+                    <div className="db-section-header">
+                        <div className="db-section-title">MISSION PATH</div>
+                    </div>
+                    {progress ? (
+                        <div className="db-levels-container">
+                            {["beginner", "medium", "hard"].map((levelStr) => (
+                                <div className="db-level-section" key={levelStr}>
+                                    <div className="db-level-title">{levelStr.toUpperCase()} LEVEL</div>
+                                    <div className="db-circles-row">
+                                        <div className="db-path-line"></div>
+                                        {Object.entries(progress[levelStr]).map(([gameKey, gameData], index) => 
+                                            renderGameCircle(levelStr, gameKey, gameData, index)
+                                        )}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : (
+                        <div className="db-coming-soon-grid" style={{ color: '#00FF9D' }}>
+                            Loading Progress...
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            <div className="db-home-right">
+                {selectedMission ? (
+                    <div className="db-briefing-panel">
+                        <div className="db-bp-header">
+                            <span className="db-bp-label">TARGET ACQUIRED</span>
+                            <span className="db-bp-level">{selectedMission.level.toUpperCase()}</span>
+                        </div>
+                        <div className="db-bp-title">{selectedMission.name}</div>
+                        <div className="db-bp-desc">
+                            {BRIEFING_TEXTS[selectedMission.key] || "Classified mission parameters. Prepare for deployment."}
+                        </div>
+                        
+                        <div className="db-bp-progress">
+                            <div className="db-bp-prog-text">
+                                MISSION PROGRESS <span>{selectedMission.questionsDone} / {selectedMission.totalQuestions}</span>
+                            </div>
+                            <div className="db-bp-prog-bar">
+                                <div className="db-bp-prog-fill" style={{ width: `${(selectedMission.questionsDone / Math.max(selectedMission.totalQuestions, 1)) * 100}%` }}></div>
+                            </div>
+                        </div>
+
+                        <button className="db-btn-engage" onClick={() => setActiveGame(selectedMission)}>
+                            [ ENGAGE MISSION ]
+                        </button>
+                    </div>
+                ) : (
+                    <div className="db-briefing-panel empty">
+                        <div className="db-avatar-welcome">
+                            <div className="db-aw-emoji">{avatar.emoji}</div>
+                        </div>
+                        <div className="db-aw-speech">
+                            <div className="db-aw-title">STATUS: STANDING BY</div>
+                            Welcome to the CyberDuo Training Grounds! Your mission is to master all security domains. Click on an available mission node to view target intel.
+                        </div>
+                    </div>
+                )}
             </div>
         </div>
     );
