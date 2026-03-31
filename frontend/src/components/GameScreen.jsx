@@ -5,7 +5,6 @@ import gameData from '../data/GameQuestions.json';
 export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack }) {
     const questions = gameData[gameKey]?.[level] || [];
     
-    // State
     const [currentIndex, setCurrentIndex] = useState(() => {
         const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return saved ? JSON.parse(saved).currentIndex : 0;
@@ -18,16 +17,15 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return saved ? JSON.parse(saved).xp : 0;
     });
-    const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: string }
+    const [feedback, setFeedback] = useState(null);
+    const [resultSaved, setResultSaved] = useState(false);
     
-    // Save state on change and notify dashboard
     useEffect(() => {
         if (currentIndex > 0 || score > 0 || xp > 0) {
             localStorage.setItem(`cyberduo_inprogress_${gameKey}_${level}`, JSON.stringify({
                 currentIndex, score, xp
             }));
         }
-        // Force the dashboard to align its visual progress circle with the local game state (useful when explicitly replaying completed games)
         if (onProgressUpdate) {
             onProgressUpdate(currentIndex);
         }
@@ -37,7 +35,6 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const [hasAnswered, setHasAnswered] = useState(false);
     const [isCorrectResult, setIsCorrectResult] = useState(null);
     
-    // Format-specific state
     const [selectedOption, setSelectedOption] = useState(null);
     const [droppedFlags, setDroppedFlags] = useState([]);
     const [checkedFlags, setCheckedFlags] = useState([]);
@@ -46,6 +43,52 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const [buildAnswers, setBuildAnswers] = useState({ lure: null, urgency: null });
 
     const [modal, setModal] = useState({ show: false, title: '', content: '' });
+
+    const [chatOpen, setChatOpen] = useState(false);
+    const [chatMessages, setChatMessages] = useState([]);
+    const [chatInput, setChatInput] = useState('');
+    const [chatLoading, setChatLoading] = useState(false);
+
+    const GEMINI_API_KEY = "AIzaSyAfAUhkJSnr7eUo90DV_xITKl8gFqEB5E0";
+
+    const handleChatSend = async () => {
+        if (!chatInput.trim() || chatLoading) return;
+        const userMsg = { role: 'user', text: chatInput };
+        setChatMessages(prev => [...prev, userMsg]);
+        const currentQuestion = chatInput;
+        setChatInput('');
+        setChatLoading(true);
+        try {
+            const response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [{
+                                text: `You are a friendly cybersecurity tutor in a game called CyberDuo. The current game question is about: "${currentQ?.questionText}". The student asks: "${currentQuestion}". Give a helpful, simple answer in 2-3 sentences maximum.`
+                            }]
+                        }]
+                    })
+                }
+            );
+            const data = await response.json();
+            console.log("Gemini response:", JSON.stringify(data));
+            if (data.candidates && data.candidates[0] && data.candidates[0].content) {
+                const reply = data.candidates[0].content.parts[0].text;
+                setChatMessages(prev => [...prev, { role: 'ai', text: reply }]);
+            } else if (data.error) {
+                setChatMessages(prev => [...prev, { role: 'ai', text: `Error: ${data.error.message}` }]);
+            } else {
+                setChatMessages(prev => [...prev, { role: 'ai', text: 'Sorry, I could not get a response. Please try again.' }]);
+            }
+        } catch (err) {
+            console.error("Gemini error:", err);
+            setChatMessages(prev => [...prev, { role: 'ai', text: 'Sorry, I could not connect. Please check your internet connection.' }]);
+        }
+        setChatLoading(false);
+    };
 
     const currentQ = questions[currentIndex];
     
@@ -61,10 +104,35 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         return () => clearInterval(timerId);
     }, [timeLeft, hasAnswered, currentIndex, currentQ, questions.length]);
 
-    // Check completion
+    useEffect(() => {
+        const saveResult = async () => {
+            if (currentIndex >= questions.length && questions.length > 0 && !resultSaved) {
+                setResultSaved(true);
+                localStorage.removeItem(`cyberduo_inprogress_${gameKey}_${level}`);
+                try {
+                    const userId = localStorage.getItem("user_id");
+                    if (userId) {
+                        await fetch("http://localhost:8000/game/save-result", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({
+                                user_id: userId,
+                                game_key: gameKey,
+                                level: level,
+                                xp_earned: xp,
+                                score: score
+                            })
+                        });
+                    }
+                } catch (err) {
+                    console.error("Could not save game result:", err);
+                }
+            }
+        };
+        saveResult();
+    }, [currentIndex, questions.length]);
+
     if (currentIndex >= questions.length && questions.length > 0) {
-        // Clear saved progress on completion
-        localStorage.removeItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return (
             <div className="gs-container">
                 <div className="gs-completion-screen">
@@ -100,7 +168,6 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             setXp(prev => prev + 20);
         } else {
             setFeedback({ type: 'error', message: currentQ.explain });
-            // Deduct XP points
             setXp(prev => Math.max(0, prev - 10));
         }
     };
@@ -121,19 +188,16 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         setHasAnswered(false);
         setIsCorrectResult(null);
         setTimeLeft(45);
-        
         const nextIndex = currentIndex + 1;
         setCurrentIndex(nextIndex);
     };
 
-    // Submission logic
     const handleSubmit = () => {
         if (hasAnswered) return;
-        
         let isCorrect = false;
 
         if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim') {
-            if (!selectedOption) return; 
+            if (!selectedOption) return;
             isCorrect = selectedOption === currentQ.correctAnswer;
         } else if (currentQ.format === 'drag_flags') {
             const correctSet = new Set(currentQ.correctFlags);
@@ -161,18 +225,13 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
 
     const showModal = (title, content) => setModal({ show: true, title, content });
 
-    // Render Question Formats
     const renderQuestionFormat = () => {
         switch (currentQ.format) {
             case 'spot_fake':
                 return (
                     <div className="gs-format gs-spot-fake">
                         {currentQ.options.map((opt, i) => (
-                            <div 
-                                key={i} 
-                                className={`gs-option-card ${selectedOption === opt ? 'selected' : ''}`}
-                                onClick={() => setSelectedOption(opt)}
-                            >
+                            <div key={i} className={`gs-option-card ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
                                 <span className="gs-sender-icon">👤</span> {opt}
                             </div>
                         ))}
@@ -182,11 +241,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                 return (
                     <div className="gs-format gs-decision-sim">
                         {currentQ.options.map((opt, i) => (
-                            <button 
-                                key={i} 
-                                className={`gs-option-btn ${selectedOption === opt ? 'selected' : ''}`}
-                                onClick={() => setSelectedOption(opt)}
-                            >
+                            <button key={i} className={`gs-option-btn ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
                                 {opt}
                             </button>
                         ))}
@@ -211,11 +266,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                             <div className="gs-chat-replies">
                                 <h5>Choose your reply:</h5>
                                 {currentQ.options.map((opt, i) => (
-                                    <button 
-                                        key={i} 
-                                        className={`gs-chat-reply-btn ${selectedOption === opt ? 'selected' : ''}`}
-                                        onClick={() => setSelectedOption(opt)}
-                                    >
+                                    <button key={i} className={`gs-chat-reply-btn ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
                                         {opt}
                                     </button>
                                 ))}
@@ -224,42 +275,26 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     </div>
                 );
             case 'drag_flags':
-                const handleDragStart = (e, flag) => {
-                    e.dataTransfer.setData('flag', flag);
-                };
+                const handleDragStart = (e, flag) => e.dataTransfer.setData('flag', flag);
                 const handleDrop = (e) => {
                     e.preventDefault();
                     const flag = e.dataTransfer.getData('flag');
-                    if (flag && !droppedFlags.includes(flag)) {
-                        setDroppedFlags([...droppedFlags, flag]);
-                    }
+                    if (flag && !droppedFlags.includes(flag)) setDroppedFlags([...droppedFlags, flag]);
                 };
                 const handleDragOver = (e) => e.preventDefault();
-
                 return (
                     <div className="gs-format gs-drag-flags">
-                        <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>
-                            {currentQ.emailContent}
-                        </div>
+                        <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>{currentQ.emailContent}</div>
                         <div className="gs-drag-area">
                             <div className="gs-flags-source">
                                 <h4>Available Flags</h4>
                                 {currentQ.redFlags.filter(f => !droppedFlags.includes(f)).map((flag, i) => (
-                                    <div 
-                                        key={i} 
-                                        draggable 
-                                        onDragStart={(e) => handleDragStart(e, flag)}
-                                        className="gs-draggable-flag"
-                                    >
+                                    <div key={i} draggable onDragStart={(e) => handleDragStart(e, flag)} className="gs-draggable-flag">
                                         🚩 {flag}
                                     </div>
                                 ))}
                             </div>
-                            <div 
-                                className="gs-drop-zone"
-                                onDrop={handleDrop}
-                                onDragOver={handleDragOver}
-                            >
+                            <div className="gs-drop-zone" onDrop={handleDrop} onDragOver={handleDragOver}>
                                 <h4>DROP SUSPICIOUS FLAGS HERE</h4>
                                 {droppedFlags.map((flag, i) => (
                                     <div key={i} className="gs-dropped-flag" onClick={() => setDroppedFlags(droppedFlags.filter(f => f !== flag))}>
@@ -275,20 +310,13 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     <div className="gs-format gs-click-flags">
                         <div className="gs-email-mockup email-client-style delay-anim">
                             {currentQ.emailParts.map((part, i) => {
-                                // First two parts are headers (sender, subject), rest are body
                                 const rowClass = i <= 1 ? 'header-row' : 'body-row';
                                 return (
-                                    <div 
-                                        key={i} 
-                                        className={`gs-email-part ${rowClass} ${checkedFlags.includes(part.id) ? 'highlighted' : ''}`}
+                                    <div key={i} className={`gs-email-part ${rowClass} ${checkedFlags.includes(part.id) ? 'highlighted' : ''}`}
                                         onClick={() => {
-                                            if (checkedFlags.includes(part.id)) {
-                                                setCheckedFlags(checkedFlags.filter(id => id !== part.id));
-                                            } else {
-                                                setCheckedFlags([...checkedFlags, part.id]);
-                                            }
-                                        }}
-                                    >
+                                            if (checkedFlags.includes(part.id)) setCheckedFlags(checkedFlags.filter(id => id !== part.id));
+                                            else setCheckedFlags([...checkedFlags, part.id]);
+                                        }}>
                                         {part.text}
                                     </div>
                                 );
@@ -306,14 +334,8 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                                     <span>{email.sender}</span>
                                 </div>
                                 <div className="gs-triage-actions">
-                                    <button 
-                                        className={`gs-btn-keep ${triageAnswers[email.id] === false ? 'selected' : ''}`}
-                                        onClick={() => setTriageAnswers({ ...triageAnswers, [email.id]: false })}
-                                    >KEEP</button>
-                                    <button 
-                                        className={`gs-btn-delete ${triageAnswers[email.id] === true ? 'selected' : ''}`}
-                                        onClick={() => setTriageAnswers({ ...triageAnswers, [email.id]: true })}
-                                    >DELETE</button>
+                                    <button className={`gs-btn-keep ${triageAnswers[email.id] === false ? 'selected' : ''}`} onClick={() => setTriageAnswers({ ...triageAnswers, [email.id]: false })}>KEEP</button>
+                                    <button className={`gs-btn-delete ${triageAnswers[email.id] === true ? 'selected' : ''}`} onClick={() => setTriageAnswers({ ...triageAnswers, [email.id]: true })}>DELETE</button>
                                 </div>
                             </div>
                         ))}
@@ -326,11 +348,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                             <h5>1. Select Attacker Lure</h5>
                             <div className="gs-build-options">
                                 {currentQ.lures.map((lure, i) => (
-                                    <button 
-                                        key={i} 
-                                        className={`gs-build-btn ${buildAnswers.lure?.text === lure.text ? 'selected' : ''}`}
-                                        onClick={() => setBuildAnswers({ ...buildAnswers, lure })}
-                                    >
+                                    <button key={i} className={`gs-build-btn ${buildAnswers.lure?.text === lure.text ? 'selected' : ''}`} onClick={() => setBuildAnswers({ ...buildAnswers, lure })}>
                                         {lure.text}
                                     </button>
                                 ))}
@@ -340,11 +358,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                             <h5>2. Select Urgency Tactic</h5>
                             <div className="gs-build-options">
                                 {currentQ.urgencies.map((urgency, i) => (
-                                    <button 
-                                        key={i} 
-                                        className={`gs-build-btn ${buildAnswers.urgency?.text === urgency.text ? 'selected' : ''}`}
-                                        onClick={() => setBuildAnswers({ ...buildAnswers, urgency })}
-                                    >
+                                    <button key={i} className={`gs-build-btn ${buildAnswers.urgency?.text === urgency.text ? 'selected' : ''}`} onClick={() => setBuildAnswers({ ...buildAnswers, urgency })}>
                                         {urgency.text}
                                     </button>
                                 ))}
@@ -355,49 +369,28 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             case 'link_inspector':
                 return (
                     <div className="gs-format gs-link-inspector">
-                        <div className="gs-link-container" 
-                             onMouseEnter={() => setShowHover(true)} 
-                             onMouseLeave={() => setShowHover(false)}>
+                        <div className="gs-link-container" onMouseEnter={() => setShowHover(true)} onMouseLeave={() => setShowHover(false)}>
                             <span className="gs-fake-link">{currentQ.displayedLink}</span>
-                            {showHover && (
-                                <div className="gs-hover-tooltip">
-                                    {currentQ.actualDestination}
-                                </div>
-                            )}
+                            {showHover && <div className="gs-hover-tooltip">{currentQ.actualDestination}</div>}
                         </div>
                         <div className="gs-inspector-actions">
-                            <button 
-                                className={`gs-btn-safe ${selectedOption === 'Safe' ? 'selected' : ''}`}
-                                onClick={() => setSelectedOption('Safe')}
-                            >
-                                ✔ SAFE
-                            </button>
-                            <button 
-                                className={`gs-btn-phish ${selectedOption === 'Phishing' ? 'selected' : ''}`}
-                                onClick={() => setSelectedOption('Phishing')}
-                            >
-                                ⚠ PHISHING
-                            </button>
+                            <button className={`gs-btn-safe ${selectedOption === 'Safe' ? 'selected' : ''}`} onClick={() => setSelectedOption('Safe')}>✔ SAFE</button>
+                            <button className={`gs-btn-phish ${selectedOption === 'Phishing' ? 'selected' : ''}`} onClick={() => setSelectedOption('Phishing')}>⚠ PHISHING</button>
                         </div>
                     </div>
                 );
             case 'case_study':
                 return (
                     <div className="gs-format gs-case-study">
-                        <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>
-                            {currentQ.emailContent}
-                        </div>
+                        <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>{currentQ.emailContent}</div>
                         <div className="gs-checklist">
                             {currentQ.redFlags.map((flag, i) => (
                                 <label key={i} className="gs-checkbox-label">
-                                    <input 
-                                        type="checkbox" 
-                                        checked={checkedFlags.includes(flag)}
+                                    <input type="checkbox" checked={checkedFlags.includes(flag)}
                                         onChange={(e) => {
                                             if (e.target.checked) setCheckedFlags([...checkedFlags, flag]);
                                             else setCheckedFlags(checkedFlags.filter(f => f !== flag));
-                                        }}
-                                    />
+                                        }} />
                                     <span className="gs-custom-checkbox"></span>
                                     {flag}
                                 </label>
@@ -413,7 +406,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     return (
         <div className="gs-container">
             {onBack && <button className="gs-btn-back" onClick={onBack}>← ABORT MISSION</button>}
-            
+
             <div className="gs-header">
                 <div className="gs-progress-wrapper">
                     <span className="gs-progress-text">Question {currentIndex + 1} of {questions.length}</span>
@@ -422,9 +415,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     </div>
                 </div>
                 <div className="gs-stats" style={{display: 'flex', gap: '15px', alignItems: 'center'}}>
-                    <div className="gs-timer-badge" style={{color: timeLeft <= 10 ? '#ff6b6b' : '#00FF9D'}}>
-                        ⏱ {timeLeft}s
-                    </div>
+                    <div className="gs-timer-badge" style={{color: timeLeft <= 10 ? '#ff6b6b' : '#00FF9D'}}>⏱ {timeLeft}s</div>
                     <span className="gs-xp-badge">⚡ {xp} XP</span>
                 </div>
             </div>
@@ -434,13 +425,9 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                 <div className={`gs-format-container ${hasAnswered ? 'answered' : ''}`}>
                     {renderQuestionFormat()}
                 </div>
-                
-                {feedback && (
-                    <div className={`gs-feedback ${feedback.type}`}>
-                        {feedback.message}
-                    </div>
-                )}
-                
+
+                {feedback && <div className={`gs-feedback ${feedback.type}`}>{feedback.message}</div>}
+
                 {!hasAnswered ? (
                     <button className="gs-btn-submit" onClick={handleSubmit}>SUBMIT ANSWER</button>
                 ) : (
@@ -450,9 +437,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                                 👁️ SHOW ANSWER
                             </button>
                         )}
-                        <button className="gs-btn-next" onClick={handleNextQuestion}>
-                            NEXT QUESTION ➔
-                        </button>
+                        <button className="gs-btn-next" onClick={handleNextQuestion}>NEXT QUESTION ➔</button>
                     </div>
                 )}
             </div>
@@ -460,10 +445,59 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             <div className="gs-ai-toolbar">
                 <button onClick={() => showModal('Hint 💡', currentQ.hint)}>💡 Hint</button>
                 <button onClick={() => showModal('Explain 📚', currentQ.explain)}>📚 Explain</button>
-                <button onClick={() => showModal('AI Agent Chat 💬', 'Agent Chat module is currently offline. Check back in a future update.')}>💬 Chat</button>
+                <button onClick={() => setChatOpen(true)}>💬 Chat</button>
             </div>
 
-            {/* AI Modal */}
+            {chatOpen && (
+                <div className="gs-modal-overlay" onClick={() => setChatOpen(false)}>
+                    <div className="gs-modal-content" style={{width: '400px', maxHeight: '500px', display: 'flex', flexDirection: 'column'}} onClick={e => e.stopPropagation()}>
+                        <h3>🤖 AI Agent Chat</h3>
+                        <div style={{flex: 1, overflowY: 'auto', marginBottom: '10px', maxHeight: '300px', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px'}}>
+                            {chatMessages.length === 0 && (
+                                <p style={{color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '13px'}}>Ask me anything about this question!</p>
+                            )}
+                            {chatMessages.map((msg, i) => (
+                                <div key={i} style={{marginBottom: '10px', textAlign: msg.role === 'user' ? 'right' : 'left'}}>
+                                    <span style={{
+                                        background: msg.role === 'user' ? '#00FF9D' : '#1a1a2e',
+                                        color: msg.role === 'user' ? '#000' : '#fff',
+                                        padding: '8px 12px',
+                                        borderRadius: '12px',
+                                        display: 'inline-block',
+                                        maxWidth: '80%',
+                                        fontSize: '13px'
+                                    }}>
+                                        {msg.text}
+                                    </span>
+                                </div>
+                            ))}
+                            {chatLoading && (
+                                <div style={{textAlign: 'left'}}>
+                                    <span style={{color: '#00FF9D', fontSize: '13px'}}>AI is thinking... ⏳</span>
+                                </div>
+                            )}
+                        </div>
+                        <div style={{display: 'flex', gap: '8px'}}>
+                            <input
+                                type="text"
+                                value={chatInput}
+                                onChange={e => setChatInput(e.target.value)}
+                                onKeyDown={e => e.key === 'Enter' && handleChatSend()}
+                                placeholder="Ask a question..."
+                                style={{flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '13px'}}
+                            />
+                            <button
+                                onClick={handleChatSend}
+                                disabled={chatLoading}
+                                style={{padding: '8px 16px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '6px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold'}}>
+                                SEND
+                            </button>
+                        </div>
+                        <button onClick={() => setChatOpen(false)} style={{marginTop: '10px'}}>CLOSE</button>
+                    </div>
+                </div>
+            )}
+
             {modal.show && (
                 <div className="gs-modal-overlay" onClick={() => setModal({ ...modal, show: false })}>
                     <div className="gs-modal-content" onClick={e => e.stopPropagation()}>
