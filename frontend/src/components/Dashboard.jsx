@@ -4,34 +4,40 @@
 // ============================================
 import { useEffect, useRef, useState } from "react";
 import { initBackground } from "./background.js";
-import { getGameProgress, checkUnlockStatus, updateGameProgress } from "../utils/gameProgress.js";
+import { getGameProgress, checkUnlockStatus, updateGameProgress, updateStreak, updateUserXP } from "../utils/gameProgress.js";
+import { incrementDailyProgress } from "../utils/dailyprogress.js";
 import GameScreen from "./GameScreen.jsx";
 import CyberAlert from "./CyberAlert.jsx";
+import StreakTracker from "./StreakTracker.jsx";
+import SkillRadar from "./SkillRadar.jsx";
+import Leaderboard from "./Leaderboard.jsx";
+import Badges from "./Badges.jsx";
+import DailyGoal from "./DailyGoal.jsx";
+import EditProfileModal from "./EditProfileModal.jsx";
+import SettingsModal from "./SettingsModal.jsx";
+import { AVATARS } from "./AvatarSelection.jsx";
 import "../styles/dashboard.css";
 import "../styles/home.css";
 
 // ---- Avatar map (matches AvatarSelection.jsx IDs exactly) ----
-const AVATAR_MAP = {
-    "hacker": { emoji: "🦸", label: "Hacker Hero" },
-    "agent": { emoji: "🦹", label: "Cyber Agent" },
-    "cat": { emoji: "🐱", label: "Cyber Cat" },
-    "bot": { emoji: "🤖", label: "AI Bot" },
-    "ninja": { emoji: "👩‍💻", label: "Code Ninja" },
-};
+const AVATAR_MAP = AVATARS.reduce((acc, curr) => {
+    acc[curr.id] = { emoji: curr.emoji, label: curr.name };
+    return acc;
+}, {});
 
 const DEFAULT_AVATAR = { emoji: "🛡️", label: "Operative" };
 
 // ---- Sidebar nav items ----
 const NAV_ITEMS = [
     { id: "home", icon: "🏠", label: "Home" },
-    { id: "streak", icon: "🔥", label: "Streak" },
     { id: "radar", icon: "📊", label: "Skill Radar" },
+    { id: "badges", icon: "🎖️", label: "Badges" },
+    { id: "dailygoal", icon: "📅", label: "Daily Goal" },
     { id: "alerts", icon: "⚠️", label: "Cyber Alert News" },
     { id: "leaderboard", icon: "🏆", label: "Leaderboard" },
-    { id: "badges", icon: "🎖️", label: "Badges" },
-    { id: "recommend", icon: "🎯", label: "Recommended" },
-    { id: "dailygoal", icon: "📅", label: "Daily Goal" },
+    { id: "streak", icon: "🔥", label: "Streak" },
 ];
+
 
 // ---- Feature placeholder descriptions ----
 const FEATURE_META = {
@@ -40,8 +46,8 @@ const FEATURE_META = {
     alerts: { title: "Cyber Alert News", desc: "Stay updated with the latest threats and security advisories." },
     leaderboard: { title: "Leaderboard", desc: "See how you rank against other operatives in the academy." },
     badges: { title: "Badge Collection", desc: "Unlock achievement badges as you complete challenges." },
-    recommend: { title: "Recommended Games", desc: "AI-curated game suggestions based on your skill gaps." },
     dailygoal: { title: "Daily Mission", desc: "Complete daily goals to earn XP and maintain your streak." },
+
 };
 
 // ---- Stats for home ----
@@ -65,20 +71,25 @@ const BRIEFING_TEXTS = {
 };
 
 // ============================================
-export default function Dashboard({ avatarId, username, email, mode, onLogout }) {
+export default function Dashboard({ avatarId, username, email, mode, updateUserData, onLogout }) {
     const canvasRef = useRef(null);
     const bgEngineRef = useRef(null);
 
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [activeNav, setActiveNav] = useState("home");
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    const [themeLight, setThemeLight] = useState(false);
+    
+    // New states for modals
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [showSettingsModal, setShowSettingsModal] = useState(false);
+
     const [activeGame, setActiveGame] = useState(null);
     const [progress, setProgress] = useState(null);
     const [selectedMission, setSelectedMission] = useState(null);
 
     useEffect(() => {
         setProgress(getGameProgress());
+        updateStreak();
     }, []);
 
     const avatar = AVATAR_MAP[avatarId] || DEFAULT_AVATAR;
@@ -112,6 +123,21 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
         setSidebarExpanded(false);
     };
 
+    // Modal save handlers
+    const handleSaveProfile = (data) => {
+        updateUserData(data);
+        setShowEditModal(false);
+    };
+
+    const handleSaveSettings = ({ mode: newMode, resetProgress }) => {
+        if (resetProgress) {
+            localStorage.removeItem("cyberduo_game_progress");
+            setProgress(getGameProgress());
+        }
+        updateUserData({ mode: newMode });
+        setShowSettingsModal(false);
+    };
+
     // ---- Render main content ----
     const renderMain = () => {
         if (activeGame) {
@@ -120,8 +146,10 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
                     gameKey={activeGame.key}
                     gameName={activeGame.name} 
                     level={activeGame.level} 
-                    onComplete={() => {
+                    onComplete={(earnedXP) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
+                        updateUserXP(earnedXP); // Persist global XP
+                        incrementDailyProgress(); // Track daily completion
                         setProgress(newProg);
                         setActiveGame(null);
                         setSelectedMission(null);
@@ -136,6 +164,11 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
         }
         if (activeNav === "home") return renderHome();
         if (activeNav === "alerts") return <CyberAlert />;
+        if (activeNav === "streak") return <StreakTracker />;
+        if (activeNav === "radar") return <SkillRadar progress={progress} />;
+        if (activeNav === "badges") return <Badges />;
+        if (activeNav === "dailygoal") return <DailyGoal />;
+        if (activeNav === "leaderboard") return <Leaderboard />;
         
         const meta = FEATURE_META[activeNav];
         const nav = NAV_ITEMS.find(n => n.id === activeNav);
@@ -338,29 +371,11 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
 
                                 {/* Items */}
                                 <div className="db-dd-items">
-                                    <button className="db-dd-item" onClick={() => setDropdownOpen(false)}>
-                                        <span className="db-dd-item-icon">👤</span> Edit Profile
+                                    <button className="db-dd-item" onClick={() => { setDropdownOpen(false); setShowEditModal(true); }}>
+                                        <span className="db-dd-item-icon">✏️</span> Edit Profile
                                     </button>
 
-                                    {/* Theme toggle */}
-                                    <div className="db-dd-theme-row">
-                                        <div className="db-dd-theme-label">
-                                            <span className="db-dd-item-icon">🌙</span>
-                                            <span style={{ fontSize: 16, color: "rgba(224,224,224,0.75)" }}>
-                                                {themeLight ? "Light Mode" : "Dark Mode"}
-                                            </span>
-                                        </div>
-                                        <label className="db-theme-toggle">
-                                            <input
-                                                type="checkbox"
-                                                checked={themeLight}
-                                                onChange={e => setThemeLight(e.target.checked)}
-                                            />
-                                            <span className="db-theme-slider" />
-                                        </label>
-                                    </div>
-
-                                    <button className="db-dd-item" onClick={() => setDropdownOpen(false)}>
+                                    <button className="db-dd-item" onClick={() => { setDropdownOpen(false); setShowSettingsModal(true); }}>
                                         <span className="db-dd-item-icon">⚙️</span> Settings
                                     </button>
 
@@ -416,6 +431,9 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
                             </div>
                         ))}
                     </div>
+
+                    {/* Sidebar Widgets (Visible when expanded) */}
+                    {/* [WIDGETS REMOVED: User requested individual full-screen pages instead] */}
                 </nav>
 
                 {/* Main */}
@@ -423,6 +441,21 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
                     {renderMain()}
                 </main>
             </div>
+
+            {/* Modals */}
+            <EditProfileModal 
+                isOpen={showEditModal} 
+                onClose={() => setShowEditModal(false)}
+                userData={{ username, email, avatarId }}
+                onSave={handleSaveProfile}
+            />
+            
+            <SettingsModal 
+                isOpen={showSettingsModal} 
+                onClose={() => setShowSettingsModal(false)}
+                currentMode={mode}
+                onSave={handleSaveSettings}
+            />
         </div>
     );
 }

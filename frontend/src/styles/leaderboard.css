@@ -1,0 +1,240 @@
+/* src/styles/leaderboard.css */
+.lb-full-container {
+    width: 100%;
+    min-height: calc(100vh - 120px);
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+    padding: 20px 0;
+    color: #fff;
+    animation: fadeIn 0.8s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.lb-page-header {
+    text-align: center;
+}
+
+.lb-page-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    letter-spacing: 4px;
+    color: #00FF9D;
+    text-shadow: 0 0 20px rgba(0, 255, 157, 0.4), 0 0 40px rgba(0, 255, 157, 0.2);
+    margin: 0;
+    text-transform: uppercase;
+}
+
+.lb-page-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.5);
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin-top: 10px;
+}
+
+/* --- PODIUM STYLES --- */
+.lb-podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 30px;
+    margin: 40px 0;
+    min-height: 350px;
+    perspective: 1000px;
+}
+
+.podium-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUpPodium 1s backwards;
+}
+
+@keyframes slideUpPodium {
+    from { opacity: 0; transform: translateY(50px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.podium-item.first { order: 2; transform: translateY(-30px); animation-delay: 0.2s; }
+.podium-item.second { order: 1; animation-delay: 0.1s; }
+.podium-item.third { order: 3; animation-delay: 0.3s; }
+
+.podium-avatar-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+}
+
+.first .podium-avatar-wrap { width: 160px; height: 160px; }
+
+.podium-avatar {
+    width: 100%;
+    height: 100%;
+    background: rgba(10, 15, 31, 1);
+    border: 3px solid #00FF9D;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.4);
+    z-index: 2;
+    position: relative;
+}
+
+.first .podium-avatar { font-size: 80px; border-width: 5px; box-shadow: 0 0 50px rgba(0, 255, 157, 0.6); }
+.second .podium-avatar { border-color: #C0C0C0; box-shadow: 0 0 30px rgba(192, 192, 192, 0.3); }
+.third .podium-avatar { border-color: #CD7F32; box-shadow: 0 0 30px rgba(205, 127, 50, 0.3); }
+
+.podium-crown {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-10deg);
+    font-size: 40px;
+    z-index: 3;
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+}
+
+.podium-base {
+    width: 140px;
+    background: linear-gradient(135deg, rgba(0, 255, 157, 0.2), rgba(0, 255, 157, 0.05));
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    border-radius: 12px 12px 0 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+}
+
+.first .podium-base { height: 180px; width: 180px; border-color: #00FF9D; background: rgba(0, 255, 157, 0.15); }
+.second .podium-base { height: 140px; border-color: #C0C0C0; }
+.third .podium-base { height: 110px; border-color: #CD7F32; }
+
+.podium-rank {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 5px;
+}
+
+.podium-name {
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-align: center;
+    margin-bottom: 5px;
+}
+
+.podium-xp {
+    color: #00FF9D;
+    font-weight: bold;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+/* --- LIST STYLES --- */
+.lb-grid-list {
+    background: rgba(20, 27, 43, 0.4);
+    backdrop-filter: blur(15px);
+    border-radius: 30px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 30px;
+    margin: 0 auto;
+    width: 100%;
+    max-width: 1000px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.lb-table-header {
+    display: grid;
+    grid-template-columns: 80px 80px 1fr 200px;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 0.4);
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.lb-table-row {
+    display: grid;
+    grid-template-columns: 80px 80px 1fr 200px;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    transition: all 0.2s ease;
+    cursor: default;
+}
+
+.lb-table-row:last-child { border-bottom: none; }
+
+.lb-table-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+    transform: translateX(5px);
+}
+
+.lb-table-row.you {
+    background: rgba(0, 255, 157, 0.07);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    box-shadow: inset 0 0 20px rgba(0, 255, 157, 0.1);
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+}
+
+.lb-table-row.you::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: #00FF9D;
+    box-shadow: 0 0 10px #00FF9D;
+}
+
+.lb-row-rank { font-weight: 800; font-size: 1.2rem; color: #555; }
+.you .lb-row-rank { color: #00FF9D; }
+.lb-row-avatar { font-size: 2rem; display: flex; justify-content: center; }
+.lb-row-name { font-weight: 600; font-size: 1.1rem; }
+.lb-row-xp { text-align: right; font-weight: 800; color: #00FF9D; font-size: 1.1rem; }
+
+/* Custom Badge for "YOU" in Table */
+.lb-table-you {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: #00FF9D;
+    color: #0A0F1F;
+    font-size: 0.7rem;
+    font-weight: 900;
+    padding: 2px 8px;
+    border-radius: 6px;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* Scrollbar adjustment */
+.db-main::-webkit-scrollbar-thumb {
+    background: #00FF9D;
+}
+
+/* Responsive Podium */
+@media (max-width: 768px) {
+    .lb-podium { flex-direction: column; align-items: center; gap: 50px; min-height: auto; }
+    .podium-item.first { order: 1; transform: none; }
+    .podium-item.second { order: 2; }
+    .podium-item.third { order: 3; }
+    .lb-table-header { display: none; }
+    .lb-table-row { grid-template-columns: 50px 50px 1fr 100px; padding: 10px; }
+}

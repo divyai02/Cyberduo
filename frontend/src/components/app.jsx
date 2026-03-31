@@ -678,22 +678,40 @@ export default function CyberDuo({ onLoginSuccess }) {
     const [showIntro, setShowIntro] = useState(true);
     const [visible, setVisible] = useState(false);
     const [tab, setTab] = useState("signin");
+    
+    // Initial state from localStorage
+    const getInitialData = () => {
+        try {
+            const stored = localStorage.getItem("cyberduo_user_data");
+            return stored ? JSON.parse(stored) : null;
+        } catch (e) { return null; }
+    };
+    
+    const initialData = getInitialData();
+    
     // screen: "login" | "avatar" | "mode" | "dashboard"
-    const [screen, setScreen] = useState("login");
-    const [avatarId, setAvatarId] = useState(null);
-    const [gameMode, setGameMode] = useState(null);
-    const [username, setUsername] = useState("");
-    const [userEmail, setUserEmail] = useState("");
+    const [screen, setScreen] = useState(initialData ? "dashboard" : "login");
+    const [avatarId, setAvatarId] = useState(initialData?.avatarId || null);
+    const [gameMode, setGameMode] = useState(initialData?.mode || null);
+    const [username, setUsername] = useState(initialData?.username || "");
+    const [userEmail, setUserEmail] = useState(initialData?.email || "");
 
     const doneIntro = useCallback(() => {
         setShowIntro(false);
         setTimeout(() => setVisible(true), 60);
     }, []);
 
+    const persistUser = (data) => {
+        const current = getInitialData() || {};
+        const updated = { ...current, ...data };
+        localStorage.setItem("cyberduo_user_data", JSON.stringify(updated));
+    };
+
     // Auth success → go to avatar selection
     const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
         if (u) setUsername(u);
         if (e) setUserEmail(e);
+        persistUser({ username: u, email: e });
         setScreen("avatar");
     }, []);
 
@@ -701,6 +719,7 @@ export default function CyberDuo({ onLoginSuccess }) {
     const handleAvatarDone = useCallback((id) => {
         console.log("Avatar saved:", id);
         setAvatarId(id);
+        persistUser({ avatarId: id });
         setScreen("mode");
     }, []);
 
@@ -708,9 +727,19 @@ export default function CyberDuo({ onLoginSuccess }) {
     const handleModeDone = useCallback((mode) => {
         console.log("Mode saved:", mode);
         setGameMode(mode);
+        persistUser({ mode });
         setScreen("dashboard");
         if (onLoginSuccess) onLoginSuccess({ avatarId, mode });
     }, [onLoginSuccess, avatarId]);
+
+    // Handle updates from modals
+    const updateUserData = useCallback((data) => {
+        if (data.username !== undefined) setUsername(data.username);
+        if (data.email !== undefined) setUserEmail(data.email);
+        if (data.avatarId !== undefined) setAvatarId(data.avatarId);
+        if (data.mode !== undefined) setGameMode(data.mode);
+        persistUser(data);
+    }, []);
 
     if (screen === "avatar") return <AvatarSelection onContinue={handleAvatarDone} />;
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
@@ -720,7 +749,16 @@ export default function CyberDuo({ onLoginSuccess }) {
             username={username}
             email={userEmail}
             mode={gameMode}
+            updateUserData={updateUserData}
             onLogout={() => {
+                // Clear all relevant keys
+                localStorage.removeItem("cyberduo_user_data");
+                localStorage.removeItem("cyberduo_game_progress");
+                localStorage.removeItem("userXP");
+                localStorage.removeItem("cyberduo_streak_data");
+                localStorage.removeItem("cyberduo_earned_badges");
+                localStorage.removeItem("cyberduo_daily_progress");
+                
                 setScreen("login");
                 setAvatarId(null);
                 setGameMode(null);

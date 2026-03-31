@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/gamescreen.css';
 import gameData from '../data/GameQuestions.json';
+import { updateStreak } from '../utils/gameProgress.js';
 
 export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack }) {
     const questions = gameData[gameKey]?.[level] || [];
@@ -90,7 +91,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         <p>SCORE: {score} / 100</p>
                         <p>XP EARNED: {xp}</p>
                     </div>
-                    <button className="gs-btn-primary" onClick={onComplete}>CONTINUE TO DASHBOARD</button>
+                    <button className="gs-btn-primary" onClick={() => onComplete(xp)}>CONTINUE TO DASHBOARD</button>
                 </div>
             </div>
         );
@@ -120,6 +121,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             setFeedback({ type: 'success', message: 'Correct! (+20 XP)' });
             setScore(prev => prev + 20);
             setXp(prev => prev + 20);
+            updateStreak();
         } else {
             setFeedback({ type: 'error', message: currentQ.explain });
             // Deduct XP points

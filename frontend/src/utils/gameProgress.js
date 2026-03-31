@@ -34,6 +34,7 @@ export function updateGameProgress(level, gameKey, questionsDone) {
             progress[level][gameKey].completed = true;
         }
         localStorage.setItem("cyberduo_game_progress", JSON.stringify(progress));
+        checkAndUnlockBadges(); // Check for new badges
     }
     return progress;
 }
@@ -75,5 +76,257 @@ export function checkUnlockStatus(mode, progress, level, gameKey) {
         
         const prevGameKey = gamesOrder[gameIdx - 1];
         return progress[level][prevGameKey].completed;
+    }
+}
+
+export function getStreakData() {
+    try {
+        const stored = localStorage.getItem("cyberduo_streak_data");
+        if (stored) {
+            return JSON.parse(stored);
+        }
+    } catch (e) {
+        console.error("Failed to parse streak data", e);
+    }
+    return {
+        currentStreak: 0,
+        longestStreak: 0,
+        lastPlayed: null, // YYYY-MM-DD
+        streakHistory: [] // array of YYYY-MM-DD
+    };
+}
+
+export function updateStreak() {
+    const streak = getStreakData();
+    const today = new Date();
+    
+    // adjust to exactly YYYY-MM-DD local time string
+    const getLocalYYYYMMDD = (d) => {
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, '0');
+        const day = String(d.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    const todayStr = getLocalYYYYMMDD(today);
+
+    if (streak.lastPlayed === todayStr) {
+        // Already played today, no change
+        return { streak, reward: null };
+    }
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterdayStr = getLocalYYYYMMDD(yesterday);
+
+    let streakIncreased = false;
+
+    if (streak.lastPlayed === yesterdayStr) {
+        // Played yesterday, increase streak
+        streak.currentStreak += 1;
+        streakIncreased = true;
+    } else {
+        // Last played before yesterday, reset streak
+        streak.currentStreak = 1;
+        streakIncreased = true;
+    }
+
+    streak.lastPlayed = todayStr;
+    
+    // add to history if not there
+    if (!streak.streakHistory.includes(todayStr)) {
+        streak.streakHistory.push(todayStr);    
+    }
+    
+    if (streak.currentStreak > streak.longestStreak) {
+        streak.longestStreak = streak.currentStreak;
+    }
+
+    // Determine rewards
+    let reward = null;
+    if (streakIncreased) {
+        if (streak.currentStreak === 3) {
+            reward = { xp: 10, badge: null };
+        } else if (streak.currentStreak === 7) {
+            reward = { xp: 50, badge: "Flame Keeper" };
+        } else if (streak.currentStreak === 14) {
+            reward = { xp: 100, badge: "Circuit Master" };
+        } else if (streak.currentStreak === 30) {
+            reward = { xp: 500, badge: "Legendary Streak" };
+        }
+    }
+
+    localStorage.setItem("cyberduo_streak_data", JSON.stringify(streak));
+    
+    // Dispatch event so StreakTracker can update in real-time
+    if (typeof window !== 'undefined') {
+        const event = new Event('streakUpdated');
+        window.dispatchEvent(event);
+    }
+
+    return { streak, reward };
+}
+
+export function calculateSkillRadar(progress) {
+    if (!progress) return [];
+    
+    const skills = [
+        { key: 'phishing', name: 'Phishing Frenzy', icon: '🎯' }, 
+        { key: 'password', name: 'Password Protector', icon: '🔐' },
+        { key: 'malware', name: 'Malware Mayhem', icon: '🦠' },
+        { key: 'firewall', name: 'Firewall Defender', icon: '🔥' },
+        { key: 'scams', name: 'Scam Spotter', icon: '💰' }
+    ];
+
+    const radarData = skills.map(skill => {
+        const beginnerDone = progress.beginner?.[skill.key]?.questionsDone || 0;
+        const mediumDone = progress.medium?.[skill.key]?.questionsDone || 0;
+        const hardDone = progress.hard?.[skill.key]?.questionsDone || 0;
+        
+        const totalDone = beginnerDone + mediumDone + hardDone;
+        // Total possible per skill across 3 levels: 5 + 5 + 5 = 15
+        const maxQuestions = 15; 
+        const percentage = Math.round((totalDone / maxQuestions) * 100);
+        
+        // Set colors based on percentage
+        let color = '#00FF9D'; // green
+        if (percentage <= 40) color = '#FF4D4D'; // red
+        else if (percentage <= 70) color = '#FFB800'; // yellow
+
+        // Calculate milestones
+        let nextBadge = '';
+        let neededForNext = '';
+        if (percentage < 33) {
+            nextBadge = 'Bronze';
+            neededForNext = 33 - percentage;
+        } else if (percentage < 66) {
+            nextBadge = 'Silver';
+            neededForNext = 66 - percentage;
+        } else if (percentage < 100) {
+            nextBadge = 'Gold';
+            neededForNext = 100 - percentage;
+        } else {
+            nextBadge = 'MAXED';
+            neededForNext = 0;
+        }
+        
+        // Create mock trend
+        const isUp = Math.random() > 0.3;
+        const trendVal = Math.floor(Math.random() * 5) + 1;
+
+        return {
+            key: skill.key,
+            name: skill.name,
+            icon: skill.icon,
+            percentage,
+            color,
+            breakdown: {
+                beginner: beginnerDone,
+                medium: mediumDone,
+                hard: hardDone
+            },
+            nextBadge,
+            neededForNext,
+            trend: { up: isUp, val: trendVal }
+        };
+    });
+    
+    return radarData;
+}
+
+
+export function getCurrentUserXP() {
+    try {
+        const xp = localStorage.getItem("userXP");
+        return xp ? parseInt(xp, 10) : 0;
+    } catch (e) {
+        console.error("Failed to get user XP", e);
+        return 0;
+    }
+}
+
+export function updateUserXP(earnedXP) {
+    try {
+        const currentXP = getCurrentUserXP();
+        const newXP = currentXP + earnedXP;
+        localStorage.setItem("userXP", newXP.toString());
+        
+        // Dispatch event so Leaderboard and other components can update
+        if (typeof window !== 'undefined') {
+            const event = new Event('xpUpdated');
+            window.dispatchEvent(event);
+            checkAndUnlockBadges(); // Check for new badges (like 500 XP club)
+        }
+        return newXP;
+    } catch (e) {
+        console.error("Failed to update user XP", e);
+        return getCurrentUserXP();
+    }
+}
+
+export function checkAndUnlockBadges() {
+    try {
+        const xp = getCurrentUserXP();
+        const progress = getGameProgress();
+        const streakData = getStreakData();
+        const earned = JSON.parse(localStorage.getItem('cyberduo_earned_badges') || '[]');
+        
+        // We can't import JSON directly in this util easily if it's called from where imports aren't setup
+        // But since we are in a React environment, we'll fetch it or the calling component will provide it.
+        // For simplicity and reliability in this specific project structure, I will define the logic
+        // and assume the badges data is available or hardcode the logic for these 8 badges.
+        
+        const badgesMetadata = [
+            { id: 'phishing_rookie', type: 'completeGame', val: 'phishing' },
+            { id: 'password_apprentice', type: 'completeGame', val: 'password' },
+            { id: 'malware_hunter', type: 'completeGame', val: 'malware' },
+            { id: 'firewall_novice', type: 'completeGame', val: 'firewall' },
+            { id: 'scam_spotter', type: 'completeGame', val: 'scams' },
+            { id: 'seven_day_warrior', type: 'streakDays', val: 7 },
+            { id: 'five_hundred_xp_club', type: 'totalXP', val: 500 },
+            { id: 'beginner_completionist', type: 'completeLevel', val: 'beginner' }
+        ];
+
+        let newlyEarned = [];
+
+        badgesMetadata.forEach(badge => {
+            if (earned.includes(badge.id)) return;
+
+            let met = false;
+            if (badge.type === 'completeGame') {
+                // Check if any level of this game is completed
+                met = progress.beginner[badge.val].completed || 
+                      progress.medium[badge.val].completed || 
+                      progress.hard[badge.val].completed;
+            } else if (badge.type === 'totalXP') {
+                met = xp >= badge.val;
+            } else if (badge.type === 'streakDays') {
+                met = streakData.currentStreak >= badge.val;
+            } else if (badge.type === 'completeLevel') {
+                const games = Object.values(progress[badge.val]);
+                met = games.every(g => g.completed);
+            }
+
+            if (met) {
+                earned.push(badge.id);
+                newlyEarned.push(badge.id);
+            }
+        });
+
+        if (newlyEarned.length > 0) {
+            localStorage.setItem('cyberduo_earned_badges', JSON.stringify(earned));
+            newlyEarned.forEach(id => {
+                const medalName = id.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                // Simple celebration alert as requested
+                alert(`🏆 New Badge Unlocked: ${medalName}!`);
+                
+                // Dispatch event for UI components
+                if (typeof window !== 'undefined') {
+                    window.dispatchEvent(new CustomEvent('badgeUnlocked', { detail: { id } }));
+                }
+            });
+        }
+    } catch (e) {
+        console.error("Failed to check badges", e);
     }
 }

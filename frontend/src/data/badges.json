@@ -1,0 +1,66 @@
+[
+  {
+    "id": "phishing_rookie",
+    "name": "Phishing Rookie",
+    "description": "Complete any 1 phishing game.",
+    "icon": "🎣",
+    "conditionType": "completeGame",
+    "conditionValue": "phishing"
+  },
+  {
+    "id": "password_apprentice",
+    "name": "Password Apprentice",
+    "description": "Complete any 1 password game.",
+    "icon": "🔐",
+    "conditionType": "completeGame",
+    "conditionValue": "password"
+  },
+  {
+    "id": "malware_hunter",
+    "name": "Malware Hunter",
+    "description": "Complete any 1 malware game.",
+    "icon": "🦠",
+    "conditionType": "completeGame",
+    "conditionValue": "malware"
+  },
+  {
+    "id": "firewall_novice",
+    "name": "Firewall Novice",
+    "description": "Complete any 1 firewall game.",
+    "icon": "🔥",
+    "conditionType": "completeGame",
+    "conditionValue": "firewall"
+  },
+  {
+    "id": "scam_spotter",
+    "name": "Scam Spotter",
+    "description": "Complete any 1 scams game.",
+    "icon": "💰",
+    "conditionType": "completeGame",
+    "conditionValue": "scams"
+  },
+  {
+    "id": "seven_day_warrior",
+    "name": "7-Day Warrior",
+    "description": "Maintain a 7-day streak.",
+    "icon": "🔥",
+    "conditionType": "streakDays",
+    "conditionValue": 7
+  },
+  {
+    "id": "five_hundred_xp_club",
+    "name": "500 XP Club",
+    "description": "Reach 500 total XP.",
+    "icon": "⭐",
+    "conditionType": "totalXP",
+    "conditionValue": 500
+  },
+  {
+    "id": "beginner_completionist",
+    "name": "Beginner Completionist",
+    "description": "Complete all 5 beginner games.",
+    "icon": "🏆",
+    "conditionType": "completeLevel",
+    "conditionValue": "beginner"
+  }
+]

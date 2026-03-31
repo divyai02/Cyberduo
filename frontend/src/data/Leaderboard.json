@@ -1,0 +1,11 @@
+[
+  { "id": "1", "name": "CyberNinja", "avatar": "🦸", "xp": 2450 },
+  { "id": "2", "name": "HackerHunter", "avatar": "🦹", "xp": 1980 },
+  { "id": "3", "name": "CodeMaster", "avatar": "👩‍💻", "xp": 1560 },
+  { "id": "4", "name": "FirewallQueen", "avatar": "🛡️", "xp": 1420 },
+  { "id": "5", "name": "SecurePanda", "avatar": "🐼", "xp": 1380 },
+  { "id": "6", "name": "AIBot", "avatar": "🤖", "xp": 1120 },
+  { "id": "7", "name": "SpaceGuard", "avatar": "🧑‍🚀", "xp": 890 },
+  { "id": "8", "name": "CyberFox", "avatar": "🦊", "xp": 750 },
+  { "id": "9", "name": "ShadowRunner", "avatar": "👤", "xp": 450 }
+]

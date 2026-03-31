@@ -1,0 +1,389 @@
+/* src/styles/SkillRadar.css */
+.sr-container {
+    background: #0A0F1F;
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    color: white;
+    font-family: 'Orbitron', sans-serif;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+    margin: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.sr-title {
+    color: #00FF9D;
+    text-transform: uppercase;
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+    letter-spacing: 2px;
+    text-align: center;
+}
+
+.sr-grid {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+}
+
+.sr-circle-wrap {
+    text-align: center;
+    flex: 1;
+    min-width: 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    position: relative;
+    opacity: 0; 
+}
+
+.sr-circle-wrap.pop-in {
+    animation: zoomInStagger 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+@keyframes zoomInStagger {
+    0% { transform: scale(0.5); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.sr-circle-inner {
+    border-radius: 50%;
+    position: relative;
+    width: 100px;
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    border: 1px solid transparent;
+}
+
+.sr-svg-ring {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: rotate(-90deg); /* Start ring at top */
+}
+
+.sr-ring-bg {
+    fill: transparent;
+    stroke: rgba(255, 255, 255, 0.05);
+    stroke-width: 8;
+}
+
+.sr-ring-path {
+    fill: transparent;
+    stroke-width: 8;
+    stroke-linecap: round;
+    /* transition applies to strokeDashoffset smoothly when updated in React via state */
+    transition: stroke-dashoffset 0.1s linear, stroke 0.5s ease;
+}
+
+.sr-icon {
+    font-size: 2rem;
+    position: relative;
+    z-index: 2;
+}
+
+.sr-info {
+    margin-top: 15px;
+}
+
+.sr-reading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.sr-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+.sr-trend {
+    font-size: 0.7rem;
+    font-family: monospace;
+}
+.sr-trend.up { color: #00FF9D; }
+.sr-trend.down { color: #FF4D4D; }
+
+.sr-name {
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.sr-description {
+    text-align: center;
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.4);
+    border-top: 1px solid rgba(255,255,255,0.05);
+    padding-top: 20px;
+    margin-top: auto;
+}
+
+/* Tooltip (Glassmorphism) */
+.sr-tooltip {
+    position: absolute;
+    top: -140px; 
+    left: 50%;
+    transform: translateX(-50%) translateY(10px);
+    background: rgba(10,15,31,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 12px;
+    padding: 15px;
+    border: 1px solid #00FF9D;
+    z-index: 100;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    width: 220px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+    color: white;
+}
+
+.sr-tooltip.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateX(-50%) translateY(0);
+}
+
+.sr-tooltip::after {
+    content: '';
+    position: absolute;
+    bottom: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 12px;
+    height: 12px;
+    background: rgba(10,15,31,0.95);
+    border-right: 1px solid #00FF9D;
+    border-bottom: 1px solid #00FF9D;
+}
+
+.sr-tt-title {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-align: center;
+}
+
+.sr-tt-pct {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.sr-tt-breakdown {
+    background: rgba(255,255,255,0.05);
+    border-radius: 6px;
+    padding: 8px;
+    display: flex;
+    justify-content: space-around;
+    font-size: 0.7rem;
+    margin-bottom: 15px;
+}
+
+.sr-tt-bd-col {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: rgba(255,255,255,0.5);
+}
+
+.sr-tt-bd-col.dot {
+    justify-content: center;
+    font-size: 1rem;
+    color: rgba(255,255,255,0.2);
+}
+
+.sr-tt-bd-col span {
+    font-weight: bold;
+    color: white;
+    margin-top: 3px;
+    font-size: 0.8rem;
+}
+
+.sr-tt-badge {
+    text-align: center;
+    font-size: 0.75rem;
+    border-top: 1px dashed rgba(255,255,255,0.2);
+    padding-top: 10px;
+}
+
+.sr-tt-badge span {
+    color: #FFB800;
+    font-weight: bold;
+}
+
+.sr-loading {
+    color: #00FF9D;
+    text-align: center;
+    padding: 40px;
+    font-family: Orbitron, sans-serif;
+    animation: flash 1s infinite alternate;
+}
+
+@keyframes flash {
+    0% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
+/* Lower Section Map & Console */
+.sr-lower-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 40px;
+    gap: 30px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 12px;
+    padding: 30px;
+    border: 1px solid rgba(255,255,255,0.05);
+}
+
+.sr-radar-chart {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.sr-spider-level {
+    fill: transparent;
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
+}
+
+.sr-spider-spoke {
+    stroke: rgba(255, 255, 255, 0.1);
+    stroke-width: 1;
+}
+
+.sr-user-polygon {
+    fill: rgba(0, 255, 157, 0.15);
+    stroke: #00FF9D;
+    stroke-width: 3;
+    filter: drop-shadow(0 0 10px rgba(0, 255, 157, 0.6));
+    transition: all 0.2s linear;
+}
+
+.sr-spider-label {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 5px rgba(0,0,0,0.8));
+    animation: zoomInStagger 0.5s ease backwards;
+}
+
+/* Briefing Console */
+.sr-tactical-assessor {
+    flex: 1;
+    background: rgba(13, 17, 27, 0.8);
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 77, 77, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    position: relative;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+    height: 100%;
+    min-height: 250px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sr-ta-header {
+    color: #FF4D4D;
+    border-bottom: 1px dashed rgba(255, 77, 77, 0.3);
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.sr-ta-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.sr-ta-line {
+    opacity: 0;
+    animation: typeLine 0.1s forwards;
+}
+
+.sr-ta-line.system { color: rgba(255, 255, 255, 0.5); }
+.sr-ta-line.warning { color: #FFB800; font-weight: bold; }
+.sr-ta-line.action { color: rgba(255, 255, 255, 0.8); margin-top: 10px; }
+
+/* Typing Stagger Delays */
+.sr-ta-line.slide-1 { animation-delay: 0.5s; }
+.sr-ta-line.slide-2 { animation-delay: 1.2s; }
+.sr-ta-line.slide-3 { animation-delay: 2.5s; }
+.sr-ta-line.slide-4 { animation-delay: 3.2s; }
+.sr-ta-line.slide-5 { animation-delay: 4.5s; }
+
+.sr-ta-cursor {
+    color: #00FF9D;
+    animation: blink 1s infinite;
+    animation-delay: 5.5s;
+    opacity: 0;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+
+@keyframes typeLine {
+    to { opacity: 1; }
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+/* Responsive Rules */
+@media (max-width: 900px) {
+    .sr-grid {
+        justify-content: center;
+    }
+    .sr-circle-wrap {
+        flex: 0 0 30%;
+        margin-bottom: 20px;
+    }
+    .sr-lower-section {
+        flex-direction: column;
+    }
+    .sr-radar-chart, .sr-tactical-assessor {
+        width: 100%;
+    }
+}
+
+@media (max-width: 600px) {
+    .sr-grid {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        justify-content: flex-start;
+        padding-bottom: 15px;
+    }
+    .sr-circle-wrap {
+        flex: 0 0 100px;
+    }
+    .sr-description {
+        display: none;
+    }
+}

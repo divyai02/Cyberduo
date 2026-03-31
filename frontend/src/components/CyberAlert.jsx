@@ -2,8 +2,7 @@ import React from 'react';
 import '../styles/CyberAlert.css';
 import alertsData from '../data/CyberAlert.json';
 
-export default function CyberAlert() {
-
+export default function CyberAlert({ compact = false }) {
     const handleAskAIClick = (headline) => {
         alert("AI Chat coming soon. Backend integration in progress.");
     };
@@ -52,6 +51,25 @@ export default function CyberAlert() {
             </div>
         );
     };
+
+    if (compact) {
+        const latest = alertsData[0]; // Assume first is most recent
+        if (!latest) return null;
+        return (
+            <div className="ca-card compact">
+                <div className="ca-card-header">
+                    <span className="ca-date">{latest.date}</span>
+                    <div className={`ca-risk-label ${getRiskColorClass(latest.riskLevel)}`}>
+                        {latest.riskLevel.toUpperCase()} RISK
+                    </div>
+                </div>
+                <h2 className="ca-headline" style={{ fontSize: '0.9rem' }}>📰 {latest.headline}</h2>
+                <div className="ca-rm-fancy-bar" style={{ marginTop: '10px' }}>
+                    {renderFancyMeter(latest.riskMeter, latest.riskLevel)}
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="ca-container">

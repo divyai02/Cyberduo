@@ -452,6 +452,48 @@
     box-shadow: 0 0 6px #00FF9D;
 }
 
+/* Sidebar Widgets Panel (when expanded) */
+.db-sidebar-widgets-panel {
+    padding: 20px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    border-top: 1px solid rgba(0, 255, 157, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    scrollbar-width: none; /* Hide scrollbar for clean look */
+    max-height: calc(100vh - 450px); /* Adjust based on nav items height */
+}
+
+.db-sidebar-widgets-panel::-webkit-scrollbar {
+    display: none;
+}
+
+.db-sidebar-widgets-panel .sr-container,
+.db-sidebar-widgets-panel .lb-compact-container,
+.db-sidebar-widgets-panel .ca-card.compact,
+.db-sidebar-widgets-panel .dg-container {
+    background: rgba(10, 15, 31, 0.4);
+    border: 1px solid rgba(0, 255, 157, 0.1);
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.3s ease;
+}
+
+.db-sidebar-widgets-panel .sr-container:hover,
+.db-sidebar-widgets-panel .lb-compact-container:hover {
+    border-color: rgba(0, 255, 157, 0.3);
+    background: rgba(0, 255, 157, 0.05);
+}
+
+.db-sidebar-widgets-panel .sr-title,
+.db-sidebar-widgets-panel .lb-compact-title,
+.db-sidebar-widgets-panel .dg-title {
+    font-size: 0.75rem;
+    margin-bottom: 8px;
+    opacity: 0.8;
+}
+
 /* ---------- Main Content ---------- */
 .db-main {
     flex: 1;
@@ -616,5 +658,250 @@
     .db-stats-row {
         grid-template-columns: repeat(2, 1fr);
     }
+}
+
+/* ---------- Modals ---------- */
+.db-modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(5, 8, 16, 0.82);
+    backdrop-filter: blur(14px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+    padding: 20px;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.db-modal-content {
+    position: relative;
+    width: 100%;
+    max-width: 650px;
+    background: linear-gradient(145deg, rgba(15, 22, 42, 0.95), rgba(10, 15, 31, 0.98));
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    border-radius: 20px;
+    padding: 40px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.8), 0 0 40px rgba(0, 255, 157, 0.05);
+    animation: modalSlideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes modalSlideUp {
+    from { opacity: 0; transform: translateY(20px) scale(0.95); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.db-modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: transparent;
+    border: none;
+    color: rgba(224, 224, 224, 0.5);
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.2s;
+}
+
+.db-modal-close:hover {
+    color: #00FF9D;
+}
+
+.db-modal-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 32px;
+    letter-spacing: 1.5px;
+    text-align: center;
+}
+
+.db-edit-section {
+    margin-bottom: 30px;
+}
+
+.db-modal-label {
+    display: block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    color: rgba(0, 255, 157, 0.7);
+    margin-bottom: 12px;
+    letter-spacing: 1.5px;
+}
+
+.db-modal-input {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #ffffff;
+    font-size: 16px;
+    font-family: 'Exo 2', sans-serif;
+    transition: all 0.2s;
+}
+
+.db-modal-input:focus {
+    outline: none;
+    background: rgba(0, 255, 157, 0.04);
+    border-color: rgba(0, 255, 157, 0.5);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.15);
+}
+
+/* Avatar Picker in Modal */
+.db-avatar-picker {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.db-avatar-option {
+    flex: 1;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.db-avatar-option:hover {
+    background: rgba(0, 255, 157, 0.08);
+    border-color: rgba(0, 255, 157, 0.3);
+}
+
+.db-avatar-option.active {
+    background: rgba(0, 255, 157, 0.15);
+    border-color: #00FF9D;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.db-avatar-emoji {
+    font-size: 40px;
+}
+
+/* Mode Picker in Modal */
+.db-mode-picker {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.db-mode-option {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.db-mode-option:hover {
+    background: rgba(0, 255, 157, 0.05);
+}
+
+.db-mode-option.active {
+    background: rgba(0, 255, 157, 0.12);
+    border-color: #00FF9D;
+}
+
+.db-mode-icon {
+    font-size: 36px;
+}
+
+.db-mode-text {
+    display: flex;
+    flex-direction: column;
+}
+
+.db-mode-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    color: #ffffff;
+}
+
+.db-mode-desc {
+    font-size: 13px;
+    color: rgba(224, 224, 224, 0.5);
+    margin-top: 4px;
+}
+
+/* Warning Section */
+.db-modal-warning {
+    display: flex;
+    gap: 14px;
+    background: rgba(255, 184, 0, 0.08);
+    border: 1px solid rgba(255, 184, 0, 0.3);
+    border-radius: 12px;
+    padding: 14px;
+    margin-bottom: 24px;
+}
+
+.db-warning-icon {
+    font-size: 20px;
+}
+
+.db-warning-text {
+    font-size: 13px;
+    color: rgba(255, 184, 0, 0.9);
+    line-height: 1.5;
+}
+
+/* Modal Actions */
+.db-modal-actions {
+    display: flex;
+    gap: 16px;
+    margin-top: 32px;
+}
+
+.db-modal-actions button {
+    flex: 1;
+    padding: 14px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.db-btn-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: rgba(224, 224, 224, 0.6);
+}
+
+.db-btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+}
+
+.db-btn-primary {
+    background: rgba(0, 255, 157, 0.2);
+    border: 1.5px solid #00FF9D;
+    color: #00FF9D;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+}
+
+.db-btn-primary:hover {
+    background: #00FF9D;
+    color: #0A0F1F;
+    box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
 }
 
