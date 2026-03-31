@@ -1,0 +1,123 @@
+[
+  {
+    "id": "alert-1",
+    "headline": "Digital Arrest Scam",
+    "description": "Elderly couple forced to take \"oath of secrecy\" on video call. Lost ₹2.58 crore to scammers posing as police.",
+    "riskLevel": "high",
+    "riskMeter": 10,
+    "date": "March 2026",
+    "riskFactors": [
+      { "factor": "Affects elderly (most vulnerable)", "points": "+3" },
+      { "factor": "Direct financial loss", "points": "+3" },
+      { "factor": "Psychological manipulation", "points": "+2" },
+      { "factor": "Widespread across India", "points": "+2" }
+    ],
+    "domains": [
+      { "name": "Scams", "percent": 80 },
+      { "name": "Phishing", "percent": 20 }
+    ]
+  },
+  {
+    "id": "alert-2",
+    "headline": "Malicious APK Scam",
+    "description": "Retired Army officer downloaded APK file after caller asked to pay ₹10 for parcel pickup. Lost ₹12 lakh.",
+    "riskLevel": "high",
+    "riskMeter": 9,
+    "date": "March 2026",
+    "riskFactors": [
+      { "factor": "Affects all smartphone users", "points": "+3" },
+      { "factor": "Technical trick (APK)", "points": "+2" },
+      { "factor": "Direct financial loss", "points": "+3" },
+      { "factor": "Small amount trick", "points": "+1" }
+    ],
+    "domains": [
+      { "name": "Malware", "percent": 70 },
+      { "name": "Phishing", "percent": 30 }
+    ]
+  },
+  {
+    "id": "alert-3",
+    "headline": "Fake WFH/Job Portals",
+    "description": "Victims paid registration fees for promised high-paying remote roles. Scammers took the fee and blocked numbers.",
+    "riskLevel": "medium",
+    "riskMeter": 6,
+    "date": "March 2026",
+    "riskFactors": [
+      { "factor": "Targets desperate job seekers", "points": "+2" },
+      { "factor": "Minor financial loss (fees)", "points": "+2" },
+      { "factor": "Fairly common and known", "points": "+1" },
+      { "factor": "No advanced tech utilized", "points": "+1" }
+    ],
+    "domains": [
+      { "name": "Scams", "percent": 90 },
+      { "name": "Phishing", "percent": 10 }
+    ]
+  },
+  {
+    "id": "alert-4",
+    "headline": "International SIM Racket",
+    "description": "Scammers routed international calls through local SIM cards. Indians received calls from fake Indian numbers.",
+    "riskLevel": "high",
+    "riskMeter": 8,
+    "date": "February 2026",
+    "riskFactors": [
+      { "factor": "Affects all mobile users", "points": "+3" },
+      { "factor": "Harder to identify scam", "points": "+3" },
+      { "factor": "Widespread", "points": "+2" }
+    ],
+    "domains": [
+      { "name": "Firewall", "percent": 60 },
+      { "name": "Scams", "percent": 40 }
+    ]
+  },
+  {
+    "id": "alert-5",
+    "headline": "WhatsApp Lottery Message",
+    "description": "Mass automated messages claiming users have won a ₹25 Lakh KBC lottery. Asks users to call a suspicious number.",
+    "riskLevel": "medium",
+    "riskMeter": 5,
+    "date": "February 2026",
+    "riskFactors": [
+      { "factor": "Mass generic targeting", "points": "+2" },
+      { "factor": "Requires user initiative", "points": "+1" },
+      { "factor": "Easily identifiable as fake", "points": "+1" },
+      { "factor": "No immediate system breach", "points": "+1" }
+    ],
+    "domains": [
+      { "name": "Phishing", "percent": 80 },
+      { "name": "Scams", "percent": 20 }
+    ]
+  },
+  {
+    "id": "alert-6",
+    "headline": "Browser Notification Spam",
+    "description": "Deceptive pop-ups asking users to 'Allow Notifications' to verify they are human, leading to annoying ad spam.",
+    "riskLevel": "low",
+    "riskMeter": 3,
+    "date": "January 2026",
+    "riskFactors": [
+      { "factor": "Annoying but mostly harmless ads", "points": "+1" },
+      { "factor": "Easily fixable in settings", "points": "+1" },
+      { "factor": "No data exfiltration", "points": "+1" }
+    ],
+    "domains": [
+      { "name": "Malware", "percent": 50 },
+      { "name": "Phishing", "percent": 50 }
+    ]
+  },
+  {
+    "id": "alert-7",
+    "headline": "Instagram Fake Brand Accounts",
+    "description": "Clone accounts imitating popular clothing brands running unrealistic 90% off clearance sales to farm followers.",
+    "riskLevel": "low",
+    "riskMeter": 2,
+    "date": "January 2026",
+    "riskFactors": [
+      { "factor": "Relies entirely on greed", "points": "+1" },
+      { "factor": "Obvious account red flags", "points": "+1" }
+    ],
+    "domains": [
+      { "name": "Scams", "percent": 100 }
+    ]
+  }
+]
