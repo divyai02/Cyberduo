@@ -50,11 +50,22 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const [showHover, setShowHover] = useState(false);
     const [triageAnswers, setTriageAnswers] = useState({});
     const [buildAnswers, setBuildAnswers] = useState({ lure: null, urgency: null });
+    
+    // NEW STATES
+    const [switchActive, setSwitchActive] = useState(false);
+    const [sequenceList, setSequenceList] = useState([]);
 
     const [modal, setModal] = useState({ show: false, title: '', content: '' });
 
     const currentQ = questions[currentIndex];
     
+    // Initialize sequence list dynamically
+    useEffect(() => {
+        if (currentQ?.format === 'sequence_builder' && currentQ.steps && sequenceList.length === 0 && !hasAnswered) {
+            setSequenceList([...currentQ.steps].sort(() => Math.random() - 0.5));
+        }
+    }, [currentQ, sequenceList.length, hasAnswered]);
+
     useEffect(() => {
         if (hasAnswered || currentIndex >= questions.length || !currentQ) return;
         if (timeLeft <= 0) {
@@ -129,6 +140,8 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         setShowHover(false);
         setTriageAnswers({});
         setBuildAnswers({ lure: null, urgency: null });
+        setSwitchActive(false);
+        setSequenceList([]);
         setHasAnswered(false);
         setIsCorrectResult(null);
         setTimeLeft(45);
@@ -152,17 +165,25 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         
         let isCorrect = false;
 
-        if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim') {
+        if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim' || currentQ.format === 'spot_weak' || currentQ.format === 'scenario_mcq') {
             if (!selectedOption) return; 
             isCorrect = selectedOption === currentQ.correctAnswer;
+        } else if (currentQ.format === 'password_builder') {
+            const pwd = droppedFlags.map(fId => currentQ.pieces.find(p => p.id === fId)?.text).join('');
+            const hasUpper = /[A-Z]/.test(pwd);
+            const hasLower = /[a-z]/.test(pwd);
+            const hasNumber = /[0-9]/.test(pwd);
+            const hasSymbol = /[^A-Za-z0-9]/.test(pwd);
+            const hasPI = droppedFlags.some(fId => currentQ.pieces.find(p => p.id === fId)?.isPersonalInfo);
+            isCorrect = pwd.length >= 8 && hasUpper && hasLower && hasNumber && hasSymbol && !hasPI;
         } else if (currentQ.format === 'drag_flags') {
             const correctSet = new Set(currentQ.correctFlags);
             const userSet = new Set(droppedFlags);
             isCorrect = correctSet.size > 0 && correctSet.size === userSet.size && [...correctSet].every(flag => userSet.has(flag));
-        } else if (currentQ.format === 'link_inspector') {
+        } else if (currentQ.format === 'link_inspector' || currentQ.format === 'file_inspector') {
             if (!selectedOption) return;
             isCorrect = selectedOption === currentQ.correctAnswer;
-        } else if (currentQ.format === 'case_study') {
+        } else if (currentQ.format === 'case_study' || currentQ.format === 'select_all') {
             const correctSet = new Set(currentQ.correctFlags);
             const userSet = new Set(checkedFlags);
             isCorrect = correctSet.size > 0 && correctSet.size === userSet.size && [...correctSet].every(flag => userSet.has(flag));
@@ -171,6 +192,17 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             isCorrect = checkedFlags.length === correctFlags.length && checkedFlags.every(id => currentQ.emailParts.find(p => p.id === id)?.isFlag);
         } else if (currentQ.format === 'inbox_triage') {
             isCorrect = Object.keys(triageAnswers).length === currentQ.emails.length && currentQ.emails.every(e => triageAnswers[e.id] === e.isPhish);
+        } else if (currentQ.format === 'file_triage' || currentQ.format === 'traffic_triage') {
+            isCorrect = Object.keys(triageAnswers).length === currentQ.files.length && currentQ.files.every(f => triageAnswers[f.id] === f.isMalware);
+        } else if (currentQ.format === 'password_triage') {
+            isCorrect = Object.keys(triageAnswers).length === currentQ.passwords.length && currentQ.passwords.every(p => triageAnswers[p.id] === p.isStrong);
+        } else if (currentQ.format === 'authenticator_sim') {
+            isCorrect = droppedFlags[0] === currentQ.correctCode;
+        } else if (currentQ.format === 'sequence_builder') {
+            isCorrect = sequenceList.every((step, idx) => step.correctOrder === idx);
+        } else if (currentQ.format === 'threat_router') {
+            const correctPortals = currentQ.portals.filter(p => p.isCorrect).map(p => p.id);
+            isCorrect = droppedFlags.length === correctPortals.length && correctPortals.every(p => droppedFlags.includes(p));
         } else if (currentQ.format === 'build_phish') {
             if (!buildAnswers.lure || !buildAnswers.urgency) return;
             isCorrect = buildAnswers.lure.correct && buildAnswers.urgency.correct;
@@ -199,12 +231,14 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     </div>
                 );
             case 'decision_simulator':
+            case 'spot_weak':
+            case 'scenario_mcq':
                 return (
-                    <div className="gs-format gs-decision-sim">
+                    <div className="gs-format gs-mcq-grid">
                         {currentQ.options.map((opt, i) => (
                             <button 
                                 key={i} 
-                                className={`gs-option-btn ${selectedOption === opt ? 'selected' : ''}`}
+                                className={`gs-mcq-card ${selectedOption === opt ? 'selected' : ''}`}
                                 onClick={() => setSelectedOption(opt)}
                             >
                                 {opt}
@@ -339,6 +373,30 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         ))}
                     </div>
                 );
+            case 'file_triage':
+            case 'traffic_triage':
+                return (
+                    <div className="gs-format gs-inbox-triage gs-file-triage">
+                        {currentQ.files.map((file, i) => (
+                            <div key={i} className="gs-triage-row">
+                                <div className="gs-triage-info" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+                                    <span style={{ fontSize: '2rem' }}>{file.icon}</span>
+                                    <strong>{file.name}</strong>
+                                </div>
+                                <div className="gs-triage-actions">
+                                    <button 
+                                        className={`gs-btn-keep ${triageAnswers[file.id] === false ? 'selected' : ''}`}
+                                        onClick={() => setTriageAnswers({ ...triageAnswers, [file.id]: false })}
+                                    >{currentQ.format === 'traffic_triage' ? 'ALLOW' : 'SAFE (KEEP)'}</button>
+                                    <button 
+                                        className={`gs-btn-delete ${triageAnswers[file.id] === true ? 'selected' : ''}`}
+                                        onClick={() => setTriageAnswers({ ...triageAnswers, [file.id]: true })}
+                                    >{currentQ.format === 'traffic_triage' ? 'BLOCK' : 'MALWARE (DEL)'}</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
             case 'build_phish':
                 return (
                     <div className="gs-format gs-build-phish">
@@ -401,14 +459,66 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                     </div>
                 );
+            case 'file_inspector':
+                return (
+                    <div className="gs-format gs-link-inspector gs-file-inspector">
+                        <div className="gs-link-container" style={{ padding: '30px', border: '2px dashed #ffb020', borderRadius: '15px', background: 'rgba(20,20,30,0.8)' }}
+                             onMouseEnter={() => setShowHover(true)} 
+                             onMouseLeave={() => setShowHover(false)}>
+                            <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📎</div>
+                            <span className="gs-fake-link" style={{ fontSize: '1.2rem', color: '#fff' }}>{currentQ.displayedName}</span>
+                            {showHover && (
+                                <div className="gs-hover-tooltip" style={{ bottom: '-60px' }}>
+                                    {currentQ.actualDestination}
+                                </div>
+                            )}
+                        </div>
+                        <div className="gs-inspector-actions">
+                            <button 
+                                className={`gs-btn-safe ${selectedOption === 'Safe' ? 'selected' : ''}`}
+                                onClick={() => setSelectedOption('Safe')}
+                            >
+                                ✔ SAFE
+                            </button>
+                            <button 
+                                className={`gs-btn-delete ${selectedOption === 'Malware' ? 'selected' : ''}`}
+                                onClick={() => setSelectedOption('Malware')}
+                                style={{ padding: '15px 30px', fontSize: '1.2rem', fontWeight: 'bold' }}
+                            >
+                                ⚠ MALWARE
+                            </button>
+                        </div>
+                    </div>
+                );
+            case 'select_all':
+                return (
+                    <div className="gs-format gs-mcq-grid">
+                        {(currentQ.redFlags || currentQ.options).map((flag, i) => (
+                            <label key={i} className={`gs-mcq-card checkbox-card ${checkedFlags.includes(flag) ? 'selected' : ''}`}>
+                                <input 
+                                    type="checkbox" 
+                                    checked={checkedFlags.includes(flag)}
+                                    onChange={(e) => {
+                                        if (e.target.checked) setCheckedFlags([...checkedFlags, flag]);
+                                        else setCheckedFlags(checkedFlags.filter(f => f !== flag));
+                                    }}
+                                />
+                                <div className="gs-custom-checkbox"></div>
+                                <span className="gs-checkbox-text">{flag}</span>
+                            </label>
+                        ))}
+                    </div>
+                );
             case 'case_study':
                 return (
-                    <div className="gs-format gs-case-study">
-                        <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>
-                            {currentQ.emailContent}
-                        </div>
+                    <div className="gs-format gs-case-study gs-select-all">
+                        {currentQ.emailContent && (
+                            <div className="gs-email-mockup" style={{ whiteSpace: 'pre-wrap' }}>
+                                {currentQ.emailContent}
+                            </div>
+                        )}
                         <div className="gs-checklist">
-                            {currentQ.redFlags.map((flag, i) => (
+                            {(currentQ.redFlags || currentQ.options).map((flag, i) => (
                                 <label key={i} className="gs-checkbox-label">
                                     <input 
                                         type="checkbox" 
@@ -421,6 +531,219 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                                     <span className="gs-custom-checkbox"></span>
                                     {flag}
                                 </label>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'password_builder':
+                const handleDragStartPB = (e, piece) => {
+                    e.dataTransfer.setData('pieceId', piece.id);
+                };
+                const handleDropPB = (e) => {
+                    e.preventDefault();
+                    const pieceId = e.dataTransfer.getData('pieceId');
+                    if (pieceId && !droppedFlags.includes(pieceId)) {
+                        setDroppedFlags([...droppedFlags, pieceId]);
+                    }
+                };
+                const handleDragOverPB = (e) => e.preventDefault();
+                
+                // Calculate strength real-time
+                const pwdStr = droppedFlags.map(fId => currentQ.pieces.find(p => p.id === fId)?.text).join('');
+                let strScore = 0;
+                if (pwdStr.length > 0) {
+                    if (pwdStr.length >= 8) strScore += 25;
+                    if (/[A-Z]/.test(pwdStr)) strScore += 25;
+                    if (/[0-9]/.test(pwdStr)) strScore += 25;
+                    if (/[^A-Za-z0-9]/.test(pwdStr)) strScore += 25;
+                    if (droppedFlags.some(fId => currentQ.pieces.find(p => p.id === fId)?.isPersonalInfo)) {
+                        strScore = Math.max(10, strScore - 40); // huge penalty
+                    }
+                }
+
+                return (
+                    <div className="gs-format gs-drag-flags gs-password-builder">
+                        <div className="gs-strength-meter">
+                            <span className="gs-strength-label">Password Strength:</span>
+                            <div className="gs-strength-bar-bg">
+                                <div className="gs-strength-bar-fill" style={{ width: `${strScore}%`, backgroundColor: strScore === 100 ? '#00FF9D' : strScore > 50 ? '#ffb020' : '#ff6b6b' }}></div>
+                            </div>
+                            <span className="gs-pwd-display">{pwdStr || "Drag pieces to build..."}</span>
+                        </div>
+                        <div className="gs-drag-area">
+                            <div className="gs-flags-source">
+                                <h4>Available Pieces</h4>
+                                <div className="gs-pieces-container">
+                                {currentQ.pieces.filter(p => !droppedFlags.includes(p.id)).map((piece, i) => (
+                                    <div 
+                                        key={i} 
+                                        draggable 
+                                        onDragStart={(e) => handleDragStartPB(e, piece)}
+                                        className={`gs-draggable-flag gs-password-chip type-${piece.type}`}
+                                    >
+                                        {piece.text}
+                                    </div>
+                                ))}
+                                </div>
+                            </div>
+                            <div 
+                                className="gs-drop-zone gs-password-dropzone"
+                                onDrop={handleDropPB}
+                                onDragOver={handleDragOverPB}
+                            >
+                                <h4>YOUR PASSWORD SEQUENCE</h4>
+                                <div className="gs-pieces-container">
+                                {droppedFlags.map((id, i) => {
+                                    const piece = currentQ.pieces.find(p => p.id === id);
+                                    if(!piece) return null;
+                                    return (
+                                        <div key={i} className={`gs-dropped-flag gs-password-chip type-${piece.type}`} onClick={() => setDroppedFlags(droppedFlags.filter(f => f !== id))}>
+                                            <span>{piece.text}</span> <span className="gs-remove-flag">✕</span>
+                                        </div>
+                                    );
+                                })}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'password_triage':
+                return (
+                    <div className="gs-format gs-inbox-triage gs-password-triage">
+                        {currentQ.passwords.map((pw, i) => (
+                            <div key={i} className="gs-triage-row">
+                                <div className="gs-triage-info">
+                                    <strong style={{fontFamily: 'monospace', letterSpacing: '2px', fontSize: '1.2rem'}}>{pw.text}</strong>
+                                </div>
+                                <div className="gs-triage-actions">
+                                    <button 
+                                        className={`gs-btn-keep ${triageAnswers[pw.id] === true ? 'selected' : ''}`}
+                                        onClick={() => setTriageAnswers({ ...triageAnswers, [pw.id]: true })}
+                                    >STRONG 🛡️</button>
+                                    <button 
+                                        className={`gs-btn-delete ${triageAnswers[pw.id] === false ? 'selected' : ''}`}
+                                        style={{borderColor: 'rgba(255, 107, 107, 0.3)'}}
+                                        onClick={() => setTriageAnswers({ ...triageAnswers, [pw.id]: false })}
+                                    >WEAK ⚠️</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            case 'authenticator_sim':
+                const handleDragStartAuth = (e, code) => {
+                    e.dataTransfer.setData('authCode', code);
+                };
+                const handleDropAuth = (e) => {
+                    e.preventDefault();
+                    const code = e.dataTransfer.getData('authCode');
+                    if (code) {
+                        setDroppedFlags([code]);
+                    }
+                };
+                const handleDragOverAuth = (e) => e.preventDefault();
+
+                return (
+                    <div className="gs-format gs-authenticator-sim">
+                        <div className="gs-phone-mockup">
+                            <div className="gs-phone-header">
+                                <span>12:00</span>
+                                <div>📱🔋</div>
+                            </div>
+                            <h4 className="gs-phone-title">Recent Messages</h4>
+                            {currentQ.phoneScreen.map((sms, i) => (
+                                <div 
+                                    key={i}
+                                    className="gs-sms-bubble"
+                                    draggable
+                                    onDragStart={(e) => handleDragStartAuth(e, sms.code)}
+                                >
+                                    <div className="gs-sms-service">{sms.service}</div>
+                                    <div className="gs-sms-code">Code: <strong>{sms.code}</strong></div>
+                                </div>
+                            ))}
+                        </div>
+                        
+                        <div className="gs-login-screen">
+                            <h4>{currentQ.gameName === 'password' ? "Bank Login" : "Secure Login"}</h4>
+                            <p className="gs-login-status">Password Accepted.</p>
+                            <p className="gs-login-prompt">Please enter the 2FA code sent to your device:</p>
+                            
+                            <div 
+                                className={`gs-2fa-input-box ${droppedFlags[0] ? 'filled' : ''}`}
+                                onDrop={handleDropAuth}
+                                onDragOver={handleDragOverAuth}
+                            >
+                                {droppedFlags[0] ? droppedFlags[0] : "Drop Code Here"}
+                            </div>
+                            
+                            {droppedFlags[0] && !hasAnswered && (
+                                <button className="gs-btn-reset-auth" onClick={() => setDroppedFlags([])}>Clear</button>
+                            )}
+                        </div>
+                    </div>
+                );
+            case 'sequence_builder':
+                const handleDragStartSeq = (e, index) => {
+                    e.dataTransfer.setData('sourceIndex', index);
+                };
+                const handleDropSeq = (e, targetIndex) => {
+                    e.preventDefault();
+                    const sourceIndex = parseInt(e.dataTransfer.getData('sourceIndex'), 10);
+                    if (sourceIndex === targetIndex) return;
+                    const newList = [...sequenceList];
+                    const [draggedItem] = newList.splice(sourceIndex, 1);
+                    newList.splice(targetIndex, 0, draggedItem);
+                    setSequenceList(newList);
+                };
+                const handleDragOverSeq = (e) => e.preventDefault();
+
+                return (
+                    <div className="gs-format gs-sequence-builder">
+                        <div className="gs-sequence-list">
+                            {sequenceList.map((step, index) => (
+                                <div 
+                                    key={step.id} 
+                                    className="gs-sequence-item"
+                                    draggable
+                                    onDragStart={(e) => handleDragStartSeq(e, index)}
+                                    onDrop={(e) => handleDropSeq(e, index)}
+                                    onDragOver={handleDragOverSeq}
+                                >
+                                    <div className="gs-seq-handle">⋮⋮</div>
+                                    <span className="gs-seq-text">{step.text}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'threat_router':
+                const handleTogglePortal = (portalId) => {
+                    if (droppedFlags.includes(portalId)) {
+                        setDroppedFlags(droppedFlags.filter(id => id !== portalId));
+                    } else {
+                        setDroppedFlags([...droppedFlags, portalId]);
+                    }
+                };
+
+                return (
+                    <div className="gs-format gs-threat-router">
+                        <div className="gs-router-email">
+                            <div className="gs-email-header">SUSPICIOUS MESSAGE</div>
+                            <div className="gs-email-body">{currentQ.emailSnippet}</div>
+                        </div>
+                        
+                        <div className="gs-portals-container">
+                            {currentQ.portals.map((portal) => (
+                                <div 
+                                    key={portal.id}
+                                    style={{cursor: 'pointer'}}
+                                    className={`gs-portal ${droppedFlags.includes(portal.id) ? 'active' : ''}`}
+                                    onClick={() => handleTogglePortal(portal.id)}
+                                >
+                                    <div className="gs-portal-glow"></div>
+                                    <span>{portal.text}</span>
+                                </div>
                             ))}
                         </div>
                     </div>
