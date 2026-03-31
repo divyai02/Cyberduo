@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import auth_routes
+from .routes import auth_routes, user_routes, game_routes
 
 app = FastAPI(title="CyberDuo API")
 
@@ -13,6 +13,8 @@ app.add_middleware(
 )
 
 app.include_router(auth_routes.router)
+app.include_router(user_routes.router)
+app.include_router(game_routes.router)
 
 @app.get("/")
 def root():
