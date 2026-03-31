@@ -8,16 +8,16 @@
         "gameName": "phishing",
         "questionText": "There are 3 indicators of phishing in this email. Click them to highlight them red.",
         "emailParts": [
-          { "id": "sender", "text": "From: HR Dept <hr-update44@gmail.com>", "isFlag": true },
-          { "id": "subject", "text": "Subject: URGENT: Mandatory Employee Update", "isFlag": true },
-          { "id": "greeting", "text": "Dear Value Employee,", "isFlag": true },
-          { "id": "body", "text": "Please review the attached mandatory handbook update immediately.", "isFlag": false },
-          { "id": "signoff", "text": "Thanks,\nHuman Resources", "isFlag": false }
+          { "id": "sender", "text": "From: Zomato Support <zomat0-refunds@gmail.com>", "isFlag": true },
+          { "id": "subject", "text": "Subject: URGENT: Your Order #4920 Was Cancelled - Claim Refund", "isFlag": true },
+          { "id": "greeting", "text": "Dear Valued Foodie,", "isFlag": true },
+          { "id": "body", "text": "We noticed an issue with your recent payment. Please click the secure link to process your refund immediately.", "isFlag": false },
+          { "id": "signoff", "text": "Stay Hungry,\nZomato Care Team", "isFlag": false }
         ],
         "concept": "The \"Red Flag\" Highlighter (Visual & Tactile)",
         "hint": "Check the sender's domain, the extreme tone of the subject, and the impersonal greeting.",
-        "explain": "Expert analysts scan for basic errors first. A company won't use @gmail.com for internal HR emails. Subjects won't use extreme urgency to panic you. Legitimate corporate emails use your real name, not 'Value Employee'.",
-        "reveal": "The 3 flags are:\n1. The Sender address using a generic '@gmail.com' instead of a company domain.\n2. The overly dramatic Subject line screaming 'URGENT'.\n3. The generic Greeting 'Dear Value Employee' instead of your real name."
+        "explain": "Expert analysts scan for basic errors first. A company like Zomato won't use @gmail.com for official emails, and notice the '0' in 'zomat0'. Subjects won't use extreme urgency to panic you into claiming a refund. Legitimate corporate emails use your real name.",
+        "reveal": "The 3 flags are:\n1. The Sender address using a misspelled 'zomat0' and generic '@gmail.com'.\n2. The overly dramatic Subject line screaming 'URGENT' regarding a refund.\n3. The generic Greeting 'Dear Valued Foodie' instead of your real name."
       },
       {
         "id": 2,

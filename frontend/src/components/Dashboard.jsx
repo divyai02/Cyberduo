@@ -6,6 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import { initBackground } from "./background.js";
 import { getGameProgress, checkUnlockStatus, updateGameProgress } from "../utils/gameProgress.js";
 import GameScreen from "./GameScreen.jsx";
+import CyberAlert from "./CyberAlert.jsx";
 import "../styles/dashboard.css";
 import "../styles/home.css";
 
@@ -134,6 +135,8 @@ export default function Dashboard({ avatarId, username, email, mode, onLogout })
             );
         }
         if (activeNav === "home") return renderHome();
+        if (activeNav === "alerts") return <CyberAlert />;
+        
         const meta = FEATURE_META[activeNav];
         const nav = NAV_ITEMS.find(n => n.id === activeNav);
         return (

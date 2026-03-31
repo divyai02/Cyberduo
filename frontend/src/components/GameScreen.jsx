@@ -18,20 +18,26 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return saved ? JSON.parse(saved).xp : 0;
     });
+    const [highestCompletedIndex, setHighestCompletedIndex] = useState(() => {
+        const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
+        if (!saved) return -1;
+        const parsed = JSON.parse(saved);
+        return parsed.highestCompletedIndex !== undefined ? parsed.highestCompletedIndex : parsed.currentIndex - 1;
+    });
     const [feedback, setFeedback] = useState(null); // { type: 'success' | 'error', message: string }
     
     // Save state on change and notify dashboard
     useEffect(() => {
-        if (currentIndex > 0 || score > 0 || xp > 0) {
+        if (currentIndex > 0 || score > 0 || xp > 0 || highestCompletedIndex > -1) {
             localStorage.setItem(`cyberduo_inprogress_${gameKey}_${level}`, JSON.stringify({
-                currentIndex, score, xp
+                currentIndex, score, xp, highestCompletedIndex
             }));
         }
         // Force the dashboard to align its visual progress circle with the local game state (useful when explicitly replaying completed games)
         if (onProgressUpdate) {
-            onProgressUpdate(currentIndex);
+            onProgressUpdate(highestCompletedIndex + 1);
         }
-    }, [currentIndex, score, xp, gameKey, level]);
+    }, [currentIndex, score, xp, highestCompletedIndex, gameKey, level]);
     
     const [timeLeft, setTimeLeft] = useState(45);
     const [hasAnswered, setHasAnswered] = useState(false);
@@ -94,6 +100,11 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const handleAnswerEval = (isCorrect) => {
         setHasAnswered(true);
         setIsCorrectResult(isCorrect);
+        
+        if (currentIndex > highestCompletedIndex) {
+            setHighestCompletedIndex(currentIndex);
+        }
+
         if (isCorrect) {
             setFeedback({ type: 'success', message: 'Correct! (+20 XP)' });
             setScore(prev => prev + 20);
@@ -110,7 +121,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         handleAnswerEval(false);
     };
 
-    const handleNextQuestion = () => {
+    const resetQuestionState = () => {
         setFeedback(null);
         setSelectedOption(null);
         setDroppedFlags([]);
@@ -121,9 +132,18 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         setHasAnswered(false);
         setIsCorrectResult(null);
         setTimeLeft(45);
-        
-        const nextIndex = currentIndex + 1;
-        setCurrentIndex(nextIndex);
+    };
+
+    const handleNextQuestion = () => {
+        resetQuestionState();
+        setCurrentIndex(currentIndex + 1);
+    };
+
+    const handlePrevQuestion = () => {
+        if (currentIndex > 0) {
+            resetQuestionState();
+            setCurrentIndex(currentIndex - 1);
+        }
     };
 
     // Submission logic
@@ -410,6 +430,8 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         }
     };
 
+    const isAlreadyCompleted = currentIndex <= highestCompletedIndex && !hasAnswered;
+
     return (
         <div className="gs-container">
             {onBack && <button className="gs-btn-back" onClick={onBack}>← ABORT MISSION</button>}
@@ -435,26 +457,41 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     {renderQuestionFormat()}
                 </div>
                 
+                {isAlreadyCompleted && (
+                    <div className="gs-feedback success" style={{ marginBottom: '15px' }}>
+                        Mission Already Completed. Read-Only Mode.
+                    </div>
+                )}
+                
                 {feedback && (
                     <div className={`gs-feedback ${feedback.type}`}>
                         {feedback.message}
                     </div>
                 )}
                 
-                {!hasAnswered ? (
-                    <button className="gs-btn-submit" onClick={handleSubmit}>SUBMIT ANSWER</button>
-                ) : (
-                    <div className="gs-actions-row">
-                        {!isCorrectResult && (
-                            <button className="gs-btn-reveal-answer" onClick={() => showModal('Correct Answer', currentQ.reveal || currentQ.explain)}>
-                                👁️ SHOW ANSWER
-                            </button>
-                        )}
-                        <button className="gs-btn-next" onClick={handleNextQuestion}>
-                            NEXT QUESTION ➔
+                <div className="gs-actions-row">
+                    {currentIndex > 0 && (
+                        <button className="gs-btn-prev" onClick={handlePrevQuestion}>
+                            🡄 PREVIOUS
                         </button>
-                    </div>
-                )}
+                    )}
+                    {(!hasAnswered && !isAlreadyCompleted) ? (
+                        <button className="gs-btn-submit" style={{ margin: 0, minWidth: 'auto', padding: '15px 40px' }} onClick={handleSubmit}>
+                            SUBMIT ANSWER
+                        </button>
+                    ) : (
+                        <>
+                            {(!isCorrectResult || isAlreadyCompleted) && (
+                                <button className="gs-btn-reveal-answer" onClick={() => showModal('Correct Answer', currentQ.reveal || currentQ.explain)}>
+                                    👁️ SHOW ANSWER
+                                </button>
+                            )}
+                            <button className="gs-btn-next" onClick={handleNextQuestion}>
+                                NEXT ➔
+                            </button>
+                        </>
+                    )}
+                </div>
             </div>
 
             <div className="gs-ai-toolbar">
