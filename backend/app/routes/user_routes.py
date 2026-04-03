@@ -60,3 +60,23 @@ def update_streak(data: StreakUpdate):
     )
 
     return {"message": "Streak updated!", "streak": streak}
+
+# ✅ SYNC LOCAL STORAGE STATE
+class SyncStateRequest(BaseModel):
+    user_id: str
+    sync_data: dict
+
+@router.post("/sync")
+def sync_user_state(data: SyncStateRequest):
+    users_collection.update_one(
+        {"_id": ObjectId(data.user_id)},
+        {"$set": {"sync_data": data.sync_data}}
+    )
+    return {"message": "State synced successfully"}
+
+@router.get("/sync/{user_id}")
+def get_user_state(user_id: str):
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return {"sync_data": user.get("sync_data", {})}

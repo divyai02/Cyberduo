@@ -437,15 +437,49 @@ function SignInForm({ onSuccess }) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleSignIn = () => {
+    const handleSignIn = async () => {
         if (!email || !password) { setError("Please fill in all fields."); return; }
         setError("");
         setLoading(true);
-        // Simulate API call — replace with real axios call
-        setTimeout(() => {
-            setLoading(false);
-            onSuccess && onSuccess({ username: email.split("@")[0], email });
-        }, 900);
+        try {
+            const response = await fetch('http://localhost:8000/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                setError(data.detail || "Login failed");
+                setLoading(false);
+                return;
+            }
+
+            // Restore Cloud Game State
+            try {
+                const syncResp = await fetch(`http://localhost:8000/user/sync/${data.user_id}`);
+                if (syncResp.ok) {
+                    const syncResult = await syncResp.json();
+                    if (syncResult.sync_data) {
+                        for (const key in syncResult.sync_data) {
+                            localStorage.setItem(key, syncResult.sync_data[key]);
+                        }
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to restore cloud state", err);
+            }
+
+            onSuccess && onSuccess({
+                user_id: data.user_id,
+                username: data.username,
+                email: email,
+                avatarId: data.avatar,
+                mode: data.mode
+            });
+        } catch (err) {
+            setError("Could not connect to server");
+        }
+        setLoading(false);
     };
 
     return (
@@ -644,12 +678,44 @@ function SignUpForm({ onSuccess }) {
                     </div>
 
                     <NeonButton
-                        onClick={() => {
-                            setDone(true);
-                            setTimeout(() => onSuccess && onSuccess({
-                                username: username || name.toLowerCase().replace(/\s/g, "_"),
-                                email,
-                            }), 1400);
+                        onClick={async () => {
+                            if (!agreed) {
+                                alert("Please agree to the Terms and Privacy Policy.");
+                                return;
+                            }
+                            const finalUsername = username || name.toLowerCase().replace(/\s/g, "_");
+                            try {
+                                const response = await fetch('http://localhost:8000/auth/signup', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        username: finalUsername,
+                                        email,
+                                        password,
+                                        name,
+                                        background,
+                                        profession: background === "nontech" ? profession : null,
+                                        role: background === "tech" ? role : null,
+                                        interests: background === "tech" ? interests : null,
+                                        ageGroup: background === "nontech" ? ageGroup : null,
+                                        reason: background === "nontech" ? reason : null,
+                                        howHeard
+                                    })
+                                });
+                                const data = await response.json();
+                                if (!response.ok) {
+                                    alert(data.detail || "Signup failed");
+                                    return;
+                                }
+                                setDone(true);
+                                setTimeout(() => onSuccess && onSuccess({
+                                    user_id: data.user_id,
+                                    username: finalUsername,
+                                    email,
+                                }), 1400);
+                            } catch (err) {
+                                alert("Failed to connect to server. Please ensure the backend is running.");
+                            }
                         }}
                         gradient="linear-gradient(90deg,#00FF9D,#9D4DFF)"
                     >
@@ -678,7 +744,7 @@ export default function CyberDuo({ onLoginSuccess }) {
     const [showIntro, setShowIntro] = useState(true);
     const [visible, setVisible] = useState(false);
     const [tab, setTab] = useState("signin");
-    
+
     // Initial state from localStorage
     const getInitialData = () => {
         try {
@@ -686,9 +752,9 @@ export default function CyberDuo({ onLoginSuccess }) {
             return stored ? JSON.parse(stored) : null;
         } catch (e) { return null; }
     };
-    
+
     const initialData = getInitialData();
-    
+
     // screen: "login" | "avatar" | "mode" | "dashboard"
     const [screen, setScreen] = useState(initialData ? "dashboard" : "login");
     const [avatarId, setAvatarId] = useState(initialData?.avatarId || null);
@@ -708,36 +774,91 @@ export default function CyberDuo({ onLoginSuccess }) {
     };
 
     // Auth success → go to avatar selection
-    const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
+    const handleAuthSuccess = useCallback(({ user_id: id, username: u, email: e } = {}) => {
         if (u) setUsername(u);
         if (e) setUserEmail(e);
-        persistUser({ username: u, email: e });
+        persistUser({ user_id: id, username: u, email: e });
         setScreen("avatar");
     }, []);
 
     // Avatar confirmed → go to mode selection
-    const handleAvatarDone = useCallback((id) => {
+    const handleAvatarDone = useCallback(async (id) => {
         console.log("Avatar saved:", id);
         setAvatarId(id);
         persistUser({ avatarId: id });
+
+        const userData = getInitialData();
+        if (userData && userData.user_id) {
+            try {
+                await fetch('http://localhost:8000/auth/save-avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userData.user_id, avatar: id })
+                });
+            } catch (e) {
+                console.error("Failed to save avatar to DB", e);
+            }
+        }
+
         setScreen("mode");
     }, []);
 
     // Mode confirmed → go to dashboard
-    const handleModeDone = useCallback((mode) => {
+    const handleModeDone = useCallback(async (mode) => {
         console.log("Mode saved:", mode);
         setGameMode(mode);
         persistUser({ mode });
+
+        const userData = getInitialData();
+        if (userData && userData.user_id) {
+            try {
+                await fetch('http://localhost:8000/auth/save-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userData.user_id, mode: mode })
+                });
+            } catch (e) {
+                console.error("Failed to save mode to DB", e);
+            }
+        }
+
         setScreen("dashboard");
         if (onLoginSuccess) onLoginSuccess({ avatarId, mode });
     }, [onLoginSuccess, avatarId]);
 
     // Handle updates from modals
-    const updateUserData = useCallback((data) => {
+    const updateUserData = useCallback(async (data) => {
         if (data.username !== undefined) setUsername(data.username);
         if (data.email !== undefined) setUserEmail(data.email);
-        if (data.avatarId !== undefined) setAvatarId(data.avatarId);
-        if (data.mode !== undefined) setGameMode(data.mode);
+
+        if (data.avatarId !== undefined) {
+            setAvatarId(data.avatarId);
+            const userData = getInitialData();
+            if (userData && userData.user_id) {
+                try {
+                    await fetch('http://localhost:8000/auth/save-avatar', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userData.user_id, avatar: data.avatarId })
+                    });
+                } catch (e) { }
+            }
+        }
+
+        if (data.mode !== undefined) {
+            setGameMode(data.mode);
+            const userData = getInitialData();
+            if (userData && userData.user_id) {
+                try {
+                    await fetch('http://localhost:8000/auth/save-mode', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ user_id: userData.user_id, mode: data.mode })
+                    });
+                } catch (e) { }
+            }
+        }
+
         persistUser(data);
     }, []);
 
@@ -745,12 +866,38 @@ export default function CyberDuo({ onLoginSuccess }) {
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
     if (screen === "dashboard") return (
         <Dashboard
+            userId={initialData?.user_id}
             avatarId={avatarId}
             username={username}
             email={userEmail}
             mode={gameMode}
             updateUserData={updateUserData}
-            onLogout={() => {
+            onLogout={async () => {
+                const userData = getInitialData();
+                if (userData && userData.user_id) {
+                    const keysToSync = [
+                        "cyberduo_game_progress",
+                        "userXP",
+                        "cyberduo_streak_data",
+                        "cyberduo_earned_badges",
+                        "cyberduo_daily_progress"
+                    ];
+                    const syncData = {};
+                    keysToSync.forEach(k => {
+                        const val = localStorage.getItem(k);
+                        if (val) syncData[k] = val;
+                    });
+                    try {
+                        await fetch('http://localhost:8000/user/sync', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: userData.user_id, sync_data: syncData })
+                        });
+                    } catch (e) {
+                        console.error("Cloud sync failed during logout", e);
+                    }
+                }
+
                 // Clear all relevant keys
                 localStorage.removeItem("cyberduo_user_data");
                 localStorage.removeItem("cyberduo_game_progress");
@@ -758,7 +905,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                 localStorage.removeItem("cyberduo_streak_data");
                 localStorage.removeItem("cyberduo_earned_badges");
                 localStorage.removeItem("cyberduo_daily_progress");
-                
+
                 setScreen("login");
                 setAvatarId(null);
                 setGameMode(null);

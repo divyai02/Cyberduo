@@ -5,7 +5,7 @@ import { updateStreak } from '../utils/gameProgress.js';
 
 export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack }) {
     const questions = gameData[gameKey]?.[level] || [];
-    
+
     const [currentIndex, setCurrentIndex] = useState(() => {
         const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return saved ? JSON.parse(saved).currentIndex : 0;
@@ -25,7 +25,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         return parsed.highestCompletedIndex !== undefined ? parsed.highestCompletedIndex : parsed.currentIndex - 1;
     });
     const [feedback, setFeedback] = useState(null);
-    
+
     useEffect(() => {
         if (currentIndex > 0 || score > 0 || xp > 0 || highestCompletedIndex > -1) {
             localStorage.setItem(`cyberduo_inprogress_${gameKey}_${level}`, JSON.stringify({
@@ -36,11 +36,11 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             onProgressUpdate(highestCompletedIndex + 1);
         }
     }, [currentIndex, score, xp, highestCompletedIndex, gameKey, level]);
-    
+
     const [timeLeft, setTimeLeft] = useState(45);
     const [hasAnswered, setHasAnswered] = useState(false);
     const [isCorrectResult, setIsCorrectResult] = useState(null);
-    
+
     const [selectedOption, setSelectedOption] = useState(null);
     const [droppedFlags, setDroppedFlags] = useState([]);
     const [checkedFlags, setCheckedFlags] = useState([]);
@@ -58,7 +58,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
 
-    const GEMINI_API_KEY = "AIzaSyAfAUhkJSnr7eUo90DV_xITKl8gFqEB5E0";
+    const GEMINI_API_KEY = "AIzaSyCOJEQ-od9iGT7CoAFP8OghRhkxd4nVoCk";
 
     // ✅ AI CHAT FUNCTION
     const handleChatSend = async () => {
@@ -70,7 +70,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         setChatLoading(true);
         try {
             const response = await fetch(
-                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${GEMINI_API_KEY}`,
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}`,
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -99,7 +99,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     };
 
     const currentQ = questions[currentIndex];
-    
+
     useEffect(() => {
         if (currentQ?.format === 'sequence_builder' && currentQ.steps && sequenceList.length === 0 && !hasAnswered) {
             setSequenceList([...currentQ.steps].sort(() => Math.random() - 0.5));
@@ -128,7 +128,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         <p>SCORE: {score} / 100</p>
                         <p>XP EARNED: {xp}</p>
                     </div>
-                    <button className="gs-btn-primary" onClick={() => onComplete(xp)}>CONTINUE TO DASHBOARD</button>
+                    <button className="gs-btn-primary" onClick={() => onComplete(xp, score)}>CONTINUE TO DASHBOARD</button>
                 </div>
             </div>
         );
@@ -139,8 +139,8 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             <div className="gs-container">
                 {onBack && <button className="gs-btn-back" onClick={onBack}>← ABORT MISSION</button>}
                 <div className="gs-completion-screen">
-                    <h1 className="gs-neon-title" style={{color: '#ff6b6b'}}>No Intel Found</h1>
-                    <p style={{color: 'rgba(255,255,255,0.7)', marginTop: '20px'}}>Mission parameters for {gameName || gameKey} ({level}) could not be loaded.</p>
+                    <h1 className="gs-neon-title" style={{ color: '#ff6b6b' }}>No Intel Found</h1>
+                    <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '20px' }}>Mission parameters for {gameName || gameKey} ({level}) could not be loaded.</p>
                 </div>
             </div>
         );
@@ -425,7 +425,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                 return (
                     <div className="gs-format gs-link-inspector gs-file-inspector">
                         <div className="gs-link-container" style={{ padding: '30px', border: '2px dashed #ffb020', borderRadius: '15px', background: 'rgba(20,20,30,0.8)' }}
-                             onMouseEnter={() => setShowHover(true)} onMouseLeave={() => setShowHover(false)}>
+                            onMouseEnter={() => setShowHover(true)} onMouseLeave={() => setShowHover(false)}>
                             <div style={{ fontSize: '3rem', marginBottom: '10px' }}>📎</div>
                             <span className="gs-fake-link" style={{ fontSize: '1.2rem', color: '#fff' }}>{currentQ.displayedName}</span>
                             {showHover && <div className="gs-hover-tooltip" style={{ bottom: '-60px' }}>{currentQ.actualDestination}</div>}
@@ -531,11 +531,11 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         {currentQ.passwords.map((pw, i) => (
                             <div key={i} className="gs-triage-row">
                                 <div className="gs-triage-info">
-                                    <strong style={{fontFamily: 'monospace', letterSpacing: '2px', fontSize: '1.2rem'}}>{pw.text}</strong>
+                                    <strong style={{ fontFamily: 'monospace', letterSpacing: '2px', fontSize: '1.2rem' }}>{pw.text}</strong>
                                 </div>
                                 <div className="gs-triage-actions">
                                     <button className={`gs-btn-keep ${triageAnswers[pw.id] === true ? 'selected' : ''}`} onClick={() => setTriageAnswers({ ...triageAnswers, [pw.id]: true })}>STRONG 🛡️</button>
-                                    <button className={`gs-btn-delete ${triageAnswers[pw.id] === false ? 'selected' : ''}`} style={{borderColor: 'rgba(255, 107, 107, 0.3)'}} onClick={() => setTriageAnswers({ ...triageAnswers, [pw.id]: false })}>WEAK ⚠️</button>
+                                    <button className={`gs-btn-delete ${triageAnswers[pw.id] === false ? 'selected' : ''}`} style={{ borderColor: 'rgba(255, 107, 107, 0.3)' }} onClick={() => setTriageAnswers({ ...triageAnswers, [pw.id]: false })}>WEAK ⚠️</button>
                                 </div>
                             </div>
                         ))}
@@ -609,7 +609,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                         <div className="gs-portals-container">
                             {currentQ.portals.map((portal) => (
-                                <div key={portal.id} style={{cursor: 'pointer'}} className={`gs-portal ${droppedFlags.includes(portal.id) ? 'active' : ''}`} onClick={() => handleTogglePortal(portal.id)}>
+                                <div key={portal.id} style={{ cursor: 'pointer' }} className={`gs-portal ${droppedFlags.includes(portal.id) ? 'active' : ''}`} onClick={() => handleTogglePortal(portal.id)}>
                                     <div className="gs-portal-glow"></div>
                                     <span>{portal.text}</span>
                                 </div>
@@ -635,8 +635,8 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         <div className="gs-progress-fill" style={{ width: `${((currentIndex) / questions.length) * 100}%` }}></div>
                     </div>
                 </div>
-                <div className="gs-stats" style={{display: 'flex', gap: '15px', alignItems: 'center'}}>
-                    <div className="gs-timer-badge" style={{color: timeLeft <= 10 ? '#ff6b6b' : '#00FF9D'}}>⏱ {timeLeft}s</div>
+                <div className="gs-stats" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
+                    <div className="gs-timer-badge" style={{ color: timeLeft <= 10 ? '#ff6b6b' : '#00FF9D' }}>⏱ {timeLeft}s</div>
                     <span className="gs-xp-badge">⚡ {xp} XP</span>
                 </div>
             </div>
@@ -681,14 +681,14 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             {/* ✅ AI CHAT WINDOW */}
             {chatOpen && (
                 <div className="gs-modal-overlay" onClick={() => setChatOpen(false)}>
-                    <div className="gs-modal-content" style={{width: '400px', maxHeight: '500px', display: 'flex', flexDirection: 'column'}} onClick={e => e.stopPropagation()}>
+                    <div className="gs-modal-content" style={{ width: '400px', maxHeight: '500px', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
                         <h3>🤖 AI Agent Chat</h3>
-                        <div style={{flex: 1, overflowY: 'auto', marginBottom: '10px', maxHeight: '300px', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px'}}>
+                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', maxHeight: '300px', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px' }}>
                             {chatMessages.length === 0 && (
-                                <p style={{color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '13px'}}>Ask me anything about this question!</p>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '13px' }}>Ask me anything about this question!</p>
                             )}
                             {chatMessages.map((msg, i) => (
-                                <div key={i} style={{marginBottom: '10px', textAlign: msg.role === 'user' ? 'right' : 'left'}}>
+                                <div key={i} style={{ marginBottom: '10px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                                     <span style={{
                                         background: msg.role === 'user' ? '#00FF9D' : '#1a1a2e',
                                         color: msg.role === 'user' ? '#000' : '#fff',
@@ -701,26 +701,26 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                                 </div>
                             ))}
                             {chatLoading && (
-                                <div style={{textAlign: 'left'}}>
-                                    <span style={{color: '#00FF9D', fontSize: '13px'}}>AI is thinking... ⏳</span>
+                                <div style={{ textAlign: 'left' }}>
+                                    <span style={{ color: '#00FF9D', fontSize: '13px' }}>AI is thinking... ⏳</span>
                                 </div>
                             )}
                         </div>
-                        <div style={{display: 'flex', gap: '8px'}}>
+                        <div style={{ display: 'flex', gap: '8px' }}>
                             <input
                                 type="text"
                                 value={chatInput}
                                 onChange={e => setChatInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleChatSend()}
                                 placeholder="Ask a question..."
-                                style={{flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '13px'}}
+                                style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '13px' }}
                             />
                             <button onClick={handleChatSend} disabled={chatLoading}
-                                style={{padding: '8px 16px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '6px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold'}}>
+                                style={{ padding: '8px 16px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '6px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
                                 SEND
                             </button>
                         </div>
-                        <button onClick={() => setChatOpen(false)} style={{marginTop: '10px'}}>CLOSE</button>
+                        <button onClick={() => setChatOpen(false)} style={{ marginTop: '10px' }}>CLOSE</button>
                     </div>
                 </div>
             )}
