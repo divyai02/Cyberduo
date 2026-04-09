@@ -1,5 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
+from typing import Optional, List
 from ..database import users_collection
 from .. import auth
 from datetime import datetime
@@ -11,6 +12,14 @@ class SignupRequest(BaseModel):
     username: str
     email: str
     password: str
+    name: Optional[str] = None
+    background: Optional[str] = None
+    profession: Optional[str] = None
+    role: Optional[str] = None
+    interests: Optional[List[str]] = None
+    ageGroup: Optional[str] = None
+    reason: Optional[str] = None
+    howHeard: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: str
@@ -41,6 +50,14 @@ def signup(data: SignupRequest):
         "username": data.username,
         "email": data.email,
         "hashed_password": hashed_pw,
+        "name": data.name,
+        "background": data.background,
+        "profession": data.profession,
+        "role": data.role,
+        "interests": data.interests,
+        "ageGroup": data.ageGroup,
+        "reason": data.reason,
+        "howHeard": data.howHeard,
         "avatar": None,
         "mode": None,
         "created_at": datetime.utcnow()

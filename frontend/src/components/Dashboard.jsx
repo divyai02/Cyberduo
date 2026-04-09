@@ -162,11 +162,31 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                     gameKey={activeGame.key}
                     gameName={activeGame.name} 
                     level={activeGame.level} 
-                    onComplete={async (earnedXP) => {
+                    onComplete={async (earnedXP, earnedScore) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
                         updateUserXP(earnedXP); // Store locally for instant UI update
                         incrementDailyProgress(); 
                         setProgress(newProg);
+                        
+                        // Save specific match score directly into DB
+                        if (userId) {
+                            try {
+                                await fetch('http://localhost:8000/game/save-result', {
+                                    method: 'POST',
+                                    headers: { 'Content-Type': 'application/json' },
+                                    body: JSON.stringify({
+                                        user_id: userId,
+                                        game_key: activeGame.key,
+                                        level: activeGame.level,
+                                        xp_earned: earnedXP,
+                                        score: earnedScore || 0
+                                    })
+                                });
+                            } catch (e) {
+                                console.error("Failed to upload game match score to DB", e);
+                            }
+                        }
+
                         setActiveGame(null);
                         setSelectedMission(null);
 

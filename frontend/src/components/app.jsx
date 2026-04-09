@@ -444,27 +444,11 @@ function SignInForm({ onSuccess }) {
         if (!email || !password) { setError("Please fill in all fields."); return; }
         setError("");
         setLoading(true);
-        
-        try {
-            const resp = await fetch(`${API_BASE_URL}/auth/login`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email, password })
-            });
-
-            const data = await resp.json();
-            if (!resp.ok) {
-                setError(data.detail || "Login failed");
-                setLoading(false);
-                return;
-            }
-
+        // Simulate API call — replace with real axios call
+        setTimeout(() => {
             setLoading(false);
-            onSuccess && onSuccess(data); // data contains user_id, username, avatar, mode
-        } catch (err) {
-            setError("Connection failed. Is the backend running?");
-            setLoading(false);
-        }
+            onSuccess && onSuccess({ username: email.split("@")[0], email });
+        }, 900);
     };
 
     return (
@@ -665,36 +649,12 @@ function SignUpForm({ onSuccess }) {
                     </div>
 
                     <NeonButton
-                        onClick={async () => {
-                            if (!email || !password || !name) return;
-                            setLoading(true);
-                            try {
-                                const resp = await fetch(`${API_BASE_URL}/auth/signup`, {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                        username: username || name.toLowerCase().replace(/\s/g, "_"),
-                                        email,
-                                        password
-                                    })
-                                });
-                                const data = await resp.json();
-                                if (!resp.ok) {
-                                    alert(data.detail || "Signup failed");
-                                    setLoading(false);
-                                    return;
-                                }
-
-                                setDone(true);
-                                setTimeout(() => onSuccess && onSuccess({
-                                    user_id: data.user_id,
-                                    username: username || name.toLowerCase().replace(/\s/g, "_"),
-                                    email,
-                                }), 1400);
-                            } catch (err) {
-                                alert("Connection failed.");
-                                setLoading(false);
-                            }
+                        onClick={() => {
+                            setDone(true);
+                            setTimeout(() => onSuccess && onSuccess({
+                                username: username || name.toLowerCase().replace(/\s/g, "_"),
+                                email,
+                            }), 1400);
                         }}
                         gradient="linear-gradient(90deg,#00FF9D,#9D4DFF)"
                     >
@@ -723,7 +683,7 @@ export default function CyberDuo({ onLoginSuccess }) {
     const [showIntro, setShowIntro] = useState(true);
     const [visible, setVisible] = useState(false);
     const [tab, setTab] = useState("signin");
-    
+
     // Initial state from localStorage
     const getInitialData = () => {
         try {
@@ -731,9 +691,9 @@ export default function CyberDuo({ onLoginSuccess }) {
             return stored ? JSON.parse(stored) : null;
         } catch (e) { return null; }
     };
-    
+
     const initialData = getInitialData();
-    
+
     // screen: "login" | "avatar" | "mode" | "dashboard"
     const [screen, setScreen] = useState(initialData ? "dashboard" : "login");
     const [userId, setUserId] = useState(initialData?.user_id || null);
@@ -753,67 +713,12 @@ export default function CyberDuo({ onLoginSuccess }) {
         localStorage.setItem("cyberduo_user_data", JSON.stringify(updated));
     };
 
-    // Sync all user data from backend
-    const syncWithBackend = async (uid) => {
-        try {
-            // 1. Get dashboard stats
-            const dashResp = await fetch(`${API_BASE_URL}/user/dashboard/${uid}`);
-            const dashData = await dashResp.json();
-            
-            if (dashResp.ok) {
-                setAvatarId(dashData.avatar);
-                setGameMode(dashData.mode);
-                setUsername(dashData.username);
-                
-                // Update local storage for persistence
-                persistUser({
-                    user_id: uid,
-                    username: dashData.username,
-                    avatarId: dashData.avatar,
-                    mode: dashData.mode
-                });
-                
-                // Set secondary stats in localStorage
-                localStorage.setItem("userXP", dashData.xp.toString());
-                localStorage.setItem("cyberduo_streak_data", JSON.stringify({ streak: dashData.streak }));
-                localStorage.setItem("cyberduo_earned_badges", JSON.stringify(dashData.badges));
-            }
-
-            // 2. Get history to restore game progress
-            const histResp = await fetch(`${API_BASE_URL}/game/history/${uid}`);
-            const histData = await histResp.json();
-            if (histResp.ok) {
-                const progress = getGameProgress(); // Load defaults
-                histData.game_history.forEach(h => {
-                    if (progress[h.level] && progress[h.level][h.game_key]) {
-                        progress[h.level][h.game_key].completed = true;
-                    }
-                });
-                localStorage.setItem("cyberduo_game_progress", JSON.stringify(progress));
-            }
-        } catch (err) {
-            console.error("Sync failed:", err);
-        }
-    };
-
-    // Auth success → check if we need selection or can go to dashboard
-    const handleAuthSuccess = useCallback((userData) => {
-        const { user_id, username: u, email: e, avatar, mode } = userData;
-        
+    // Auth success → go to avatar selection
+    const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
         if (u) setUsername(u);
         if (e) setUserEmail(e);
-        if (user_id) setUserId(user_id);
-        
-        persistUser({ user_id, username: u, email: e });
-        
-        // Pull full data
-        syncWithBackend(user_id).then(() => {
-            if (avatar && mode) {
-                setScreen("dashboard");
-            } else {
-                setScreen("avatar");
-            }
-        });
+        persistUser({ username: u, email: e });
+        setScreen("avatar");
     }, []);
 
     // Avatar confirmed → go to mode selection
@@ -829,6 +734,20 @@ export default function CyberDuo({ onLoginSuccess }) {
         }
         setAvatarId(id);
         persistUser({ avatarId: id });
+
+        const userData = getInitialData();
+        if (userData && userData.user_id) {
+            try {
+                await fetch('http://localhost:8000/auth/save-avatar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userData.user_id, avatar: id })
+                });
+            } catch (e) {
+                console.error("Failed to save avatar to DB", e);
+            }
+        }
+
         setScreen("mode");
     }, []);
 
@@ -845,6 +764,20 @@ export default function CyberDuo({ onLoginSuccess }) {
         }
         setGameMode(mode);
         persistUser({ mode });
+
+        const userData = getInitialData();
+        if (userData && userData.user_id) {
+            try {
+                await fetch('http://localhost:8000/auth/save-mode', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userData.user_id, mode: mode })
+                });
+            } catch (e) {
+                console.error("Failed to save mode to DB", e);
+            }
+        }
+
         setScreen("dashboard");
         if (onLoginSuccess) onLoginSuccess({ avatarId, mode });
     }, [onLoginSuccess, avatarId]);
@@ -855,7 +788,6 @@ export default function CyberDuo({ onLoginSuccess }) {
         if (data.email !== undefined) setUserEmail(data.email);
         if (data.avatarId !== undefined) setAvatarId(data.avatarId);
         if (data.mode !== undefined) setGameMode(data.mode);
-        
         persistUser(data);
 
         // Save to backend
@@ -883,13 +815,37 @@ export default function CyberDuo({ onLoginSuccess }) {
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
     if (screen === "dashboard") return (
         <Dashboard
-            userId={userId}
             avatarId={avatarId}
             username={username}
             email={userEmail}
             mode={gameMode}
             updateUserData={updateUserData}
-            onLogout={() => {
+            onLogout={async () => {
+                const userData = getInitialData();
+                if (userData && userData.user_id) {
+                    const keysToSync = [
+                        "cyberduo_game_progress",
+                        "userXP",
+                        "cyberduo_streak_data",
+                        "cyberduo_earned_badges",
+                        "cyberduo_daily_progress"
+                    ];
+                    const syncData = {};
+                    keysToSync.forEach(k => {
+                        const val = localStorage.getItem(k);
+                        if (val) syncData[k] = val;
+                    });
+                    try {
+                        await fetch('http://localhost:8000/user/sync', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ user_id: userData.user_id, sync_data: syncData })
+                        });
+                    } catch (e) {
+                        console.error("Cloud sync failed during logout", e);
+                    }
+                }
+
                 // Clear all relevant keys
                 localStorage.removeItem("cyberduo_user_data");
                 localStorage.removeItem("cyberduo_game_progress");
@@ -897,7 +853,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                 localStorage.removeItem("cyberduo_streak_data");
                 localStorage.removeItem("cyberduo_earned_badges");
                 localStorage.removeItem("cyberduo_daily_progress");
-                
+
                 setScreen("login");
                 setUserId(null);
                 setAvatarId(null);
