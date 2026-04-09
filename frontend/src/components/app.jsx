@@ -3,6 +3,9 @@ import { initBackground } from "./background.js";
 import AvatarSelection from "./AvatarSelection.jsx";
 import ModeSelection from "./ModeSelection.jsx";
 import Dashboard from "./Dashboard.jsx";
+import { getGameProgress } from "../utils/gameProgress.js";
+
+const API_BASE_URL = "http://localhost:5000";
 
 // ═══════════════════════════════════════════════════════════
 // BACKGROUND CANVAS COMPONENT
@@ -437,15 +440,31 @@ function SignInForm({ onSuccess }) {
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
 
-    const handleSignIn = () => {
+    const handleSignIn = async () => {
         if (!email || !password) { setError("Please fill in all fields."); return; }
         setError("");
         setLoading(true);
-        // Simulate API call — replace with real axios call
-        setTimeout(() => {
+        
+        try {
+            const resp = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+
+            const data = await resp.json();
+            if (!resp.ok) {
+                setError(data.detail || "Login failed");
+                setLoading(false);
+                return;
+            }
+
             setLoading(false);
-            onSuccess && onSuccess({ username: email.split("@")[0], email });
-        }, 900);
+            onSuccess && onSuccess(data); // data contains user_id, username, avatar, mode
+        } catch (err) {
+            setError("Connection failed. Is the backend running?");
+            setLoading(false);
+        }
     };
 
     return (
@@ -509,6 +528,8 @@ function SignUpForm({ onSuccess }) {
     const [username, setUsername] = useState("");
     const [howHeard, setHowHeard] = useState("");
     const [agreed, setAgreed] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
     const [done, setDone] = useState(false);
 
     return (
@@ -644,16 +665,40 @@ function SignUpForm({ onSuccess }) {
                     </div>
 
                     <NeonButton
-                        onClick={() => {
-                            setDone(true);
-                            setTimeout(() => onSuccess && onSuccess({
-                                username: username || name.toLowerCase().replace(/\s/g, "_"),
-                                email,
-                            }), 1400);
+                        onClick={async () => {
+                            if (!email || !password || !name) return;
+                            setLoading(true);
+                            try {
+                                const resp = await fetch(`${API_BASE_URL}/auth/signup`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        username: username || name.toLowerCase().replace(/\s/g, "_"),
+                                        email,
+                                        password
+                                    })
+                                });
+                                const data = await resp.json();
+                                if (!resp.ok) {
+                                    alert(data.detail || "Signup failed");
+                                    setLoading(false);
+                                    return;
+                                }
+
+                                setDone(true);
+                                setTimeout(() => onSuccess && onSuccess({
+                                    user_id: data.user_id,
+                                    username: username || name.toLowerCase().replace(/\s/g, "_"),
+                                    email,
+                                }), 1400);
+                            } catch (err) {
+                                alert("Connection failed.");
+                                setLoading(false);
+                            }
                         }}
                         gradient="linear-gradient(90deg,#00FF9D,#9D4DFF)"
                     >
-                        {done ? "🎉 WELCOME TO THE ACADEMY!" : "CREATE ACCOUNT"}
+                        {loading ? "COMMUNICATING..." : done ? "🎉 WELCOME TO THE ACADEMY!" : "CREATE ACCOUNT"}
                     </NeonButton>
 
                     {done && (
@@ -691,6 +736,7 @@ export default function CyberDuo({ onLoginSuccess }) {
     
     // screen: "login" | "avatar" | "mode" | "dashboard"
     const [screen, setScreen] = useState(initialData ? "dashboard" : "login");
+    const [userId, setUserId] = useState(initialData?.user_id || null);
     const [avatarId, setAvatarId] = useState(initialData?.avatarId || null);
     const [gameMode, setGameMode] = useState(initialData?.mode || null);
     const [username, setUsername] = useState(initialData?.username || "");
@@ -707,25 +753,96 @@ export default function CyberDuo({ onLoginSuccess }) {
         localStorage.setItem("cyberduo_user_data", JSON.stringify(updated));
     };
 
-    // Auth success → go to avatar selection
-    const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
+    // Sync all user data from backend
+    const syncWithBackend = async (uid) => {
+        try {
+            // 1. Get dashboard stats
+            const dashResp = await fetch(`${API_BASE_URL}/user/dashboard/${uid}`);
+            const dashData = await dashResp.json();
+            
+            if (dashResp.ok) {
+                setAvatarId(dashData.avatar);
+                setGameMode(dashData.mode);
+                setUsername(dashData.username);
+                
+                // Update local storage for persistence
+                persistUser({
+                    user_id: uid,
+                    username: dashData.username,
+                    avatarId: dashData.avatar,
+                    mode: dashData.mode
+                });
+                
+                // Set secondary stats in localStorage
+                localStorage.setItem("userXP", dashData.xp.toString());
+                localStorage.setItem("cyberduo_streak_data", JSON.stringify({ streak: dashData.streak }));
+                localStorage.setItem("cyberduo_earned_badges", JSON.stringify(dashData.badges));
+            }
+
+            // 2. Get history to restore game progress
+            const histResp = await fetch(`${API_BASE_URL}/game/history/${uid}`);
+            const histData = await histResp.json();
+            if (histResp.ok) {
+                const progress = getGameProgress(); // Load defaults
+                histData.game_history.forEach(h => {
+                    if (progress[h.level] && progress[h.level][h.game_key]) {
+                        progress[h.level][h.game_key].completed = true;
+                    }
+                });
+                localStorage.setItem("cyberduo_game_progress", JSON.stringify(progress));
+            }
+        } catch (err) {
+            console.error("Sync failed:", err);
+        }
+    };
+
+    // Auth success → check if we need selection or can go to dashboard
+    const handleAuthSuccess = useCallback((userData) => {
+        const { user_id, username: u, email: e, avatar, mode } = userData;
+        
         if (u) setUsername(u);
         if (e) setUserEmail(e);
-        persistUser({ username: u, email: e });
-        setScreen("avatar");
+        if (user_id) setUserId(user_id);
+        
+        persistUser({ user_id, username: u, email: e });
+        
+        // Pull full data
+        syncWithBackend(user_id).then(() => {
+            if (avatar && mode) {
+                setScreen("dashboard");
+            } else {
+                setScreen("avatar");
+            }
+        });
     }, []);
 
     // Avatar confirmed → go to mode selection
-    const handleAvatarDone = useCallback((id) => {
+    const handleAvatarDone = useCallback(async (id) => {
         console.log("Avatar saved:", id);
+        const uid = getInitialData()?.user_id;
+        if (uid) {
+            await fetch(`${API_BASE_URL}/auth/save-avatar`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: uid, avatar: id })
+            });
+        }
         setAvatarId(id);
         persistUser({ avatarId: id });
         setScreen("mode");
     }, []);
 
     // Mode confirmed → go to dashboard
-    const handleModeDone = useCallback((mode) => {
+    const handleModeDone = useCallback(async (mode) => {
         console.log("Mode saved:", mode);
+        const uid = getInitialData()?.user_id;
+        if (uid) {
+            await fetch(`${API_BASE_URL}/auth/save-mode`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ user_id: uid, mode: mode })
+            });
+        }
         setGameMode(mode);
         persistUser({ mode });
         setScreen("dashboard");
@@ -733,18 +850,40 @@ export default function CyberDuo({ onLoginSuccess }) {
     }, [onLoginSuccess, avatarId]);
 
     // Handle updates from modals
-    const updateUserData = useCallback((data) => {
+    const updateUserData = useCallback(async (data) => {
         if (data.username !== undefined) setUsername(data.username);
         if (data.email !== undefined) setUserEmail(data.email);
         if (data.avatarId !== undefined) setAvatarId(data.avatarId);
         if (data.mode !== undefined) setGameMode(data.mode);
+        
         persistUser(data);
+
+        // Save to backend
+        const uid = getInitialData()?.user_id;
+        if (uid) {
+            try {
+                await fetch(`${API_BASE_URL}/user/update`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        user_id: uid,
+                        username: data.username,
+                        email: data.email,
+                        avatar: data.avatarId,
+                        mode: data.mode
+                    })
+                });
+            } catch (err) {
+                console.error("Failed to sync profile update:", err);
+            }
+        }
     }, []);
 
     if (screen === "avatar") return <AvatarSelection onContinue={handleAvatarDone} />;
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
     if (screen === "dashboard") return (
         <Dashboard
+            userId={userId}
             avatarId={avatarId}
             username={username}
             email={userEmail}
@@ -760,6 +899,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                 localStorage.removeItem("cyberduo_daily_progress");
                 
                 setScreen("login");
+                setUserId(null);
                 setAvatarId(null);
                 setGameMode(null);
                 setUsername("");

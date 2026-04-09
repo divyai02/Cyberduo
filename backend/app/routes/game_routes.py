@@ -86,7 +86,7 @@ def save_game_result(data: GameResult):
 # ✅ GET USER GAME HISTORY
 @router.get("/history/{user_id}")
 def get_game_history(user_id: str):
-    user = users_collection.find_one({"_id": ObjectId(data.user_id)})
+    user = users_collection.find_one({"_id": ObjectId(user_id)})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return {

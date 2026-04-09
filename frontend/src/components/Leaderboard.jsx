@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import '../styles/leaderboard.css';
-import mockData from '../data/leaderboard.json';
+import { AVATARS } from './AvatarSelection.jsx';
 
-const AVATAR_MAP = {
-    "hacker": { emoji: "🦸", label: "Hacker Hero" },
-    "agent": { emoji: "🦹", label: "Cyber Agent" },
-    "cat": { emoji: "🐱", label: "Cyber Cat" },
-    "bot": { emoji: "🤖", label: "AI Bot" },
-    "ninja": { emoji: "👩‍💻", label: "Code Ninja" },
+const API_BASE_URL = "http://localhost:5000";
+
+// Helper to get emoji from ID using the shared AVATARS list
+const getAvatarEmoji = (id) => {
+    const av = AVATARS.find(a => a.id === id);
+    return av ? av.emoji : "🛡️";
 };
 
 const DEFAULT_AVATAR = { emoji: "🛡️", label: "Operative" };
@@ -50,19 +50,46 @@ const PodiumItem = ({ user, rank, type }) => {
         </div>
     );
 };
-
 const Leaderboard = ({ compact = false }) => {
     const [userXP, setUserXP] = useState(0);
-    const [userData, setUserData] = useState({ name: 'You', avatar: '🛡️' });
+    const [userData, setUserData] = useState({ id: null, name: 'You', avatar: '🛡️' });
+    const [rankings, setRankings] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const fetchLeaderboard = async () => {
+        try {
+            const resp = await fetch(`${API_BASE_URL}/user/leaderboard`);
+            const data = await resp.json();
+            if (resp.ok) {
+                // Map the avatar IDs to emojis
+                const mapped = data.map(u => ({
+                    ...u,
+                    avatar: getAvatarEmoji(u.avatar)
+                }));
+                setRankings(mapped);
+            }
+        } catch (err) {
+            console.error("Leaderboard fetch failed:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
+        fetchLeaderboard();
+        
         const updateFromStorage = () => {
+            const stored = localStorage.getItem("cyberduo_user_data");
+            if (stored) {
+                const data = JSON.parse(stored);
+                setUserData({ 
+                    id: data.user_id,
+                    name: data.username, 
+                    avatar: getAvatarEmoji(data.avatarId) 
+                });
+            }
             const xp = localStorage.getItem("userXP");
-            const storedUsername = localStorage.getItem("cyberduo_username") || "You";
-            const avatarId = localStorage.getItem("cyberduo_avatar");
-            const avatar = AVATAR_MAP[avatarId]?.emoji || DEFAULT_AVATAR.emoji;
             setUserXP(xp ? parseInt(xp, 10) : 0);
-            setUserData({ name: storedUsername, avatar });
         };
         updateFromStorage();
         window.addEventListener('storage', updateFromStorage);
@@ -74,16 +101,31 @@ const Leaderboard = ({ compact = false }) => {
     }, []);
 
     const allRankings = useMemo(() => {
-        const currentUser = {
-            id: 'current-user',
-            name: userData.name,
-            avatar: userData.avatar,
-            xp: userXP,
-            isCurrentUser: true
-        };
-        const combined = [...mockData, currentUser].sort((a, b) => b.xp - a.xp);
-        return combined.map((user, index) => ({ ...user, rank: index + 1 }));
-    }, [userXP, userData]);
+        // Find current user in rankings by ID
+        const currentInList = rankings.find(r => r.id === userData.id);
+        
+        let list = [...rankings];
+        
+        // If current user isn't in top 50 (returned by API), add them manually for display
+        if (!currentInList && userData.id) {
+            list.push({
+                id: userData.id,
+                name: userData.name,
+                avatar: userData.avatar,
+                xp: userXP,
+                isCurrentUser: true
+            });
+        }
+        
+        const sorted = list.sort((a, b) => b.xp - a.xp);
+        return sorted.map((user, index) => ({ 
+            ...user, 
+            rank: index + 1,
+            isCurrentUser: user.id === userData.id
+        }));
+    }, [rankings, userXP, userData]);
+
+    if (loading) return <div className="lb-loading">ACCESSING GLOBAL RANKINGS...</div>;
 
     if (compact) {
         return (

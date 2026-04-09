@@ -60,3 +60,52 @@ def update_streak(data: StreakUpdate):
     )
 
     return {"message": "Streak updated!", "streak": streak}
+
+
+# ✅ GET GLOBAL LEADERBOARD
+@router.get("/leaderboard")
+def get_leaderboard():
+    # Fetch all users, sort by XP descending, limit to top 50
+    users = users_collection.find({}, {"username": 1, "avatar": 1, "xp": 1}).sort("xp", -1).limit(50)
+    
+    leaderboard = []
+    for user in users:
+        leaderboard.append({
+            "id": str(user["_id"]),
+            "name": user.get("username"),
+            "avatar": user.get("avatar"),
+            "xp": user.get("xp", 0)
+        })
+    
+    return leaderboard
+
+
+# ✅ UPDATE USER PROFILE
+class UserUpdate(BaseModel):
+    user_id: str
+    username: str = None
+    email: str = None
+    avatar: str = None
+    mode: str = None
+
+@router.post("/update")
+def update_user(data: UserUpdate):
+    # Prepare update payload
+    update_ops = {}
+    if data.username: update_ops["username"] = data.username
+    if data.email: update_ops["email"] = data.email
+    if data.avatar: update_ops["avatar"] = data.avatar
+    if data.mode: update_ops["mode"] = data.mode
+    
+    if not update_ops:
+        return {"message": "No fields to update"}
+        
+    result = users_collection.update_one(
+        {"_id": ObjectId(data.user_id)},
+        {"$set": update_ops}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(status_code=404, detail="User not found")
+        
+    return {"message": "Profile updated!", "updated_fields": update_ops}

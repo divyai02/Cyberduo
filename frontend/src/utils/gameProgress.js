@@ -134,6 +134,10 @@ export function updateStreak() {
     streak.lastPlayed = todayStr;
     
     // add to history if not there
+    if (!streak.streakHistory) {
+        streak.streakHistory = [];
+    }
+    
     if (!streak.streakHistory.includes(todayStr)) {
         streak.streakHistory.push(todayStr);    
     }

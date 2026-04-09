@@ -28,6 +28,9 @@ class ModeRequest(BaseModel):
 # ✅ SIGNUP
 @router.post("/signup")
 def signup(data: SignupRequest):
+    if not data.password:
+        raise HTTPException(status_code=400, detail="Password cannot be empty")
+    
     if users_collection.find_one({"email": data.email}):
         raise HTTPException(status_code=400, detail="Email already registered")
     if users_collection.find_one({"username": data.username}):
@@ -52,6 +55,9 @@ def signup(data: SignupRequest):
 # ✅ LOGIN
 @router.post("/login")
 def login(data: LoginRequest):
+    if not data.password:
+        raise HTTPException(status_code=400, detail="Password cannot be empty")
+    
     user = users_collection.find_one({"email": data.email})
     if not user:
         raise HTTPException(status_code=401, detail="Invalid email or password")

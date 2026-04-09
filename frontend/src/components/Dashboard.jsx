@@ -71,7 +71,9 @@ const BRIEFING_TEXTS = {
 };
 
 // ============================================
-export default function Dashboard({ avatarId, username, email, mode, updateUserData, onLogout }) {
+const API_BASE_URL = "http://localhost:5000";
+
+export default function Dashboard({ userId, avatarId, username, email, mode, updateUserData, onLogout }) {
     const canvasRef = useRef(null);
     const bgEngineRef = useRef(null);
 
@@ -84,11 +86,25 @@ export default function Dashboard({ avatarId, username, email, mode, updateUserD
     const [showSettingsModal, setShowSettingsModal] = useState(false);
 
     const [activeGame, setActiveGame] = useState(null);
-    const [progress, setProgress] = useState(null);
     const [selectedMission, setSelectedMission] = useState(null);
+    const [stats, setStats] = useState({
+        totalXP: 0,
+        level: 1,
+        rank: "Initiate",
+        missionsCompleted: 0,
+        streak: 0
+    });
+
+    const [progress, setProgress] = useState({});
+    
+    // Flatten all missions for count and current display
+    const allMissionsArr = Object.values(progress).flatMap(levelObj => Object.values(levelObj));
+    const solvedMissions = allMissionsArr.filter(m => m.completed).length;
+    const currentMissions = allMissionsArr.filter(m => !m.completed);
 
     useEffect(() => {
-        setProgress(getGameProgress());
+        const initialProgress = getGameProgress();
+        setProgress(initialProgress || {});
         updateStreak();
     }, []);
 
@@ -146,13 +162,32 @@ export default function Dashboard({ avatarId, username, email, mode, updateUserD
                     gameKey={activeGame.key}
                     gameName={activeGame.name} 
                     level={activeGame.level} 
-                    onComplete={(earnedXP) => {
+                    onComplete={async (earnedXP) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
-                        updateUserXP(earnedXP); // Persist global XP
-                        incrementDailyProgress(); // Track daily completion
+                        updateUserXP(earnedXP); // Store locally for instant UI update
+                        incrementDailyProgress(); 
                         setProgress(newProg);
                         setActiveGame(null);
                         setSelectedMission(null);
+
+                        // Save to backend
+                        if (userId) {
+                            try {
+                                await fetch(`${API_BASE_URL}/game/save-result`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        user_id: userId,
+                                        game_key: activeGame.key,
+                                        level: activeGame.level,
+                                        score: 100, // Missions are binary complete in this UI
+                                        xp_earned: earnedXP
+                                    })
+                                });
+                            } catch (err) {
+                                console.error("Failed to save game result:", err);
+                            }
+                        }
                     }}
                     onProgressUpdate={(completedQuestions) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, completedQuestions);
@@ -264,7 +299,7 @@ export default function Dashboard({ avatarId, username, email, mode, updateUserD
                                     <div className="db-level-title">{levelStr.toUpperCase()} LEVEL</div>
                                     <div className="db-circles-row">
                                         <div className="db-path-line"></div>
-                                        {Object.entries(progress[levelStr]).map(([gameKey, gameData], index) => 
+                                        {Object.entries(progress[levelStr] || {}).map(([gameKey, gameData], index) => 
                                             renderGameCircle(levelStr, gameKey, gameData, index)
                                         )}
                                     </div>
