@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/gamescreen.css';
-import gameData from '../data/GameQuestions.json';
+// import gameData from '../data/GameQuestions.json'; // Now fetching from DB
 import { updateStreak } from '../utils/gameProgress.js';
+import { incrementDailyProgress } from '../utils/dailyprogress.js';
 
-export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack }) {
-    const questions = gameData[gameKey]?.[level] || [];
+export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack, userId }) {
+    const [questions, setQuestions] = useState([]);
+    const API_BASE_URL = "http://localhost:5000";
 
+    // ✅ ALL STATE HOOKS MUST BE DECLARED BEFORE ANY EARLY RETURNS (React rules)
+    const [loadingError, setLoadingError] = useState(false);
+
+    // Restore progress from localStorage
     const [currentIndex, setCurrentIndex] = useState(() => {
         const saved = localStorage.getItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return saved ? JSON.parse(saved).currentIndex : 0;
@@ -58,7 +64,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
 
-    const GEMINI_API_KEY = "AIzaSyCOJEQ-od9iGT7CoAFP8OghRhkxd4nVoCk";
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
     // ✅ AI CHAT FUNCTION
     const handleChatSend = async () => {
@@ -106,8 +112,10 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         }
     }, [currentQ, sequenceList.length, hasAnswered]);
 
+    const isPaused = modal.show || chatOpen;
+
     useEffect(() => {
-        if (hasAnswered || currentIndex >= questions.length || !currentQ) return;
+        if (hasAnswered || currentIndex >= questions.length || !currentQ || isPaused) return;
         if (timeLeft <= 0) {
             handleTimeUp();
             return;
@@ -116,8 +124,30 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             setTimeLeft(prev => prev - 1);
         }, 1000);
         return () => clearInterval(timerId);
-    }, [timeLeft, hasAnswered, currentIndex, currentQ, questions.length]);
+    }, [timeLeft, hasAnswered, currentIndex, currentQ, questions.length, isPaused]);
 
+    // ✅ FETCH QUESTIONS FROM DB — hook must appear here, before any conditional returns
+    useEffect(() => {
+        async function fetchQuestions() {
+            setLoadingError(false);
+            try {
+                const res = await fetch(`${API_BASE_URL}/game/questions/${gameKey}/${level}`);
+                if (!res.ok) throw new Error("Failed to fetch");
+                const data = await res.json();
+                if (Array.isArray(data) && data.length > 0) {
+                    setQuestions(data);
+                } else {
+                    setLoadingError(true);
+                }
+            } catch (e) {
+                console.error("Failed to fetch questions from DB", e);
+                setLoadingError(true);
+            }
+        }
+        fetchQuestions();
+    }, [gameKey, level]);
+
+    // ✅ COMPLETION SCREEN — placed after all hook declarations
     if (currentIndex >= questions.length && questions.length > 0) {
         localStorage.removeItem(`cyberduo_inprogress_${gameKey}_${level}`);
         return (
@@ -128,23 +158,46 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         <p>SCORE: {score} / 100</p>
                         <p>XP EARNED: {xp}</p>
                     </div>
-                    <button className="gs-btn-primary" onClick={() => onComplete(xp, score)}>CONTINUE TO DASHBOARD</button>
+                    <button className="gs-btn-primary" onClick={() => {
+                        try { onComplete(xp, score); } catch(e) { console.error(e); onBack?.(); }
+                    }}>CONTINUE TO DASHBOARD</button>
                 </div>
             </div>
         );
     }
 
-    if (!currentQ) {
+    if (loadingError) {
         return (
             <div className="gs-container">
-                {onBack && <button className="gs-btn-back" onClick={onBack}>← ABORT MISSION</button>}
                 <div className="gs-completion-screen">
-                    <h1 className="gs-neon-title" style={{ color: '#ff6b6b' }}>No Intel Found</h1>
-                    <p style={{ color: 'rgba(255,255,255,0.7)', marginTop: '20px' }}>Mission parameters for {gameName || gameKey} ({level}) could not be loaded.</p>
+                    <h1 className="gs-neon-title" style={{ color: '#ff6b6b' }}>Link Failed</h1>
+                    <p>Intel for {gameKey} ({level}) could not be retrieved from the mainframe.</p>
+                    <button className="gs-btn-primary" onClick={onBack}>RETURN TO BASE</button>
                 </div>
             </div>
         );
     }
+
+    if (questions.length === 0) {
+        return (
+            <div className="gs-container">
+                <div className="gs-completion-screen">
+                    <h1 className="gs-neon-title">Establishing Link...</h1>
+                    <p>Accessing the CyberDuo secure database. Stand by, operative.</p>
+                </div>
+            </div>
+        );
+    }
+
+    if (!currentQ && questions.length > 0) return (
+        <div className="gs-container">
+            <div className="gs-completion-screen">
+                <h1 className="gs-neon-title">Analysis Complete</h1>
+                <p>All available intel for this sector has been processed.</p>
+                <button className="gs-btn-primary" onClick={() => onComplete(xp, score)}>RETURN TO BASE</button>
+            </div>
+        </div>
+    );
 
     const handleAnswerEval = (isCorrect) => {
         setHasAnswered(true);
@@ -157,6 +210,53 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             setScore(prev => prev + 20);
             setXp(prev => prev + 20);
             updateStreak();
+            incrementDailyProgress(); // Update local storage
+            
+            // ✅ PERSIST TO DB IN REAL-TIME
+            if (userId) {
+                // Sync Streak
+                fetch(`${API_BASE_URL}/user/update-streak`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId })
+                }).catch(e => console.error("Streak sync failed", e));
+
+                // Sync Question Progress
+                fetch(`${API_BASE_URL}/game/save-result`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        game_key: gameKey,
+                        level: level,
+                        xp_earned: 20,
+                        score: score + 20, // Use actual current score
+                        is_single_question: true,
+                        question_index: currentIndex // Pass current question index
+                    })
+                })
+                .then(res => res.json())
+                .then((data) => {
+                    // ✅ Sync local XP EXACTLY with what the backend calculated
+                    if (data.new_xp !== undefined) {
+                        localStorage.setItem('userXP', data.new_xp.toString());
+                    }
+                    // ✅ Trigger UI to refresh XP and Leaderboard
+                    window.dispatchEvent(new Event('xpUpdated'));
+                    window.dispatchEvent(new Event('leaderboardRefresh'));
+                }).catch(e => console.error("DB Sync failed", e));
+
+                // ✅ Sync Daily Mission Counter (Real-Time)
+                const dailyData = JSON.parse(localStorage.getItem('cyberduo_daily_progress') || '{"count": 0}');
+                fetch(`${API_BASE_URL}/user/sync-daily`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        user_id: userId,
+                        count: dailyData.count
+                    })
+                }).catch(e => console.error("Daily mission sync failed", e));
+            }
         } else {
             setFeedback({ type: 'error', message: currentQ.explain });
             setXp(prev => Math.max(0, prev - 10));
@@ -178,6 +278,10 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         setBuildAnswers({ lure: null, urgency: null });
         setSwitchActive(false);
         setSequenceList([]);
+        // Adaptive Inbox custom state
+        if (currentQ?.format === 'adaptive_inbox') {
+            setBuildAnswers({ currentIndex: 0 }); // reuse buildAnswers for local state if needed, or just add adaptiveIndex
+        }
         setHasAnswered(false);
         setIsCorrectResult(null);
         setTimeLeft(45);
@@ -197,10 +301,51 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
 
     const handleSubmit = () => {
         if (hasAnswered) return;
-        let isCorrect = false;
+        
+        let isInputMissing = false;
+        // ✅ VALIDATION FEEDBACK
+        if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim' || currentQ.format === 'spot_weak' || currentQ.format === 'scenario_mcq' || currentQ.format === 'link_inspector' || currentQ.format === 'file_inspector' || currentQ.format === 'quishing_drills' || currentQ.format === 'deepfake_detection' || currentQ.format === 'spot_the_difference' || currentQ.format === 'digital_whodunnit' || currentQ.format === 'branching_narratives' || currentQ.format === 'resource_management' || currentQ.format === 'the_imposter' || currentQ.format === 'cyber_snakes_ladders' || currentQ.format === 'phish_a_friend' || currentQ.format === 'adversary_roleplay' || currentQ.format === 'kc7_log_hunt' || currentQ.format === 'kahoot_trivia') {
+            if (!selectedOption) isInputMissing = true;
+        } else if (currentQ.format === 'escape_rooms') {
+            if (!chatInput) isInputMissing = true;
+        } else if (currentQ.format === 'svg_code_inspection') {
+            if (!selectedOption) isInputMissing = true;
+        } else if (currentQ.format === 'omni_threat_chains') {
+            if (!selectedOption) isInputMissing = true;
+        } else if (currentQ.format === 'password_builder' || currentQ.format === 'drag_flags' || currentQ.format === 'authenticator_sim' || currentQ.format === 'threat_router') {
+            if (droppedFlags.length === 0) isInputMissing = true;
+        } else if (currentQ.format === 'case_study' || currentQ.format === 'select_all' || currentQ.format === 'click_flags' || currentQ.format === 'omni_threat_chain' || currentQ.format === 'scavenger_hunt' || currentQ.format === 'adversary_roleplay') {
+            if (checkedFlags.length === 0) isInputMissing = true;
+        } else if (currentQ.format === 'inbox_triage' || currentQ.format === 'file_triage' || currentQ.format === 'traffic_triage' || currentQ.format === 'password_triage' || currentQ.format === 'adaptive_inbox') {
+            if (Object.keys(triageAnswers).length < (currentQ.emails?.length || currentQ.files?.length || currentQ.passwords?.length)) isInputMissing = true;
+        } else if (currentQ.format === 'build_phish') {
+            if (!buildAnswers.lure || !buildAnswers.urgency) isInputMissing = true;
+        }
 
-        if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim' || currentQ.format === 'spot_weak' || currentQ.format === 'scenario_mcq') {
-            if (!selectedOption) return;
+        if (isInputMissing) {
+            // Allow submitting with no answer — just treat it as wrong
+            handleAnswerEval(false);
+            return;
+        }
+
+        let isCorrect = false;
+        if (currentQ.format === 'spot_fake' || currentQ.format === 'decision_simulator' || currentQ.format === 'chat_sim' || currentQ.format === 'spot_weak' || currentQ.format === 'scenario_mcq' || currentQ.format === 'deepfake_detection' || currentQ.format === 'spot_the_difference' || currentQ.format === 'digital_whodunnit' || currentQ.format === 'branching_narratives' || currentQ.format === 'resource_management' || currentQ.format === 'the_imposter' || currentQ.format === 'cyber_snakes_ladders' || currentQ.format === 'phish_a_friend' || currentQ.format === 'quishing_drills' || currentQ.format === 'quishing_drill' || currentQ.format === 'kc7_log_hunt' || currentQ.format === 'kahoot_trivia') {
+            isCorrect = selectedOption === currentQ.correctAnswer;
+        } else if (currentQ.format === 'adversary_roleplay') {
+            // Check if multiple flags were used or single selection
+            if (currentQ.assets && checkedFlags.length > 0) {
+                 const totalCost = checkedFlags.reduce((sum, id) => sum + (currentQ.assets.find(a => a.id === id)?.cost || 0), 0);
+                 const totalVal = checkedFlags.reduce((sum, id) => sum + (currentQ.assets.find(a => a.id === id)?.value || 0), 0);
+                 isCorrect = totalCost <= currentQ.budget && totalVal >= currentQ.targetValue;
+            } else {
+                 const asset = currentQ.assets.find(a => a.name === selectedOption);
+                 isCorrect = asset && asset.value >= currentQ.targetValue;
+            }
+        } else if (currentQ.format === 'omni_threat_chains' || currentQ.format === 'omni_threat_chain') {
+            isCorrect = selectedOption === currentQ.correctAnswer;
+        } else if (currentQ.format === 'escape_rooms') {
+            isCorrect = chatInput.trim().toUpperCase() === currentQ.correctAnswer.toUpperCase();
+        } else if (currentQ.format === 'svg_code_inspection') {
             isCorrect = selectedOption === currentQ.correctAnswer;
         } else if (currentQ.format === 'password_builder') {
             const pwd = droppedFlags.map(fId => currentQ.pieces.find(p => p.id === fId)?.text).join('');
@@ -214,8 +359,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             const correctSet = new Set(currentQ.correctFlags);
             const userSet = new Set(droppedFlags);
             isCorrect = correctSet.size > 0 && correctSet.size === userSet.size && [...correctSet].every(flag => userSet.has(flag));
-        } else if (currentQ.format === 'link_inspector' || currentQ.format === 'file_inspector') {
-            if (!selectedOption) return;
+        } else if (currentQ.format === 'link_inspector' || currentQ.format === 'file_inspector' || currentQ.format === 'quishing_drill') {
             isCorrect = selectedOption === currentQ.correctAnswer;
         } else if (currentQ.format === 'case_study' || currentQ.format === 'select_all') {
             const correctSet = new Set(currentQ.correctFlags);
@@ -224,7 +368,16 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
         } else if (currentQ.format === 'click_flags') {
             const correctFlags = currentQ.emailParts.filter(p => p.isFlag);
             isCorrect = checkedFlags.length === correctFlags.length && checkedFlags.every(id => currentQ.emailParts.find(p => p.id === id)?.isFlag);
-        } else if (currentQ.format === 'inbox_triage') {
+        } else if (currentQ.format === 'omni_threat_chain' || currentQ.format === 'omni_threat_chains' && checkedFlags.length > 0) {
+            const correctFlags = currentQ.channels.flatMap(c => c.parts).filter(p => p.isFlag);
+            isCorrect = checkedFlags.length === correctFlags.length && checkedFlags.every(id => currentQ.channels.flatMap(c => c.parts).find(p => p.id === id)?.isFlag);
+        } else if (currentQ.format === 'scavenger_hunt' || currentQ.format === 'capture_the_flag') {
+            const correctFlags = currentQ.objects.filter(o => o.isRedFlag || o.isFlag);
+            isCorrect = checkedFlags.length === correctFlags.length && checkedFlags.every(id => {
+                const found = currentQ.objects.find(o => o.id === (id.id || id) || o.id === id);
+                return found && (found.isRedFlag || found.isFlag);
+            });
+        } else if (currentQ.format === 'inbox_triage' || currentQ.format === 'adaptive_inbox') {
             isCorrect = Object.keys(triageAnswers).length === currentQ.emails.length && currentQ.emails.every(e => triageAnswers[e.id] === e.isPhish);
         } else if (currentQ.format === 'file_triage' || currentQ.format === 'traffic_triage') {
             isCorrect = Object.keys(triageAnswers).length === currentQ.files.length && currentQ.files.every(f => triageAnswers[f.id] === f.isMalware);
@@ -238,7 +391,6 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             const correctPortals = currentQ.portals.filter(p => p.isCorrect).map(p => p.id);
             isCorrect = droppedFlags.length === correctPortals.length && correctPortals.every(p => droppedFlags.includes(p));
         } else if (currentQ.format === 'build_phish') {
-            if (!buildAnswers.lure || !buildAnswers.urgency) return;
             isCorrect = buildAnswers.lure.correct && buildAnswers.urgency.correct;
         }
 
@@ -264,11 +416,18 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             case 'scenario_mcq':
                 return (
                     <div className="gs-format gs-mcq-grid">
-                        {currentQ.options.map((opt, i) => (
-                            <button key={i} className={`gs-mcq-card ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
-                                {opt}
-                            </button>
-                        ))}
+                        {currentQ.options.map((opt, i) => {
+                            const isSelected = selectedOption === opt;
+                            const isWrong = hasAnswered && isSelected && !isCorrectResult;
+                            const isCorrect = hasAnswered && opt === currentQ.correctAnswer;
+                            const statusClass = isCorrect ? 'correct-answer' : (isWrong ? 'wrong-answer' : '');
+                            return (
+                                <button key={i} className={`gs-mcq-card ${isSelected ? 'selected' : ''} ${statusClass}`} onClick={() => !hasAnswered && setSelectedOption(opt)}>
+                                    <div className="gs-option-letter">{String.fromCharCode(65 + i)}</div>
+                                    <div className="gs-option-text">{opt}</div>
+                                </button>
+                            );
+                        })}
                     </div>
                 );
             case 'chat_sim':
@@ -348,6 +507,71 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                     </div>
                 );
+            case 'omni_threat_chain':
+                return (
+                    <div className="gs-format gs-omni-chain" style={{ display: 'flex', gap: '20px' }}>
+                        {currentQ.channels.map((channel, cIdx) => (
+                            <div key={cIdx} className="gs-channel-box" style={{ flex: 1, background: 'rgba(255,255,255,0.05)', borderRadius: '10px', padding: '15px', border: '1px solid rgba(0, 255, 157, 0.2)' }}>
+                                <div style={{ fontSize: '1.2rem', marginBottom: '10px', color: '#00FF9D', borderBottom: '1px solid rgba(0,255,157,0.3)', paddingBottom: '5px' }}>{channel.type.toUpperCase()}</div>
+                                <div className="gs-channel-content">
+                                    {channel.parts.map((part, pIdx) => (
+                                        <span key={pIdx} className={`gs-channel-part ${checkedFlags.includes(part.id) ? 'highlighted' : ''}`}
+                                            style={{ cursor: 'pointer', padding: '2px 5px', borderRadius: '4px', backgroundColor: checkedFlags.includes(part.id) ? 'rgba(255,107,107,0.4)' : 'transparent' }}
+                                            onClick={() => {
+                                                if (checkedFlags.includes(part.id)) setCheckedFlags(checkedFlags.filter(id => id !== part.id));
+                                                else setCheckedFlags([...checkedFlags, part.id]);
+                                            }}>
+                                            {part.text}{' '}
+                                        </span>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            case 'scavenger_hunt':
+                return (
+                    <div className="gs-format gs-scavenger-hunt">
+                        <div style={{ position: 'relative', width: '100%', height: '300px', background: '#111', border: '1px solid #444', borderRadius: '10px', overflow: 'hidden' }}>
+                            {currentQ.objects && currentQ.objects.length > 0 ? currentQ.objects.map((obj, i) => (
+                                <div key={obj.id} 
+                                    className={`gs-hunt-obj ${checkedFlags.includes(obj.id) ? 'highlighted' : ''}`}
+                                    style={{ position: 'absolute', top: obj.top, left: obj.left, padding: '10px', background: checkedFlags.includes(obj.id) ? 'rgba(255,107,107,0.9)' : 'rgba(34,34,34,0.9)', border: '2px dashed', borderColor: checkedFlags.includes(obj.id) ? '#ff6b6b' : '#00FF9D', borderRadius: '8px', cursor: 'pointer', color: '#fff', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                                    onClick={() => {
+                                        if (checkedFlags.includes(obj.id)) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
+                                        else setCheckedFlags([...checkedFlags, obj.id]);
+                                    }}>
+                                    <span style={{ fontSize: '1.5rem' }}>{obj.icon}</span> 
+                                    <span style={{ fontWeight: 'bold' }}>{obj.label}</span>
+                                </div>
+                            )) : <div style={{ color: '#ff6b6b', padding: '20px' }}>Loading environment targets...</div>}
+                        </div>
+                    </div>
+                );
+            case 'adversary_roleplay':
+                const spent = checkedFlags.reduce((sum, id) => sum + (currentQ.assets.find(a => a.id === id)?.cost || 0), 0);
+                const val = checkedFlags.reduce((sum, id) => sum + (currentQ.assets.find(a => a.id === id)?.value || 0), 0);
+                return (
+                    <div className="gs-format gs-roleplay">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '20px', padding: '15px', background: 'rgba(255,107,107,0.1)', border: '1px solid #ff6b6b', borderRadius: '10px' }}>
+                            <div style={{ color: '#ff6b6b' }}><strong>Attacker Budget:</strong> {currentQ.budget - spent} / {currentQ.budget}</div>
+                            <div style={{ color: '#00FF9D' }}><strong>Threat Value:</strong> {val} / {currentQ.targetValue} Target</div>
+                        </div>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                            {currentQ.assets.map(asset => (
+                                <div key={asset.id} 
+                                    style={{ padding: '15px', border: checkedFlags.includes(asset.id) ? '2px solid #ff6b6b' : '1px solid #444', borderRadius: '8px', cursor: 'pointer', opacity: (spent + asset.cost > currentQ.budget && !checkedFlags.includes(asset.id)) ? 0.5 : 1 }}
+                                    onClick={() => {
+                                        if (checkedFlags.includes(asset.id)) setCheckedFlags(checkedFlags.filter(id => id !== asset.id));
+                                        else if (spent + asset.cost <= currentQ.budget) setCheckedFlags([...checkedFlags, asset.id]);
+                                    }}>
+                                    <div style={{ fontWeight: 'bold' }}>{asset.name}</div>
+                                    <div style={{ fontSize: '0.9rem', color: '#888' }}>Cost: {asset.cost} | Value: {asset.value}</div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
             case 'inbox_triage':
                 return (
                     <div className="gs-format gs-inbox-triage">
@@ -363,6 +587,32 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                                 </div>
                             </div>
                         ))}
+                    </div>
+                );
+            case 'adaptive_inbox':
+                const activeEmailIdx = Object.keys(triageAnswers).length;
+                const activeEmail = currentQ.emails[activeEmailIdx];
+                return (
+                    <div className="gs-format gs-adaptive-inbox">
+                        {activeEmail ? (
+                            <div className="gs-inbox-card" style={{ maxWidth: '400px', margin: '0 auto', background: '#222', padding: '20px', borderRadius: '15px', border: '1px solid #444', textAlign: 'center' }}>
+                                <div style={{ fontSize: '0.9rem', color: '#888', marginBottom: '15px' }}>Email {activeEmailIdx + 1} of {currentQ.emails.length}</div>
+                                <div style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>{activeEmail.subject}</div>
+                                <div style={{ margin: '10px 0', padding: '10px', background: '#111', borderRadius: '8px' }}>From: {activeEmail.sender}</div>
+                                
+                                <div style={{ display: 'flex', gap: '15px', marginTop: '20px', justifyContent: 'center' }}>
+                                    <button className="gs-btn-keep" onClick={() => setTriageAnswers({ ...triageAnswers, [activeEmail.id]: false })} style={{ flex: 1, padding: '15px', fontSize: '1.2rem', border: '2px solid #00FF9D', background: 'transparent', color: '#00FF9D', borderRadius: '8px', cursor: 'pointer' }}>SAFE</button>
+                                    <button className="gs-btn-delete" onClick={() => setTriageAnswers({ ...triageAnswers, [activeEmail.id]: true })} style={{ flex: 1, padding: '15px', fontSize: '1.2rem', border: '2px solid #ff6b6b', background: 'transparent', color: '#ff6b6b', borderRadius: '8px', cursor: 'pointer' }}>PHISH</button>
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{ textAlign: 'center', color: '#00FF9D', fontSize: '1.2rem' }}>Inbox cleared! Submit your report.</div>
+                        )}
+                        <div style={{ marginTop: '20px', display: 'flex', gap: '5px', justifyContent: 'center' }}>
+                            {currentQ.emails.map((e, i) => (
+                                <div key={e.id} style={{ width: '20px', height: '6px', backgroundColor: triageAnswers[e.id] !== undefined ? '#555' : '#222', borderRadius: '3px' }}></div>
+                            ))}
+                        </div>
                     </div>
                 );
             case 'file_triage':
@@ -416,6 +666,28 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                             {showHover && <div className="gs-hover-tooltip">{currentQ.actualDestination}</div>}
                         </div>
                         <div className="gs-inspector-actions">
+                            <button className={`gs-btn-safe ${selectedOption === 'Safe' ? 'selected' : ''}`} onClick={() => setSelectedOption('Safe')}>✔ SAFE</button>
+                            <button className={`gs-btn-phish ${selectedOption === 'Phishing' ? 'selected' : ''}`} onClick={() => setSelectedOption('Phishing')}>⚠ PHISHING</button>
+                        </div>
+                    </div>
+                );
+            case 'quishing_drill':
+                return (
+                    <div className="gs-format gs-link-inspector gs-quishing">
+                        <div className="gs-quishing-object" style={{ textAlign: 'center', padding: '20px', border: '1px solid #444', borderRadius: '15px', background: '#222', maxWidth: '300px', margin: '0 auto 20px' }}>
+                            <div style={{ fontSize: '1.2rem', marginBottom: '15px' }}>{currentQ.qrObject}</div>
+                            <div className="gs-qr-mockup" style={{ width: '150px', height: '150px', margin: '0 auto', background: `radial-gradient(circle, #fff 20%, transparent 20%), radial-gradient(circle, transparent 20%, #fff 20%, transparent 30%), radial-gradient(circle, #fff 15%, transparent 15%), linear-gradient(#111 2px, transparent 2px), linear-gradient(90deg, #111 2px, transparent 2px)`, backgroundSize: '15px 15px', border: '10px solid #fff', borderRadius: '5px' }}></div>
+                            <button onClick={() => setShowHover(true)} style={{ marginTop: '15px', padding: '10px 20px', background: '#00FF9D', color: '#111', border: 'none', borderRadius: '5px', fontWeight: 'bold', cursor: 'pointer' }}>SCAN QR CODE</button>
+                        </div>
+                        
+                        {showHover && (
+                            <div style={{ textAlign: 'center', margin: '20px 0' }}>
+                                <div style={{ color: '#00FF9D', marginBottom: '5px' }}>Scanner Output:</div>
+                                <div style={{ fontSize: '1.1rem', background: '#111', padding: '10px', borderRadius: '5px', wordBreak: 'break-all' }}>{currentQ.decodedURL}</div>
+                            </div>
+                        )}
+                        
+                        <div className="gs-inspector-actions" style={{ opacity: showHover ? 1 : 0.8 }}>
                             <button className={`gs-btn-safe ${selectedOption === 'Safe' ? 'selected' : ''}`} onClick={() => setSelectedOption('Safe')}>✔ SAFE</button>
                             <button className={`gs-btn-phish ${selectedOption === 'Phishing' ? 'selected' : ''}`} onClick={() => setSelectedOption('Phishing')}>⚠ PHISHING</button>
                         </div>
@@ -572,6 +844,224 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                     </div>
                 );
+            case 'quishing_drills':
+                return (
+                    <div className="gs-format gs-quishing">
+                        <div className="gs-phone-mockup">
+                            <div className="gs-qr-scanner">
+                                <div className="gs-qr-code-placeholder">
+                                    <div className="gs-qr-overlay"></div>
+                                </div>
+                                <div className="gs-scanned-result">
+                                    <span className="gs-res-label">SCANNED URL:</span>
+                                    <code className="gs-decoded-url">{currentQ.decodedURL}</code>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="gs-mcq-grid" style={{ marginTop: '20px' }}>
+                            {(currentQ.options || ['Safe', 'Phishing']).map((opt, i) => (
+                                <button key={i} className={`gs-mcq-card ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+
+            case 'omni_threat_chains':
+                return (
+                    <div className="gs-format gs-threat-chain">
+                        <div className="gs-chain-visual">
+                            {currentQ.channels.map((ch, idx) => (
+                                <div key={idx} className="gs-chain-channel">
+                                    <div className="gs-channel-type">{ch.type} ATTACK</div>
+                                    <div className="gs-channel-bubble">
+                                        {ch.parts.map(p => (
+                                            <span 
+                                                key={p.id} 
+                                                className={`gs-chain-part ${selectedOption === p.text ? 'selected' : ''} ${p.isFlag && hasAnswered ? (isCorrect ? 'correct' : 'malicious') : ''}`}
+                                                onClick={() => setSelectedOption(p.text)}
+                                            >
+                                                {p.text}
+                                            </span>
+                                        ))}
+                                    </div>
+                                    {idx < currentQ.channels.length - 1 && <div className="gs-chain-link">➔</div>}
+                                </div>
+                            ))}
+                        </div>
+                        <p className="gs-instruction-mini">Identify the malicious payload in the multi-channel attack chain.</p>
+                    </div>
+                );
+            case 'deepfake_detection':
+                return (
+                    <div className="gs-format gs-deepfake">
+                        <div className="gs-deepfake-visual">
+                            <div className="gs-video-placeholder">
+                                <div className="gs-audio-wave">
+                                    {[...Array(20)].map((_, i) => (
+                                        <div key={i} className="gs-wave-bar" style={{ animationDelay: `${i * 0.1}s` }}></div>
+                                    ))}
+                                </div>
+                                <div className="gs-glitch-overlay"></div>
+                                <p>ENCRYPTED CEO FEED</p>
+                            </div>
+                        </div>
+                        <div className="gs-transcript">
+                            <strong>Transcript:</strong> "{currentQ.audioTranscript}"
+                        </div>
+                        <div className="gs-mcq-grid">
+                            {currentQ.options.map((opt, i) => (
+                                <button key={i} className={`gs-mcq-card ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'svg_code_inspection':
+                return (
+                    <div className="gs-format gs-svg-inspection">
+                        <div className="gs-code-block">
+                            <pre>
+                                {currentQ.codeLines.map((line) => (
+                                    <div 
+                                        key={line.id} 
+                                        className={`gs-code-line ${selectedOption === line.id ? 'highlighted' : ''}`}
+                                        onClick={() => setSelectedOption(line.id)}
+                                    >
+                                        <span className="gs-line-num">{line.id}</span>
+                                        <code>{line.text}</code>
+                                    </div>
+                                ))}
+                            </pre>
+                        </div>
+                        <p className="gs-instruction-mini">Click the line containing the malicious payload.</p>
+                    </div>
+                );
+            case 'spot_the_difference':
+                return (
+                    <div className="gs-format gs-spot-diff">
+                        <div className="gs-diff-cards">
+                            <div className="gs-diff-card">
+                                <div className="gs-card-header">Target Brand: {currentQ.brandName}</div>
+                                <div className="gs-card-url">URL: {currentQ.urlReal}</div>
+                                <div className="gs-login-form-mock">
+                                    <div className="gs-input-mock">Username</div>
+                                    <div className="gs-input-mock">Password</div>
+                                    <div className="gs-btn-mock">Sign In</div>
+                                </div>
+                            </div>
+                            <div className="gs-diff-card">
+                                <div className="gs-card-header">Target Brand: {currentQ.brandName}</div>
+                                <div className="gs-card-url" style={{ color: '#ffb020' }}>URL: {currentQ.urlFake}</div>
+                                <div className="gs-login-form-mock">
+                                    <div className="gs-input-mock">Username</div>
+                                    <div className="gs-input-mock">Password</div>
+                                    <div className="gs-btn-mock">Sign In</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="gs-mcq-grid" style={{ marginTop: '20px' }}>
+                            {currentQ.options.map((opt, i) => {
+                                const isSelected = selectedOption === opt;
+                                const isWrong = hasAnswered && isSelected && !isCorrectResult;
+                                const isCorrect = hasAnswered && opt === currentQ.correctAnswer;
+                                const statusClass = isCorrect ? 'correct-answer' : (isWrong ? 'wrong-answer' : '');
+                                return (
+                                    <button key={i} className={`gs-mcq-card ${isSelected ? 'selected' : ''} ${statusClass}`} onClick={() => !hasAnswered && setSelectedOption(opt)}>
+                                        <div className="gs-option-letter">{String.fromCharCode(65 + i)}</div>
+                                        <div className="gs-option-text">{opt}</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                );
+            case 'digital_whodunnit':
+                return (
+                    <div className="gs-format gs-whodunnit">
+                        <div className="gs-header-table">
+                            <div className="gs-table-head">
+                                <span>FROM</span>
+                                <span>SPF</span>
+                                <span>DKIM</span>
+                            </div>
+                            {currentQ.emails.map(email => (
+                                <div key={email.id} className={`gs-table-row ${selectedOption === email.from ? 'selected' : ''}`} onClick={() => setSelectedOption(email.from)}>
+                                    <span>{email.from}</span>
+                                    <span style={{ color: email.spf === 'PASS' ? '#00FF9D' : '#ff6b6b' }}>{email.spf}</span>
+                                    <span style={{ color: email.dkim === 'PASS' ? '#00FF9D' : '#ff6b6b' }}>{email.dkim}</span>
+                                </div>
+                            ))}
+                        </div>
+                        <p className="gs-instruction-mini">Select the imposter email based on header evidence.</p>
+                    </div>
+                );
+            case 'escape_rooms':
+                return (
+                    <div className="gs-format gs-escape-room">
+                        <div className="gs-cipher-box">
+                            <div className="gs-cipher-display">{currentQ.cipherText}</div>
+                            <div className="gs-cipher-tip">HINT: CAESAR SHIFT +3 (A→D)</div>
+                        </div>
+                        <div className="gs-terminal-input">
+                            <span className="gs-prompt">{'>'}</span>
+                            <input 
+                                type="text" 
+                                value={chatInput} 
+                                onChange={(e) => setChatInput(e.target.value)} 
+                                placeholder="ENTER DECODED FLAG..."
+                                className="gs-terminal-field"
+                            />
+                        </div>
+                    </div>
+                );
+            case 'branching_narratives':
+            case 'resource_management':
+            case 'the_imposter':
+            case 'cyber_snakes_ladders':
+            case 'phish_a_friend':
+                return (
+                    <div className="gs-format gs-mcq-grid">
+                        {currentQ.scenario && <div className="gs-scenario-text">{currentQ.scenario}</div>}
+                        {currentQ.messages && (
+                            <div className="gs-imposter-chat">
+                                {currentQ.messages.map((msg, i) => (
+                                    <div key={i} className={`gs-chat-bubble ${selectedOption === msg.sender ? 'selected' : ''}`} onClick={() => setSelectedOption(msg.sender)}>
+                                        <strong>{msg.sender}:</strong> {msg.text}
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                        <div className="gs-options-list" style={{ width: '100%' }}>
+                            {(currentQ.options || []).map((opt, i) => (
+                                <button key={i} className={`gs-mcq-card ${selectedOption === opt ? 'selected' : ''}`} onClick={() => setSelectedOption(opt)}>
+                                    {opt}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'capture_the_flag':
+                return (
+                    <div className="gs-format gs-scavenger-hunt">
+                        <div style={{ position: 'relative', width: '100%', height: '300px', background: '#111', border: '1px solid #444', borderRadius: '10px', overflow: 'hidden' }}>
+                            {currentQ.objects.map((obj) => (
+                                <div key={obj.id} 
+                                    className={`gs-hunt-obj ${checkedFlags.includes(obj.id) ? 'highlighted' : ''}`}
+                                    style={{ position: 'absolute', top: obj.top, left: obj.left, padding: '10px', background: checkedFlags.includes(obj.id) ? 'rgba(255,107,107,0.9)' : 'rgba(34,34,34,0.9)', border: '2px dashed', borderColor: checkedFlags.includes(obj.id) ? '#ff6b6b' : '#00FF9D', borderRadius: '8px', cursor: 'pointer', color: '#fff', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
+                                    onClick={() => {
+                                        if (checkedFlags.includes(obj.id)) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
+                                        else setCheckedFlags([...checkedFlags, obj.id]);
+                                    }}>
+                                    <span style={{ fontSize: '1.5rem' }}>{obj.icon}</span> 
+                                    <span style={{ fontWeight: 'bold' }}>{obj.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
             case 'sequence_builder':
                 const handleDragStartSeq = (e, index) => e.dataTransfer.setData('sourceIndex', index);
                 const handleDropSeq = (e, targetIndex) => {
@@ -617,11 +1107,143 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                     </div>
                 );
+            case 'escape_rooms':
+                return (
+                    <div className="gs-format gs-terminal">
+                        <div className="gs-terminal-header" style={{background: '#333', color: '#ccc', padding: '5px 10px', fontSize: '0.8rem', fontFamily: 'monospace', borderRadius: '8px 8px 0 0'}}>root@cyberduo:~#</div>
+                        <div className="gs-terminal-body" style={{background: '#0a0a0a', padding: '15px', color: '#00FF9D', fontFamily: '"Share Tech Mono", monospace', minHeight: '200px', borderRadius: '0 0 8px 8px', border: '1px solid #333'}}>
+                            {currentQ.terminalOutput && currentQ.terminalOutput.map((line, i) => <div key={i} style={{marginBottom: '5px'}}>{line}</div>)}
+                            <div className="gs-terminal-input-row" style={{display: 'flex', gap: '10px', marginTop: '15px'}}>
+                                <span>$&gt;</span>
+                                <input type="text" value={chatInput} onChange={e => setChatInput(e.target.value)} disabled={hasAnswered} style={{background: 'transparent', border: 'none', color: '#fff', flex: 1, fontFamily: 'inherit', outline: 'none', fontSize: '1rem'}} autoFocus={!hasAnswered} />
+                            </div>
+                        </div>
+                    </div>
+                );
+            case 'kc7_log_hunt':
+                return (
+                    <div className="gs-format gs-whodunnit">
+                        <div className="gs-header-table">
+                            <div className="gs-table-head" style={{gridTemplateColumns: '1fr 1.5fr 2fr 1fr'}}>
+                                <span>TIME</span>
+                                <span>IP ADDR</span>
+                                <span>EVENT</span>
+                                <span>STATUS</span>
+                            </div>
+                            {currentQ.logs && currentQ.logs.map(log => (
+                                <div key={log.id} className={`gs-table-row ${selectedOption === log.id ? 'selected' : ''}`} style={{gridTemplateColumns: '1fr 1.5fr 2fr 1fr'}} onClick={() => !hasAnswered && setSelectedOption(log.id)}>
+                                    <span>{log.time}</span>
+                                    <span style={{fontFamily: 'monospace'}}>{log.ip}</span>
+                                    <span>{log.event}</span>
+                                    <span style={{ color: log.status === 'DENIED' ? '#ff6b6b' : '#00FF9D' }}>{log.status}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                );
+            case 'traffic_triage':
+                return (
+                    <div className="gs-format gs-inbox-triage">
+                        {currentQ.files && currentQ.files.map((file, i) => (
+                            <div key={i} className="gs-triage-row">
+                                <div className="gs-triage-info">
+                                    <strong style={{fontFamily: 'monospace', fontSize: '1.2rem'}}>{file.name}</strong>
+                                    <span>{file.desc}</span>
+                                </div>
+                                <div className="gs-triage-actions" style={{display: 'flex', gap: '10px'}}>
+                                    <button className={`gs-btn-keep ${triageAnswers[file.id] === false ? 'selected' : ''}`} onClick={() => !hasAnswered && setTriageAnswers({ ...triageAnswers, [file.id]: false })} style={{padding: '8px 20px', borderRadius: '5px', background: 'transparent', border: '2px solid #00FF9D', color: '#00FF9D', cursor: 'pointer'}}>ALLOW</button>
+                                    <button className={`gs-btn-delete ${triageAnswers[file.id] === true ? 'selected' : ''}`} onClick={() => !hasAnswered && setTriageAnswers({ ...triageAnswers, [file.id]: true })} style={{padding: '8px 20px', borderRadius: '5px', background: 'transparent', border: '2px solid #ff6b6b', color: '#ff6b6b', cursor: 'pointer'}}>BLOCK</button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                );
+            case 'kahoot_trivia':
+                const colors = ['#e21b3c', '#1368ce', '#d89e00', '#26890c'];
+                const shapes = ['▲', '◆', '●', '■'];
+                return (
+                    <div className="gs-format gs-kahoot" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px' }}>
+                        {currentQ.options.map((opt, i) => (
+                            <button key={i} className={`gs-kahoot-btn ${selectedOption === opt ? 'selected' : ''}`} 
+                                style={{
+                                    backgroundColor: selectedOption === opt ? '#fff' : colors[i%4], 
+                                    color: selectedOption === opt ? '#000' : '#fff',
+                                    border: selectedOption === opt ? `4px solid ${colors[i%4]}` : 'none',
+                                    padding: '25px', 
+                                    borderRadius: '8px', 
+                                    fontSize: '1.2rem', 
+                                    fontWeight: 'bold', 
+                                    display: 'flex', 
+                                    alignItems: 'center', 
+                                    gap: '15px', 
+                                    cursor: 'pointer',
+                                    boxShadow: '0 4px 0 rgba(0,0,0,0.2)',
+                                    transform: selectedOption === opt ? 'translateY(2px)' : 'none'
+                                }} 
+                                onClick={() => !hasAnswered && setSelectedOption(opt)}>
+                                <span style={{ fontSize: '2rem' }}>{shapes[i%4]}</span>
+                                <span style={{ textAlign: 'left', lineHeight: '1.3' }}>{opt}</span>
+                            </button>
+                        ))}
+                    </div>
+                );
             default:
-                return <div>Format not supported</div>;
+                // This prevents blank screens if a DB format has no dedicated render case
+                if (currentQ.options && currentQ.options.length > 0) {
+                    return (
+                        <div className="gs-format gs-mcq-grid">
+                            {currentQ.scenario && <div className="gs-scenario-text">{currentQ.scenario}</div>}
+                            {currentQ.options.map((opt, i) => {
+                                const isSelected = selectedOption === opt;
+                                const isWrong = hasAnswered && isSelected && !isCorrectResult;
+                                const isCorrect = hasAnswered && opt === currentQ.correctAnswer;
+                                const statusClass = isCorrect ? 'correct-answer' : (isWrong ? 'wrong-answer' : '');
+                                return (
+                                    <button key={i} className={`gs-mcq-card ${isSelected ? 'selected' : ''} ${statusClass}`} onClick={() => !hasAnswered && setSelectedOption(opt)}>
+                                        <div className="gs-option-letter">{String.fromCharCode(65 + i)}</div>
+                                        <div className="gs-option-text">{opt}</div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    );
+                }
+                return <div className="gs-feedback error" style={{margin:'20px 0'}}>⚠ Question format '{currentQ.format}' is not yet supported in this version.</div>;
+
         }
     };
 
+    const getFormatInfo = (format) => {
+        const mapping = {
+            spot_fake: { icon: '🔍', label: 'Spot The Fake', color: 'phishing' },
+            decision_simulator: { icon: '⚖️', label: 'Decision Simulator', color: 'decision' },
+            scenario_mcq: { icon: '🧠', label: 'Scenario Analysis', color: 'analysis' },
+            drag_flags: { icon: '🚩', label: 'Red Flag Discovery', color: 'investigate' },
+            inbox_triage: { icon: '📥', label: 'Inbox Triage', color: 'sort' },
+            file_triage: { icon: '📁', label: 'File Analysis', color: 'scan' },
+            password_builder: { icon: '🛡️', label: 'Password Builder', color: 'build' },
+            sequence_builder: { icon: '🔢', label: 'Timeline Builder', color: 'build' },
+            case_study: { icon: '🔎', label: 'Case Study Audit', color: 'investigate' },
+            link_inspector: { icon: '🔗', label: 'Link Inspector', color: 'scan' },
+            omni_threat_chains: { icon: '⛓️', label: 'Threat Chain', color: 'phishing' },
+            scavenger_hunt: { icon: '🕵️', label: 'Scavenger Hunt', color: 'scan' },
+            digital_whodunnit: { icon: '🕵️', label: 'Digital Whodunnit', color: 'investigate' },
+            select_all: { icon: '✅', label: 'Select All', color: 'decision' },
+            spot_the_difference: { icon: '👀', label: 'Visual Analysis', color: 'investigate' },
+            quishing_drill: { icon: '📱', label: 'QR Code Analysis', color: 'scan' },
+            the_imposter: { icon: '🎭', label: 'Imposter Detection', color: 'phishing' },
+            branching_narratives: { icon: '🛤️', label: 'Branching Narrative', color: 'decision' },
+            traffic_triage: { icon: '🚦', label: 'Traffic Analysis', color: 'sort' },
+            adaptive_inbox: { icon: '📨', label: 'Live Inbox Sim', color: 'sort' },
+            file_inspector: { icon: '📄', label: 'Malware Inspector', color: 'scan' },
+            escape_rooms: { icon: '💻', label: 'Terminal Escape', color: 'investigate' },
+            kc7_log_hunt: { icon: '📊', label: 'Log Hunting', color: 'scan' },
+            kahoot_trivia: { icon: '🎮', label: 'Cyber Trivia', color: 'analysis' }
+        };
+        return mapping[format] || { icon: '💻', label: 'Cyber Challenge', color: 'analysis' };
+    };
+
+    const formatInfo = currentQ ? getFormatInfo(currentQ.format) : null;
     const isAlreadyCompleted = currentIndex <= highestCompletedIndex && !hasAnswered;
 
     return (
@@ -636,12 +1258,29 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     </div>
                 </div>
                 <div className="gs-stats" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
-                    <div className="gs-timer-badge" style={{ color: timeLeft <= 10 ? '#ff6b6b' : '#00FF9D' }}>⏱ {timeLeft}s</div>
+                    <div className="gs-timer-badge" style={{ 
+                        color: isPaused ? '#888' : (timeLeft <= 10 ? '#ff6b6b' : '#00FF9D'),
+                        border: isPaused ? '1px solid #444' : '1px solid currentColor'
+                    }}>
+                        {isPaused ? "⏸ PAUSED" : `⏱ ${timeLeft}s`}
+                    </div>
                     <span className="gs-xp-badge">⚡ {xp} XP</span>
                 </div>
             </div>
 
             <div className="gs-question-card">
+                {currentQ.concept && (
+                    <div className="gs-concept-tag">🎯 {currentQ.concept}</div>
+                )}
+                
+                {formatInfo && (
+                    <div className={`gs-format-banner gs-banner--${currentQ.level_name === 'hard' ? 'hard-elite' : (currentQ.game_key === 'scams' ? 'scam' : formatInfo.color)}`}>
+                        <div className="gs-banner-icon">{currentQ.level_name === 'hard' ? '⚜️' : (currentQ.game_key === 'scams' ? '🕵️' : formatInfo.icon)}</div>
+                        <div className="gs-banner-label">{currentQ.level_name === 'hard' ? 'Elite Mission' : (currentQ.game_key === 'scams' ? 'Scam Spotter' : formatInfo.label)}</div>
+                        <div className="gs-banner-tag">{currentQ.level_name.toUpperCase()}</div>
+                    </div>
+                )}
+                
                 <h2 className="gs-question-text">{currentQ.questionText}</h2>
                 <div className={`gs-format-container ${hasAnswered ? 'answered' : ''}`}>
                     {renderQuestionFormat()}
@@ -664,7 +1303,84 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                     ) : (
                         <>
                             {(!isCorrectResult || isAlreadyCompleted) && (
-                                <button className="gs-btn-reveal-answer" onClick={() => showModal('Correct Answer', currentQ.reveal || currentQ.explain)}>👁️ SHOW ANSWER</button>
+                                <button className="gs-btn-reveal-answer"
+                                    onClick={() => {
+                                        let solutionDisplay;
+                                        if (currentQ.format === 'sequence_builder') {
+                                            const ordered = [...(currentQ.steps || [])].sort((a, b) => a.correctOrder - b.correctOrder);
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#00FF9D', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '14px', borderBottom: '1px solid rgba(0,255,157,0.3)', paddingBottom: '10px' }}>CORRECT ORDER:</div>
+                                                    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '14px' }}>
+                                                        {ordered.map((step, idx) => (
+                                                            <div key={step.id} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px', background: 'rgba(0,255,157,0.08)', border: '1px solid rgba(0,255,157,0.25)', borderRadius: '8px' }}>
+                                                                <span style={{ background: '#00FF9D', color: '#000', borderRadius: '50%', width: '24px', height: '24px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '0.85rem', flexShrink: 0 }}>{idx + 1}</span>
+                                                                <span>{step.text}</span>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    <div style={{ lineHeight: '1.6', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else if (currentQ.format === 'click_flags') {
+                                            const correctItems = currentQ.emailParts?.filter(p => currentQ.correctFlags?.includes(p.id)).map(p => p.text) || [];
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#00FF9D', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(0,255,157,0.3)', paddingBottom: '10px' }}>RED FLAGS TO FIND:</div>
+                                                    {correctItems.map((item, i) => (<div key={i} style={{ padding: '8px 12px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.4)', borderRadius: '6px', marginBottom: '8px' }}>🚩 {item}</div>))}
+                                                    <div style={{ lineHeight: '1.6', marginTop: '12px', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else if (currentQ.format === 'scavenger_hunt' || currentQ.format === 'capture_the_flag') {
+                                            const correctItems = currentQ.objects?.filter(o => o.isRedFlag || o.isFlag).map(o => o.label) || [];
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#00FF9D', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(0,255,157,0.3)', paddingBottom: '10px' }}>ITEMS TO FLAG:</div>
+                                                    {correctItems.map((item, i) => (<div key={i} style={{ padding: '8px 12px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.4)', borderRadius: '6px', marginBottom: '8px' }}>🚩 {item}</div>))}
+                                                    <div style={{ lineHeight: '1.6', marginTop: '12px', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else if (currentQ.format === 'traffic_triage' || currentQ.format === 'file_triage') {
+                                            const badFiles = currentQ.files?.filter(f => f.isMalware) || [];
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#ff6b6b', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,107,107,0.3)', paddingBottom: '10px' }}>MALICIOUS FILES TO BLOCK:</div>
+                                                    {badFiles.map((f, i) => (<div key={i} style={{ padding: '10px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.4)', borderRadius: '8px', marginBottom: '8px', fontFamily: 'monospace' }}>⛔ {f.name}</div>))}
+                                                    <div style={{ lineHeight: '1.6', marginTop: '15px', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else if (currentQ.format === 'inbox_triage') {
+                                            const badEmails = currentQ.emails?.filter(e => e.isPhish) || [];
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#ff6b6b', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,107,107,0.3)', paddingBottom: '10px' }}>PHISHING EMAILS TO BLOCK:</div>
+                                                    {badEmails.map((e, i) => (<div key={i} style={{ padding: '10px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.4)', borderRadius: '8px', marginBottom: '8px' }}>🎣 {e.subject} (from {e.sender})</div>))}
+                                                    <div style={{ lineHeight: '1.6', marginTop: '15px', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else if (currentQ.format === 'kc7_log_hunt') {
+                                            const badLogs = currentQ.logs?.filter(l => l.status === 'MALICIOUS' || l.status === 'ATTACK') || [];
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#ff6b6b', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '12px', borderBottom: '1px solid rgba(255,107,107,0.3)', paddingBottom: '10px' }}>INDICATORS OF COMPROMISE (IOC):</div>
+                                                    {badLogs.map((l, i) => (<div key={i} style={{ padding: '10px', background: 'rgba(255,107,107,0.1)', border: '1px solid rgba(255,107,107,0.4)', borderRadius: '8px', marginBottom: '8px', fontFamily: 'monospace' }}>⚠️ [{l.time}] {l.ip} - {l.event}</div>))}
+                                                    <div style={{ lineHeight: '1.6', marginTop: '15px', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        } else {
+                                            const answer = currentQ.correctAnswer || currentQ.correctFlags?.join(', ') || currentQ.correctCode || 'Check mission logs for details.';
+                                            solutionDisplay = (
+                                                <>
+                                                    <div style={{ color: '#00FF9D', fontSize: '1.1rem', fontWeight: 'bold', marginBottom: '14px', borderBottom: '1px solid rgba(0,255,157,0.3)', paddingBottom: '10px' }}>CORE SOLUTION:</div>
+                                                    <div style={{ padding: '15px', background: 'rgba(0,255,157,0.08)', border: '1px solid rgba(0,255,157,0.3)', borderRadius: '8px', marginBottom: '15px', fontSize: '1.2rem', color: '#00FF9D' }}>{answer}</div>
+                                                    <div style={{ lineHeight: '1.6', color: 'rgba(255,255,255,0.8)' }}>{currentQ.reveal || currentQ.explain}</div>
+                                                </>
+                                            );
+                                        }
+                                        showModal('Security Intel', solutionDisplay);
+                                    }}>
+                                    {'\uD83D\uDC41\uFE0F'} SHOW SOLUTION
+                                </button>
                             )}
                             <button className="gs-btn-next" onClick={handleNextQuestion}>NEXT ➔</button>
                         </>
@@ -681,46 +1397,47 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             {/* ✅ AI CHAT WINDOW */}
             {chatOpen && (
                 <div className="gs-modal-overlay" onClick={() => setChatOpen(false)}>
-                    <div className="gs-modal-content" style={{ width: '400px', maxHeight: '500px', display: 'flex', flexDirection: 'column' }} onClick={e => e.stopPropagation()}>
-                        <h3>🤖 AI Agent Chat</h3>
-                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '10px', maxHeight: '300px', padding: '10px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px' }}>
+                    <div className="gs-modal-content" style={{ width: '600px', maxHeight: '80vh', height: '600px', display: 'flex', flexDirection: 'column', padding: '30px' }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ fontSize: '1.8rem', marginBottom: '20px' }}>🤖 AI Agent Chat</h3>
+                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', padding: '15px', background: 'rgba(0,0,0,0.3)', borderRadius: '8px' }}>
                             {chatMessages.length === 0 && (
-                                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '13px' }}>Ask me anything about this question!</p>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '1.1rem' }}>Ask me anything about this question!</p>
                             )}
                             {chatMessages.map((msg, i) => (
                                 <div key={i} style={{ marginBottom: '10px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                                     <span style={{
                                         background: msg.role === 'user' ? '#00FF9D' : '#1a1a2e',
                                         color: msg.role === 'user' ? '#000' : '#fff',
-                                        padding: '8px 12px',
+                                        padding: '12px 18px',
                                         borderRadius: '12px',
                                         display: 'inline-block',
-                                        maxWidth: '80%',
-                                        fontSize: '13px'
+                                        maxWidth: '85%',
+                                        fontSize: '1.1rem',
+                                        lineHeight: '1.5'
                                     }}>{msg.text}</span>
                                 </div>
                             ))}
                             {chatLoading && (
-                                <div style={{ textAlign: 'left' }}>
-                                    <span style={{ color: '#00FF9D', fontSize: '13px' }}>AI is thinking... ⏳</span>
+                                <div style={{ textAlign: 'left', marginTop: '10px' }}>
+                                    <span style={{ color: '#00FF9D', fontSize: '1.1rem' }}>AI is thinking... ⏳</span>
                                 </div>
                             )}
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <input
                                 type="text"
                                 value={chatInput}
                                 onChange={e => setChatInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleChatSend()}
                                 placeholder="Ask a question..."
-                                style={{ flex: 1, padding: '8px', borderRadius: '6px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '13px' }}
+                                style={{ flex: 1, padding: '15px', borderRadius: '8px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '1.1rem' }}
                             />
                             <button onClick={handleChatSend} disabled={chatLoading}
-                                style={{ padding: '8px 16px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '6px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                                style={{ padding: '0 30px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '8px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
                                 SEND
                             </button>
                         </div>
-                        <button onClick={() => setChatOpen(false)} style={{ marginTop: '10px' }}>CLOSE</button>
+                        <button onClick={() => setChatOpen(false)} style={{ marginTop: '20px', padding: '15px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', cursor: 'pointer', transition: '0.3s', fontSize: '1.1rem' }}>CLOSE</button>
                     </div>
                 </div>
             )}
@@ -729,7 +1446,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                 <div className="gs-modal-overlay" onClick={() => setModal({ ...modal, show: false })}>
                     <div className="gs-modal-content" onClick={e => e.stopPropagation()}>
                         <h3>{modal.title}</h3>
-                        <p>{modal.content}</p>
+                        <div style={{ lineHeight: '1.7', fontSize: '1.05rem' }}>{modal.content}</div>
                         <button onClick={() => setModal({ ...modal, show: false })}>CLOSE</button>
                     </div>
                 </div>

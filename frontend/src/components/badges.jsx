@@ -58,7 +58,12 @@ const Badges = () => {
                                 <p className="badge-back-desc">{badge.description}</p>
                                 <div className="badge-condition">
                                     <span className="badge-condition-label">REQ:</span>
-                                    <span className="badge-condition-text">{badge.conditionType.replace(/([A-Z])/g, ' $1').toUpperCase()} {badge.conditionValue}</span>
+                                    <span className="badge-condition-text">
+                                        {badge.conditionType.replace(/([A-Z])/g, ' $1').toUpperCase()}{' '}
+                                        {typeof badge.conditionValue === 'object' 
+                                            ? JSON.stringify(badge.conditionValue).replace(/["{}]/g, '').replace(/:/g, ': ').toUpperCase()
+                                            : String(badge.conditionValue).toUpperCase()}
+                                    </span>
                                 </div>
                             </div>
                         </div>

@@ -22,7 +22,7 @@ const DailyGoal = () => {
 
     // Ensure we have a clean number for the progress
     const currentProgress = Number(stats.progress) || 0;
-    const percentage = Math.round((currentProgress / 1) * 100);
+    const percentage = Math.round((currentProgress / 10) * 100);
 
     return (
         <div className="dg-page-container">
@@ -55,7 +55,7 @@ const DailyGoal = () => {
                             </svg>
                             <div className="dg-gauge-info">
                                 <div className="dg-gauge-top-val">{currentProgress}</div>
-                                <div className="dg-gauge-bot-val">OF 1 LEVEL</div>
+                                <div className="dg-gauge-bot-val">{currentProgress >= 10 ? "GOAL REACHED!" : "OF 10 QUESTIONS"}</div>
                             </div>
                         </div>
                     </div>
@@ -63,8 +63,8 @@ const DailyGoal = () => {
                     {/* Right Section: Objective Intel */}
                     <div className="dg-intel-section">
                         <div className="dg-intel-card">
-                            <h3 className="dg-progress-desc">
-                                Goal Status: {currentProgress} / 1 module completed
+                            <h3 className="dg-progress-desc" style={{ color: currentProgress >= 10 ? '#00FF9D' : '#fff' }}>
+                                Goal Status: {currentProgress >= 10 ? "Mission Objective Accomplished!" : `${currentProgress} / 10 questions completed`}
                             </h3>
                             
                             <div className="dg-reward-glow-panel">

@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/CyberAlert.css';
-import alertsData from '../data/CyberAlert.json';
+import localAlertsData from '../data/CyberAlert.json';
 
 export default function CyberAlert({ compact = false }) {
     const [chatOpen, setChatOpen] = useState(false);
@@ -8,7 +8,112 @@ export default function CyberAlert({ compact = false }) {
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
 
-    const GEMINI_API_KEY = "AIzaSyCOJEQ-od9iGT7CoAFP8OghRhkxd4nVoCk";
+    const [alertsData, setAlertsData] = useState(localAlertsData); // ✅ Local-First Initialization
+
+    const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
+
+    // ... inside component:
+    useEffect(() => {
+        // Use newsdata.io API or fallback to our local data if the key is broken
+        const API_BASE_URL = "http://localhost:5000";
+        const fetchUrl = `${API_BASE_URL}/user/alerts/news`;
+
+        if (!fetchUrl) {
+            setAlertsData(localAlertsData);
+            return;
+        }
+
+        fetch(fetchUrl)
+            .then(res => res.json())
+            .then(data => {
+                // Handle the backend relay response which now matches NewsData structure
+                if (!data || data.status === 'error' || !data.results) {
+                    console.error("News Relay Error or No Results:", data?.results?.message || "Check Backend Logs");
+                    // Keep existing localAlertsData initialization
+                    return;
+                }
+
+                // STRICT Client-Side filtering to drop irrelevant news (e.g. general arrests, politics)
+                const validKeywords = ['cyber', 'hacker', 'phishing', 'malware', 'scam', 'fraud', 'breach', 'ransomware', 'digital arrest', 'otp', 'online', 'deepfake'];
+                const filteredResults = data.results.filter(article => {
+                    const text = ((article.title || "") + " " + (article.description || "")).toLowerCase();
+                    return validKeywords.some(kw => text.includes(kw));
+                });
+
+                const formatted = filteredResults.slice(0, 8).map((article, index) => {
+                    const text = ((article.title || "") + " " + (article.description || "")).toLowerCase();
+                    
+                    let score = 4 + Math.floor(Math.random() * 2); // base 4-5
+                    let domains = [];
+                    let riskFactors = [];
+
+                    if (text.includes("phishing") || text.includes("link") || text.includes("spoof") || text.includes("fake website") || text.includes("impersonat")) {
+                        score += 3;
+                        domains.push({ name: "Phishing Frenzy", percent: 80 + Math.floor(Math.random() * 15) });
+                        riskFactors.push({ factor: "Deceptive Links/Messages", points: "+3 Risk" });
+                    }
+                    if (text.includes("malware") || text.includes("virus") || text.includes("ransomware") || text.includes("trojan") || text.includes("spyware")) {
+                        score += 4;
+                        domains.push({ name: "Malware Mayhem", percent: 75 + Math.floor(Math.random() * 20) });
+                        riskFactors.push({ factor: "Malicious Software", points: "+4 Risk" });
+                    }
+                    if (text.includes("password") || text.includes("breach") || text.includes("leak") || text.includes("hack") || text.includes("data loss")) {
+                        score += 3;
+                        domains.push({ name: "Password Protector", percent: 70 + Math.floor(Math.random() * 20) });
+                        riskFactors.push({ factor: "Data/Credential Compromise", points: "+3 Risk" });
+                    }
+                    if (text.includes("scam") || text.includes("fraud") || text.includes("financial") || text.includes("steal") || text.includes("cyber cell")) {
+                        score += 2;
+                        domains.push({ name: "Scam Spotter", percent: 85 + Math.floor(Math.random() * 10) });
+                        riskFactors.push({ factor: "Cyber Identity/Financial Fraud", points: "+2 Risk" });
+                    }
+
+                    if (domains.length === 0) {
+                        domains.push({ name: "Firewall Defender", percent: 60 + Math.floor(Math.random() * 20) });
+                        riskFactors.push({ factor: "General Cyber Threat", points: "+1 Risk" });
+                    }
+
+                    score = Math.min(10, score);
+                    let riskLevel = "medium";
+                    if (score >= 8) riskLevel = "high";
+                    else if (score >= 5) riskLevel = "medium";
+                    else riskLevel = "low";
+
+                    // Smart Date Logic for Tactical Feel
+                    const rawDate = article.pubDate?.split(" ")[0] || new Date().toISOString().split("T")[0];
+                    const todayStr = new Date().toISOString().split("T")[0];
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayStr = yesterday.toISOString().split("T")[0];
+
+                    let displayDate = rawDate;
+                    if (rawDate === todayStr) displayDate = "TODAY";
+                    else if (rawDate === yesterdayStr) displayDate = "YESTERDAY";
+
+                    return {
+                        id: index,
+                        date: displayDate,
+                        rawDate: rawDate,
+                        headline: article.title,
+                        description: article.description || "Click the article link for more information about this cyber alert.",
+                        riskLevel: riskLevel,
+                        riskMeter: score,
+                        riskFactors: riskFactors,
+                        domains: domains
+                    };
+                });
+                // If it returned empty array, use local
+                if (formatted.length === 0) {
+                    setAlertsData(localAlertsData);
+                } else {
+                    setAlertsData(formatted);
+                }
+            })
+            .catch(err => {
+                console.log("Fetch failed, using local data", err);
+                setAlertsData(localAlertsData);
+            });
+    }, []);
 
     const handleAskAIClick = () => {
         setChatOpen(true);
@@ -97,7 +202,7 @@ export default function CyberAlert({ compact = false }) {
     };
 
     if (compact) {
-        const latest = alertsData[0]; // Assume first is most recent
+        const latest = alertsData[0];
         if (!latest) return null;
         return (
             <div className="ca-card compact">
@@ -125,7 +230,6 @@ export default function CyberAlert({ compact = false }) {
             <div className="ca-list-wrapper">
                 {alertsData.map((alert, index) => (
                     <div className="ca-card" key={alert.id || index}>
-
                         <div className="ca-card-header">
                             <span className="ca-date">{alert.date}</span>
                             <div className={`ca-risk-label ${getRiskColorClass(alert.riskLevel)}`}>
@@ -148,34 +252,33 @@ export default function CyberAlert({ compact = false }) {
                                     {renderFancyMeter(alert.riskMeter, alert.riskLevel)}
                                 </div>
                             </div>
+                        {alert.riskFactors && alert.riskFactors.length > 0 && (
+                            <div className="ca-factors">
+                                <span className="ca-factors-title">Risk Factors:</span>
+                                <ul className="ca-factors-list">
+                                    {alert.riskFactors.map((rf, idx) => (
+                                        <li key={idx}>
+                                            <span className="ca-factor-text">{rf.factor}</span>
+                                            <span className="ca-factor-points">{rf.points}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        )}
 
-                            {alert.riskFactors && alert.riskFactors.length > 0 && (
-                                <div className="ca-factors">
-                                    <span className="ca-factors-title">Risk Factors:</span>
-                                    <ul className="ca-factors-list">
-                                        {alert.riskFactors.map((rf, idx) => (
-                                            <li key={idx}>
-                                                <span className="ca-factor-text">{rf.factor}</span>
-                                                <span className="ca-factor-points">{rf.points}</span>
-                                            </li>
-                                        ))}
-                                    </ul>
+                        {alert.domains && alert.domains.length > 0 && (
+                            <div className="ca-domains-section">
+                                <span className="ca-factors-title">Game Domains Involved:</span>
+                                <div className="ca-domains-row">
+                                    {alert.domains.map(d => renderDomainCircle(d.name, d.percent))}
                                 </div>
-                            )}
-
-                            {alert.domains && alert.domains.length > 0 && (
-                                <div className="ca-domains-section">
-                                    <span className="ca-factors-title">Game Domains Involved:</span>
-                                    <div className="ca-domains-row">
-                                        {alert.domains.map(d => renderDomainCircle(d.name, d.percent))}
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
+                            </div>
+                        )}
                     </div>
-                ))}
+                </div>
+            ))}
             </div>
+
             <button className="ca-floating-ai-btn" onClick={() => handleAskAIClick('General')}>
                 <div className="ca-ai-icon">💬</div>
                 <span>Ask AI Assistant</span>
@@ -184,47 +287,48 @@ export default function CyberAlert({ compact = false }) {
 
             {chatOpen && (
                 <div className="gs-modal-overlay" onClick={() => setChatOpen(false)} style={{ position: 'fixed', top: 0, left: 0, width: '100%', height: '100%', background: 'rgba(0,0,0,0.8)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 9999 }}>
-                    <div className="gs-modal-content" style={{ width: '400px', maxHeight: '500px', display: 'flex', flexDirection: 'column', background: '#0a0a1a', padding: '20px', borderRadius: '15px', border: '1px solid #00FF9D' }} onClick={e => e.stopPropagation()}>
-                        <h3 style={{ color: '#00FF9D', margin: '0 0 15px 0', fontSize: '1.2rem', textAlign: 'center' }}>🤖 CyberSec AI Assistant</h3>
-                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', minHeight: '250px', maxHeight: '300px', padding: '10px', background: 'rgba(0,0,0,0.5)', borderRadius: '8px' }}>
+                    <div className="gs-modal-content" style={{ width: '600px', maxHeight: '80vh', height: '600px', display: 'flex', flexDirection: 'column', background: '#0a0a1a', padding: '30px', borderRadius: '15px', border: '1px solid #00FF9D' }} onClick={e => e.stopPropagation()}>
+                        <h3 style={{ color: '#00FF9D', margin: '0 0 20px 0', fontSize: '1.8rem', textAlign: 'center' }}>🤖 CyberSec AI Assistant</h3>
+                        <div style={{ flex: 1, overflowY: 'auto', marginBottom: '15px', padding: '15px', background: 'rgba(0,0,0,0.5)', borderRadius: '8px' }}>
                             {chatMessages.length === 0 && (
-                                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '13px', marginTop: '20px' }}>Ask me anything about cybersecurity, threats, or the latest alerts!</p>
+                                <p style={{ color: 'rgba(255,255,255,0.5)', textAlign: 'center', fontSize: '1.1rem', marginTop: '20px' }}>Ask me anything about cybersecurity, threats, or the latest alerts!</p>
                             )}
                             {chatMessages.map((msg, i) => (
                                 <div key={i} style={{ marginBottom: '10px', textAlign: msg.role === 'user' ? 'right' : 'left' }}>
                                     <span style={{
                                         background: msg.role === 'user' ? '#00FF9D' : '#1a1a2e',
                                         color: msg.role === 'user' ? '#000' : '#fff',
-                                        padding: '10px 14px',
+                                        padding: '12px 18px',
                                         borderRadius: '12px',
                                         display: 'inline-block',
                                         maxWidth: '85%',
-                                        fontSize: '13px',
+                                        fontSize: '1.1rem',
+                                        lineHeight: '1.5',
                                         border: msg.role === 'ai' ? '1px solid rgba(0, 255, 157, 0.2)' : 'none'
                                     }}>{msg.text}</span>
                                 </div>
                             ))}
                             {chatLoading && (
-                                <div style={{ textAlign: 'left' }}>
-                                    <span style={{ color: '#00FF9D', fontSize: '13px' }}>AI is analyzing threat data... ⏳</span>
+                                <div style={{ textAlign: 'left', marginTop: '10px' }}>
+                                    <span style={{ color: '#00FF9D', fontSize: '1.1rem' }}>AI is analyzing threat data... ⏳</span>
                                 </div>
                             )}
                         </div>
-                        <div style={{ display: 'flex', gap: '8px' }}>
+                        <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
                             <input
                                 type="text"
                                 value={chatInput}
                                 onChange={e => setChatInput(e.target.value)}
                                 onKeyDown={e => e.key === 'Enter' && handleChatSend()}
                                 placeholder="Ask about phishing, malware..."
-                                style={{ flex: 1, padding: '10px', borderRadius: '8px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '13px' }}
+                                style={{ flex: 1, padding: '15px', borderRadius: '8px', border: '1px solid #00FF9D', background: '#0a0a1a', color: '#fff', fontSize: '1.1rem' }}
                             />
                             <button onClick={handleChatSend} disabled={chatLoading}
-                                style={{ padding: '10px 20px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '8px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold' }}>
+                                style={{ padding: '0 30px', background: chatLoading ? '#555' : '#00FF9D', color: '#000', border: 'none', borderRadius: '8px', cursor: chatLoading ? 'not-allowed' : 'pointer', fontWeight: 'bold', fontSize: '1.2rem' }}>
                                 SEND
                             </button>
                         </div>
-                        <button onClick={() => setChatOpen(false)} style={{ marginTop: '15px', padding: '10px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', cursor: 'pointer', transition: '0.3s' }}>CLOSE</button>
+                        <button onClick={() => setChatOpen(false)} style={{ marginTop: '20px', padding: '15px', background: 'transparent', color: '#fff', border: '1px solid rgba(255,255,255,0.3)', borderRadius: '8px', cursor: 'pointer', transition: '0.3s', fontSize: '1.1rem' }}>CLOSE</button>
                     </div>
                 </div>
             )}

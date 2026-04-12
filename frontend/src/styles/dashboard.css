@@ -452,6 +452,16 @@
     box-shadow: 0 0 6px #00FF9D;
 }
 
+/* Locked nav item (e.g. certificate before mastery) */
+.db-nav-item--locked {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.db-nav-item--locked:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
 /* Sidebar Widgets Panel (when expanded) */
 .db-sidebar-widgets-panel {
     padding: 20px 15px;
@@ -577,86 +587,83 @@
     line-height: 1.6;
 }
 
-/* ---------- Responsive ---------- */
+/* ---------- Mastery Banner ---------- */
+.db-mastery-banner {
+    background: linear-gradient(90deg, rgba(0, 255, 157, 0.1) 0%, rgba(0, 255, 157, 0.02) 100%);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin-bottom: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    animation: bannerPulse 3s infinite ease-in-out;
+    box-shadow: 0 0 30px rgba(0, 255, 157, 0.05);
+}
+
+@keyframes bannerPulse {
+    0%, 100% { border-color: rgba(0, 255, 157, 0.3); box-shadow: 0 0 30px rgba(0, 255, 157, 0.05); }
+    50% { border-color: rgba(0, 255, 157, 0.6); box-shadow: 0 0 40px rgba(0, 255, 157, 0.15); }
+}
+
+.db-mb-content {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.db-mb-icon {
+    font-size: 32px;
+    filter: drop-shadow(0 0 10px #00FF9D);
+}
+
+.db-mb-text {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.db-mb-text strong {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    color: #00FF9D;
+    letter-spacing: 2px;
+}
+
+.db-mb-text span {
+    font-size: 13px;
+    color: rgba(224, 224, 224, 0.7);
+}
+
+.db-mb-btn {
+    background: #00FF9D;
+    color: #000;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.db-mb-btn:hover {
+    background: #fff;
+    box-shadow: 0 0 20px #fff;
+    transform: scale(1.05);
+}
+
 @media (max-width: 640px) {
-    .db-sidebar {
-        position: fixed;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        top: auto;
-        width: 100% !important;
-        height: 60px;
-        flex-direction: row;
-        border-right: none;
-        border-top: 1px solid rgba(0, 255, 157, 0.1);
-        z-index: 50;
-    }
-
-    .db-sidebar-toggle {
-        display: none;
-    }
-
-    .db-sidebar-nav {
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        overflow-y: hidden;
-        padding: 0;
-        width: 100%;
-    }
-
-    .db-nav-item {
+    .db-mastery-banner {
         flex-direction: column;
-        height: 60px;
-        min-width: 60px;
-        padding: 0;
-        border-left: none;
-        border-top: 3px solid transparent;
-        justify-content: center;
-        gap: 2px;
+        text-align: center;
+        gap: 16px;
     }
-
-    .db-nav-item.active {
-        border-left-color: transparent;
-        border-top-color: #00FF9D;
-    }
-
-    .db-nav-icon {
-        width: 100%;
-        height: auto;
-        font-size: 22px;
-    }
-
-    .db-nav-label {
-        opacity: 1;
-        font-size: 8px;
-        letter-spacing: 0;
-        color: rgba(224, 224, 224, 0.45);
-    }
-
-    .db-nav-item.active .db-nav-label {
-        color: #00FF9D;
-    }
-
-    .db-nav-item.active .db-nav-icon::after {
-        display: none;
-    }
-
-    .db-body {
+    .db-mb-content {
         flex-direction: column;
-    }
-
-    .db-main {
-        padding: 20px 16px 80px;
-    }
-
-    .db-welcome-heading {
-        font-size: 20px;
-    }
-
-    .db-stats-row {
-        grid-template-columns: repeat(2, 1fr);
     }
 }
 
@@ -903,5 +910,135 @@
     background: #00FF9D;
     color: #0A0F1F;
     box-shadow: 0 0 25px rgba(0, 255, 157, 0.5);
+}
+
+/* ============================================
+   CERTIFICATE CARD — Home Page
+   ============================================ */
+.db-cert-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px 28px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: rgba(255, 255, 255, 0.02);
+    margin-top: 28px;
+    transition: all 0.4s ease;
+    flex-wrap: wrap;
+}
+
+/* Locked state */
+.db-cert-card--locked {
+    opacity: 0.6;
+    border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Active / Earned state */
+.db-cert-card--active {
+    opacity: 1;
+    background: linear-gradient(135deg, rgba(251, 191, 36, 0.08), rgba(0, 255, 157, 0.04));
+    border-color: rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 30px rgba(251, 191, 36, 0.08);
+    animation: certCardPulse 2.5s infinite ease-in-out;
+}
+
+@keyframes certCardPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(251, 191, 36, 0.06); border-color: rgba(251, 191, 36, 0.4); }
+    50% { box-shadow: 0 0 40px rgba(251, 191, 36, 0.18); border-color: rgba(251, 191, 36, 0.7); }
+}
+
+.db-cert-card-left {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    flex: 1;
+    min-width: 0;
+}
+
+.db-cert-card-icon {
+    font-size: 2.5rem;
+    flex-shrink: 0;
+    filter: drop-shadow(0 0 8px rgba(251, 191, 36, 0.4));
+}
+
+.db-cert-card--locked .db-cert-card-icon {
+    filter: grayscale(1) opacity(0.5);
+}
+
+.db-cert-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+}
+
+.db-cert-card-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    color: #fbbf24;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.db-cert-card--locked .db-cert-card-title {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+.db-cert-card-sub {
+    font-size: 0.82rem;
+    color: rgba(255, 255, 255, 0.5);
+    line-height: 1.4;
+}
+
+.db-cert-progress-bar {
+    height: 4px;
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 2px;
+    margin-top: 6px;
+    overflow: hidden;
+    max-width: 280px;
+}
+
+.db-cert-progress-fill {
+    height: 100%;
+    background: #00FF9D;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+    box-shadow: 0 0 8px rgba(0, 255, 157, 0.5);
+}
+
+/* The main CTA button */
+.db-cert-obtain-btn {
+    flex-shrink: 0;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    background: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.db-cert-obtain-btn:disabled {
+    cursor: not-allowed;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: transparent;
+    color: rgba(255, 255, 255, 0.25);
+}
+
+.db-cert-obtain-btn:not(:disabled):hover {
+    background: #fbbf24;
+    color: #000;
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.4);
+    transform: translateY(-2px);
 }
 

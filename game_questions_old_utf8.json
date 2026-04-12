@@ -1,0 +1,779 @@
+{
+  "phishing": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "click_flags",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "There are 3 indicators of phishing in this email. Click them to highlight them red.",
+        "emailParts": [
+          {
+            "id": "sender",
+            "text": "From: Zomato Support <zomat0-refunds@gmail.com>",
+            "isFlag": true
+          },
+          {
+            "id": "subject",
+            "text": "Subject: URGENT: Your Order #4920 Was Cancelled - Claim Refund",
+            "isFlag": true
+          },
+          {
+            "id": "greeting",
+            "text": "Dear Valued Foodie,",
+            "isFlag": true
+          },
+          {
+            "id": "body",
+            "text": "We noticed an issue with your recent payment. Please click the secure link to process your refund immediately.",
+            "isFlag": false
+          },
+          {
+            "id": "signoff",
+            "text": "Stay Hungry,\nZomato Care Team",
+            "isFlag": false
+          }
+        ],
+        "concept": "The \"Red Flag\" Highlighter (Visual & Tactile)",
+        "hint": "Check the sender's domain, the extreme tone of the subject, and the impersonal greeting.",
+        "explain": "Expert analysts scan for basic errors first. A company like Zomato won't use @gmail.com for official emails, and notice the '0' in 'zomat0'. Subjects won't use extreme urgency to panic you into claiming a refund. Legitimate corporate emails use your real name.",
+        "reveal": "The 3 flags are:\n1. The Sender address using a misspelled 'zomat0' and generic '@gmail.com'.\n2. The overly dramatic Subject line screaming 'URGENT' regarding a refund.\n3. The generic Greeting 'Dear Valued Foodie' instead of your real name."
+      },
+      {
+        "id": 2,
+        "format": "inbox_triage",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "You have 45 seconds to sort your morning inbox. Mark each as Keep (Safe) or Delete (Phish).",
+        "emails": [
+          {
+            "id": "e1",
+            "subject": "Meeting: Q3 Planning",
+            "sender": "calendar-invite@google.com",
+            "isPhish": false
+          },
+          {
+            "id": "e2",
+            "subject": "Account Suspended: Verify Now",
+            "sender": "security@paypa1-update.com",
+            "isPhish": true
+          },
+          {
+            "id": "e3",
+            "subject": "Your meeting recording is available",
+            "sender": "no-reply@zoom.us",
+            "isPhish": false
+          },
+          {
+            "id": "e4",
+            "subject": "Payment Failed: Update Card",
+            "sender": "support@netfiix-billing.net",
+            "isPhish": true
+          }
+        ],
+        "concept": "Inbox Triage (Speed & Sorting)",
+        "hint": "Look closely at the spelling of the sender domains. 'paypal' vs 'paypa1' and 'netflix' vs 'netfiix'.",
+        "explain": "Scammers buy domains that look almost identical to real popular services (like spelling PayPal with a '1' or Netflix with two 'i's). They rely on you reading quickly and panicking.",
+        "reveal": "Email 2 is Phishing (notice the '1' in paypa1). Email 4 is Phishing (notice the double 'i' in netfiix). Emails 1 and 3 are Safe, using exact official domains (google.com and zoom.us)."
+      },
+      {
+        "id": 3,
+        "format": "link_inspector",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Hover your mouse over the button below. Is this link safe?",
+        "displayedLink": "RESET PASSWORD",
+        "actualDestination": "http://www.micros0ft-security-update.com",
+        "options": [
+          "Safe",
+          "Phishing"
+        ],
+        "correctAnswer": "Phishing",
+        "concept": "The Hover Detective (Hidden Information)",
+        "hint": "Look very closely at the spelling of 'Microsoft' in the hidden URL tooltip.",
+        "explain": "Teaching the #1 rule of phishing: Check the link before you click. Scammers hide malicious domains behind legitimate-looking buttons, using sneaky typos to trick your eyes.",
+        "reveal": "This is Phishing. Notice the '0' instead of an 'o' in 'micros0ft-security-update.com'."
+      },
+      {
+        "id": 4,
+        "format": "build_phish",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Build an email that will trick the Finance Manager.",
+        "lures": [
+          {
+            "text": "Annual Policy Update Available",
+            "correct": false
+          },
+          {
+            "text": "URGENT: Unpaid Vendor Invoice",
+            "correct": true
+          }
+        ],
+        "urgencies": [
+          {
+            "text": "Please review this when you have time next week.",
+            "correct": false
+          },
+          {
+            "text": "Immediate Action Required: Wire transfer failing.",
+            "correct": true
+          }
+        ],
+        "concept": "Build-a-Phish (Role Reversal)",
+        "hint": "Finance managers care heavily about money and invoices, and they react to extreme business urgency.",
+        "explain": "To catch a criminal, you must think like one! Phishers use highly targeted lures (like invoices for Finance departments) combined with intense urgency to force their victims to make mistakes.",
+        "reveal": "The correct answer is targeting the Finance Manager with an 'Unpaid Vendor Invoice' lure, combined with the 'Immediate Action' wire transfer urgency."
+      },
+      {
+        "id": 5,
+        "format": "chat_sim",
+        "difficulty": "beginner",
+        "gameName": "phishing",
+        "questionText": "Message from: 'IT_Support' on your corporate messenger.",
+        "chatHistory": [
+          {
+            "sender": "IT_Support",
+            "message": "Hi, we detect irregular login activity on your account from Russia."
+          },
+          {
+            "sender": "IT_Support",
+            "message": "Please send us the 6-digit MFA code you just received on your phone to secure your account immediately."
+          }
+        ],
+        "options": [
+          "Okay, the code is 849-210.",
+          "I will not share MFA codes over chat. I will call the official IT Helpdesk number."
+        ],
+        "correctAnswer": "I will not share MFA codes over chat. I will call the official IT Helpdesk number.",
+        "concept": "Chat Simulator (Smishing/Vishing)",
+        "hint": "Would real IT ever ask you to send them your secret MFA code?",
+        "explain": "This is an MFA Fatigue / Bypass attack. The attacker already has your password and triggered the MFA code themselves. They are messaging you pretending to be IT to trick you into bypassing your own security.",
+        "reveal": "The correct response is to refuse and call the official IT number. Real IT will NEVER ask you to give them your MFA code."
+      }
+    ]
+  },
+  "password": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "password_builder",
+        "difficulty": "beginner",
+        "gameName": "password",
+        "questionText": "Build a secure password by dragging blocks into the password field. It must be strong!",
+        "pieces": [
+          {
+            "id": "p1",
+            "text": "kitty",
+            "type": "lowercase",
+            "isPersonalInfo": false
+          },
+          {
+            "id": "p2",
+            "text": "2024",
+            "type": "number",
+            "isPersonalInfo": true
+          },
+          {
+            "id": "p3",
+            "text": "Secure",
+            "type": "uppercase",
+            "isPersonalInfo": false
+          },
+          {
+            "id": "p4",
+            "text": "!",
+            "type": "symbol",
+            "isPersonalInfo": false
+          },
+          {
+            "id": "p5",
+            "text": "dog",
+            "type": "lowercase",
+            "isPersonalInfo": false
+          },
+          {
+            "id": "p6",
+            "text": "$",
+            "type": "symbol",
+            "isPersonalInfo": false
+          },
+          {
+            "id": "p7",
+            "text": "9",
+            "type": "number",
+            "isPersonalInfo": false
+          }
+        ],
+        "concept": "The Password Builder (Interactive & Strength)",
+        "hint": "A strong password has at least 8 characters, upper and lowercase letters, a number, a symbol, and avoids predictable personal info (like current years).",
+        "explain": "Longer, complex passwords are much harder for computers to crack in brute-force dictionary attacks. A Password Manager makes creating and remembering these easy so you don't rely only on memory.",
+        "reveal": "A correct password might look like 'Secure9!' - mixing cases, numbers, and symbols without using predictable info like '2024'."
+      },
+      {
+        "id": 2,
+        "format": "password_triage",
+        "difficulty": "beginner",
+        "gameName": "password",
+        "questionText": "Rapid Triage! Sort these 4 passwords instantly before time runs out.",
+        "passwords": [
+          {
+            "id": "t1",
+            "text": "P@ssw0rd_1",
+            "isStrong": false
+          },
+          {
+            "id": "t2",
+            "text": "BlueTiger#22",
+            "isStrong": true
+          },
+          {
+            "id": "t3",
+            "text": "admin123",
+            "isStrong": false
+          },
+          {
+            "id": "t4",
+            "text": "S3cure_Vault99!",
+            "isStrong": true
+          }
+        ],
+        "concept": "Speed Classification",
+        "hint": "Dictionary words and 'admin' are instantly cracked. Look for true randomness.",
+        "explain": "Hackers use automated scripts that guess millions of common passwords per second. Only passwords with length, complexity, and no dictionary words survive.",
+        "reveal": "P@ssword and admin are incredibly weak. BlueTiger#22 is decent, and S3cure_Vault99! is very strong."
+      },
+      {
+        "id": 3,
+        "format": "authenticator_sim",
+        "difficulty": "beginner",
+        "gameName": "password",
+        "questionText": "Your Bank requires a 2FA code to login. Carefully select the correct code from your phone and ignore the scams!",
+        "phoneScreen": [
+          {
+            "id": "sms1",
+            "service": "Unknown Number",
+            "message": "URGENT: Bank Fraud detected! Reply with code to secure:",
+            "code": "992-114",
+            "isTarget": false
+          },
+          {
+            "id": "sms2",
+            "service": "BankAuth System",
+            "message": "Your valid login code is:",
+            "code": "839-210",
+            "isTarget": true
+          },
+          {
+            "id": "sms3",
+            "service": "BankAuth System",
+            "message": "Your code from 2 hours ago has expired:",
+            "code": "114-990",
+            "isTarget": false
+          }
+        ],
+        "correctCode": "839-210",
+        "concept": "Two-Factor Authentication (2FA)",
+        "hint": "Banks will never text you from an unknown number demanding you to reply with a code. Look for the standard automated secure code.",
+        "explain": "Hackers can't bypass 2FA, so they try to trick you into giving them the code! A classic scam is a fake 'Fraud Alert' text trying to panic you. Always use the freshly generated code from the official system.",
+        "reveal": "The correct Bank code is 839-210. The 'urgent fraud' text is a hacker trying to steal a code, and the old code is expired!"
+      },
+      {
+        "id": 4,
+        "format": "sequence_builder",
+        "difficulty": "beginner",
+        "gameName": "password",
+        "questionText": "Maya reused 'FluffyCat123' on all her accounts. Drag and sequence how an attacker hijacks her life.",
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Hacker buys a leaked streaming service database on the dark web.",
+            "correctOrder": 0
+          },
+          {
+            "id": "s2",
+            "text": "Hacker extracts Maya's email and password 'FluffyCat123'.",
+            "correctOrder": 1
+          },
+          {
+            "id": "s3",
+            "text": "Bots rapidly test this exact combination on banking and email platforms.",
+            "correctOrder": 2
+          },
+          {
+            "id": "s4",
+            "text": "Maya's entire digital identity is hijacked due to password reuse.",
+            "correctOrder": 3
+          }
+        ],
+        "concept": "Credential Stuffing Sequence",
+        "hint": "It starts on the dark web, moves to automation, and ends with identity theft.",
+        "explain": "Password reuse is totally toxic. Hackers perform 'Credential Stuffing' - spamming one breached password across thousands of sites. Always use unique passwords via a Password Manager.",
+        "reveal": "The attack flows from Database Breach -> Extraction -> Bot Automation -> Total Hijack."
+      },
+      {
+        "id": 5,
+        "format": "threat_router",
+        "difficulty": "beginner",
+        "gameName": "password",
+        "questionText": "Click to activate ALL safe security portals for this suspicious email.",
+        "portals": [
+          {
+            "id": "p1",
+            "text": "Click Link",
+            "isCorrect": false
+          },
+          {
+            "id": "p2",
+            "text": "Trash",
+            "isCorrect": true
+          },
+          {
+            "id": "p3",
+            "text": "Browser Direct",
+            "isCorrect": true
+          }
+        ],
+        "emailSnippet": "Subject: Unusual login. Click here to secure account.",
+        "concept": "Threat Discarding",
+        "hint": "Never trust the link in an unsolicited email. You can safely throw it away or investigate via official channels.",
+        "explain": "Never trust an unsolicited password reset link. Both trashing the email and navigating directly to the source website (bypassing the email completely) are perfectly secure actions.",
+        "reveal": "Both 'Trash' and 'Browser Direct' are secure actions! Trashing instantly neutralizes the threat, while Browser Direct lets you safely check your real account status."
+      }
+    ]
+  },
+  "malware": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "file_triage",
+        "difficulty": "beginner",
+        "gameName": "malware",
+        "questionText": "Rapid Triage! Sort your downloaded files. Mark as KEEP (Safe) or DELETE (Malware).",
+        "files": [
+          {
+            "id": "f1",
+            "name": "Q3_Report.pdf",
+            "icon": "≡ƒôä",
+            "isMalware": false
+          },
+          {
+            "id": "f2",
+            "name": "FlashPlayer_Update.exe",
+            "icon": "≡ƒÆ┐",
+            "isMalware": true
+          },
+          {
+            "id": "f3",
+            "name": "TeamPhoto.jpg",
+            "icon": "≡ƒû╝∩╕Å",
+            "isMalware": false
+          },
+          {
+            "id": "f4",
+            "name": "Invoice_4992.pdf.exe",
+            "icon": "≡ƒôä",
+            "isMalware": true
+          }
+        ],
+        "concept": "File Extension Verification",
+        "hint": "Always check the LAST extension of a file. And remember, Flash Player has been dead for years!",
+        "explain": "Malware often disguises itself. A classic trick is the 'double extension' (like .pdf.exe) where Windows hides the actual actionable extension (.exe). Scammers also use fake software updates.",
+        "reveal": "FlashPlayer_Update.exe is fake (Flash is obsolete). Invoice_4992.pdf.exe is a classic double-extension trick."
+      },
+      {
+        "id": 2,
+        "format": "file_inspector",
+        "difficulty": "beginner",
+        "gameName": "malware",
+        "questionText": "Hover over this email attachment. Is it safe to open?",
+        "displayedName": "Salary_Review_2026.docx",
+        "actualDestination": "Executable Script (Salary_Review_2026.docx.vbs)",
+        "options": [
+          "Safe",
+          "Malware"
+        ],
+        "correctAnswer": "Malware",
+        "concept": "Hidden Script Execution",
+        "hint": "Look closely at the hidden file type revealed when you inspect it.",
+        "explain": "Just like phishing links, attachments can lie about their true nature. A .vbs (Visual Basic Script) is an executable file capable of running code and downloading malware onto your system instantly.",
+        "reveal": "This is Malware. It looks like a Word document (.docx) but is actually a dangerous script (.vbs)."
+      },
+      {
+        "id": 3,
+        "format": "click_flags",
+        "difficulty": "beginner",
+        "gameName": "malware",
+        "questionText": "Your computer is running slow! Open the Task Manager and click the suspicious process to terminate.",
+        "emailParts": [
+          {
+            "id": "p1",
+            "text": "Google Chrome (chrome.exe)",
+            "isFlag": false
+          },
+          {
+            "id": "p2",
+            "text": "Windows Explorer (explorer.exe)",
+            "isFlag": false
+          },
+          {
+            "id": "p3",
+            "text": "System Update (sysupd@te.exe)",
+            "isFlag": true
+          },
+          {
+            "id": "p4",
+            "text": "Antivirus Scanner (avp.exe)",
+            "isFlag": false
+          }
+        ],
+        "concept": "Process Anomaly Detection",
+        "hint": "Look for weird spelling, symbols, or typos in the process names. Real system updates don't use '@' symbols.",
+        "explain": "Malware processes try to blend in with normal system activities by using names that look official. Spotting subtle typos (like using '@' instead of 'a') helps identify unauthorized programs running in the background.",
+        "reveal": "The malicious process is 'sysupd@te.exe'. The '@' symbol is a dead giveaway of a spoofed program name."
+      },
+      {
+        "id": 4,
+        "format": "threat_router",
+        "difficulty": "beginner",
+        "gameName": "malware",
+        "questionText": "You found a labeled USB drive in the cafe. Route it safely!",
+        "portals": [
+          {
+            "id": "r1",
+            "text": "Plug into Work PC",
+            "isCorrect": false
+          },
+          {
+            "id": "r2",
+            "text": "Give to IT Security",
+            "isCorrect": true
+          },
+          {
+            "id": "r3",
+            "text": "Plug into Home PC",
+            "isCorrect": false
+          }
+        ],
+        "emailSnippet": "USB Drive Label: 'CONFIDENTIAL SALARIES 2026'",
+        "concept": "Physical Media Security",
+        "hint": "Curiosity killed the cat! Never plug an untrusted device into any computer you own or work for.",
+        "explain": "This is a 'Baiting' attack. Attackers leave malware-infected USBs in public places, hoping human curiosity will compel someone to plug them in. Just plugging it in can compromise the machine automatically.",
+        "reveal": "The only safe option is to hand it directly to IT Security for analysis. Plugging it in anywhere is an instant fail!"
+      },
+      {
+        "id": 5,
+        "format": "sequence_builder",
+        "difficulty": "beginner",
+        "gameName": "malware",
+        "questionText": "A red screen appears: 'All your files are encrypted! Pay $500 in Bitcoin.' Sequence your immediate response.",
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Disconnect computer from the Wi-Fi/Network immediately.",
+            "correctOrder": 0
+          },
+          {
+            "id": "s2",
+            "text": "Take a photo of the screen using your phone for evidence.",
+            "correctOrder": 1
+          },
+          {
+            "id": "s3",
+            "text": "Do NOT pay the ransom.",
+            "correctOrder": 2
+          },
+          {
+            "id": "s4",
+            "text": "Call the IT Security Incident team from your phone.",
+            "correctOrder": 3
+          }
+        ],
+        "concept": "Ransomware Incident Response",
+        "hint": "Stop the spread first! Then gather proof, avoid falling for the extortion, and finally call for professional backup.",
+        "explain": "In a ransomware attack, speed is critical. Disconnecting from the network stops the malware from spreading to servers or coworkers. You should never pay the ransom because there's no guarantee they will unlock your files.",
+        "reveal": "The correct sequence: Disconnect -> Snap a photo -> Refuse to pay -> Call IT."
+      }
+    ]
+  },
+  "scams": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "chat_sim",
+        "difficulty": "beginner",
+        "gameName": "scams",
+        "questionText": "Message from: 'Unknown Number' pretending to be family.",
+        "chatHistory": [
+          {
+            "sender": "Unknown Number",
+            "message": "Hey, it's Mom! I dropped my phone in water and I'm using an old spare. I need to pay for my groceries at the register right now but my Apple Pay isn't working on this phone."
+          },
+          {
+            "sender": "Unknown Number",
+            "message": "Can you quickly send $100 to this number via Venmo? I'll pay you back the second I get home."
+          }
+        ],
+        "options": [
+          "Sure, sending it right now! Are you okay?",
+          "I'm calling the number I have saved for you right now to verify this is actually you."
+        ],
+        "correctAnswer": "I'm calling the number I have saved for you right now to verify this is actually you.",
+        "concept": "The 'Broken Phone' Family Imposter",
+        "hint": "This relies on urgency ('at the register'). Always verify identity before sending money.",
+        "explain": "This is a classic 'Family Emergency' imposter scam. The scammer creates false urgency so you act without thinking. Taking 30 seconds to call the known number or ask a personal verification question destroys the scam.",
+        "reveal": "The correct response is verifying the identity. Never blindly send cash to an unknown number, even if they claim to be family in an emergency."
+      },
+      {
+        "id": 2,
+        "format": "click_flags",
+        "difficulty": "beginner",
+        "gameName": "scams",
+        "questionText": "You get a DM from a Crypto Guru. Click the 3 massive RED FLAGS in their message.",
+        "emailParts": [
+          {
+            "id": "p1",
+            "text": "Hello friend! Want to achieve financial freedom? ≡ƒÜÇ",
+            "isFlag": false
+          },
+          {
+            "id": "p2",
+            "text": "I can guarantee 1000% returns in just 24 hours!!!",
+            "isFlag": true
+          },
+          {
+            "id": "p3",
+            "text": "All you need to do is send a $500 upfront deposit.",
+            "isFlag": true
+          },
+          {
+            "id": "p4",
+            "text": "Sign up here: http://secure-crypto-binance-login-secure.xyz",
+            "isFlag": true
+          }
+        ],
+        "concept": "Crypto Scams & Fake Gurus",
+        "hint": "Look for impossible promises, demands for cash upfront, and sketchy URLs.",
+        "explain": "Crypto scams rely on greed and FOMO (Fear Of Missing Out). Guaranteed extreme returns don't exist in reality. Legitimate platforms never ask for 'upfront deposits' directly via DM, and they definitely don't use .xyz domains with multiple 'secure' keywords.",
+        "reveal": "The guaranteed 1000% returns, the demand for a $500 deposit, and the extremely fake .xyz domain are the three red flags."
+      },
+      {
+        "id": 3,
+        "format": "sequence_builder",
+        "difficulty": "beginner",
+        "gameName": "scams",
+        "questionText": "Anatomy of a Scam: Drag the steps into the correct order to reveal how an Overpayment Scam works on Facebook Marketplace.",
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Scammer sends a fake email showing a 'payment confirmation' for $500.",
+            "correctOrder": 0
+          },
+          {
+            "id": "s2",
+            "text": "Scammer messages you panicking: 'I accidentally sent $500 instead of $50!'",
+            "correctOrder": 1
+          },
+          {
+            "id": "s3",
+            "text": "Scammer begs you to refund $450 back to them immediately.",
+            "correctOrder": 2
+          },
+          {
+            "id": "s4",
+            "text": "You lose $450 of your own real money when their original payment bounces.",
+            "correctOrder": 3
+          }
+        ],
+        "concept": "The Overpayment Trap",
+        "hint": "It starts with a fake receipt, transitions to panic and begging, and ends with you losing your own funds.",
+        "explain": "Overpayment scams trick you into acting fast out of 'kindness'. Because their initial payment was fake (or made with a stolen card that will pull back), any money you 'refund' them comes straight out of your real bank balance forever.",
+        "reveal": "Correct! Fake Email -> Panic & Begging -> You Refund -> You Lose Real Money."
+      },
+      {
+        "id": 4,
+        "format": "threat_router",
+        "difficulty": "beginner",
+        "gameName": "scams",
+        "questionText": "A beautiful person you matched with online 3 days ago says their bank is frozen and they need $200 for a plane ticket to visit you. Route this conversation!",
+        "portals": [
+          {
+            "id": "r1",
+            "text": "Wire Transfer the $200",
+            "isCorrect": false
+          },
+          {
+            "id": "r2",
+            "text": "Give Them Your Credit Card",
+            "isCorrect": false
+          },
+          {
+            "id": "r3",
+            "text": "Report & Block Account",
+            "isCorrect": true
+          }
+        ],
+        "emailSnippet": "'You are my soulmate! If you just send me the money, we can be together.'",
+        "concept": "The Sweetheart Catfish",
+        "hint": "Never give money to someone you've never met in real life. Love bombing is a manipulation tactic.",
+        "explain": "Romance scammers heavily manipulate emotions. They build a relationship rapidly (love bombing), then invent an emergency or 'travel excuse' to ask for untraceable money.",
+        "reveal": "The only safe option is to instantly Report & Block a suspected romance scammer."
+      },
+      {
+        "id": 5,
+        "format": "link_inspector",
+        "difficulty": "beginner",
+        "gameName": "scams",
+        "questionText": "You receive a text saying your Netflix account is locked. Hover over the button to reveal the true URL.",
+        "displayedLink": "UPDATE BILLING INFO",
+        "actualDestination": "http://login-netfiix-security.com",
+        "options": [
+          "Safe",
+          "Phishing"
+        ],
+        "correctAnswer": "Phishing",
+        "concept": "Typosquatting & SMS Phishing (Smishing)",
+        "hint": "Look extremely closely at the spelling of the streaming service when it is revealed.",
+        "explain": "Scammers purposely misspell well-known brands by changing one letter (like 'netfiix' with two i's instead of an l). This is called typosquatting. Combined with a fake text (Smishing), they steal your password the moment you log in.",
+        "reveal": "This is a Typosquatting Phishing trap. Notice the double-i in 'netfiix'."
+      }
+    ]
+  },
+  "firewall": {
+    "beginner": [
+      {
+        "id": 1,
+        "format": "decision_simulator",
+        "difficulty": "beginner",
+        "gameName": "firewall",
+        "questionText": "You are at a cafe and the Wi-Fi is broken. An open, unpassworded network appears called 'Free_Airport_Wi-Fi_Fast'. You need to check your corporate bank account.",
+        "options": [
+          "Connect to the open Wi-Fi because you are just checking quickly.",
+          "Turn off Wi-Fi and use your cellular data / VPN instead."
+        ],
+        "correctAnswer": "Turn off Wi-Fi and use your cellular data / VPN instead.",
+        "concept": "Evil Twin & Open Networks",
+        "hint": "Hackers easily deploy fake hotspots in crowded areas to steal traffic.",
+        "explain": "Using an open Wi-Fi network without a VPN leaves your traffic exposed. Hackers can easily intercept your passwords (Man-in-the-Middle) or set up fake hotspots (Evil Twin) to steal data.",
+        "reveal": "Turning off Wi-Fi and using secure cellular data is the right move for secure tasks like banking."
+      },
+      {
+        "id": 2,
+        "format": "threat_router",
+        "difficulty": "beginner",
+        "gameName": "firewall",
+        "questionText": "You bought a cheap $15 smart camera on a discount site. It needs Wi-Fi access. Which network do you put it on?",
+        "portals": [
+          {
+            "id": "r1",
+            "text": "Main Home Network",
+            "isCorrect": false
+          },
+          {
+            "id": "r2",
+            "text": "Work VPN Network",
+            "isCorrect": false
+          },
+          {
+            "id": "r3",
+            "text": "Guest / IoT Network",
+            "isCorrect": true
+          }
+        ],
+        "emailSnippet": "Cheap Smart Camera Configuration",
+        "concept": "IoT Network Segmentation",
+        "hint": "Cheap, unpatchable smart devices are easy targets for hackers. Do you really want them on the same network as your laptop?",
+        "explain": "Cheap IoT devices (smart cameras, fridges) are notorious for having terrible security. If a hacker breaches the camera, putting it on an internet-only Guest network prevents them from pivoting over to hack your personal PC.",
+        "reveal": "Isolating IoT devices on a Guest Network ensures that if their weak security is breached, the attacker is stuck in a dead-end network."
+      },
+      {
+        "id": 3,
+        "format": "sequence_builder",
+        "difficulty": "beginner",
+        "gameName": "firewall",
+        "questionText": "You just unboxed a brand new home Wi-Fi router. Drag the steps into the correct sequence to secure it from hackers.",
+        "steps": [
+          {
+            "id": "s1",
+            "text": "Boot up the new router.",
+            "correctOrder": 0
+          },
+          {
+            "id": "s2",
+            "text": "Immediately change the default admin password (e.g. 'admin'/'password').",
+            "correctOrder": 1
+          },
+          {
+            "id": "s3",
+            "text": "Turn OFF remote web access.",
+            "correctOrder": 2
+          },
+          {
+            "id": "s4",
+            "text": "Create a strong WPA3 Wi-Fi password.",
+            "correctOrder": 3
+          }
+        ],
+        "concept": "Initial Router Configuration",
+        "hint": "Step 1 is booting it, but immediately after you must lock the front door by changing the default admin credentials. Then disable remote entry, and finally secure the Wi-Fi signal.",
+        "explain": "The biggest mistake people make is leaving the router's admin password as 'admin'/'password'. Anyone who joins the WiFi can log in and take over the router. Disabling remote web management ensures no one from the internet can try to log into your router settings.",
+        "reveal": "Correct! Boot -> Change default ADMIN password -> Disable remote access -> Set strong Wi-Fi password."
+      },
+      {
+        "id": 4,
+        "format": "link_inspector",
+        "difficulty": "beginner",
+        "gameName": "firewall",
+        "questionText": "You connect to a hotel Wi-Fi and open your bank's website. Inspect the URL bar. Is it secure?",
+        "displayedLink": "Bank Login Portal",
+        "actualDestination": "http://192.168.4.52/secure_login",
+        "options": [
+          "Safe",
+          "Threat"
+        ],
+        "correctAnswer": "Threat",
+        "concept": "HTTPS vs HTTP inspection",
+        "hint": "A real bank will never use an unencrypted 'HTTP' IP address instead of their real web domain.",
+        "explain": "When on public Wi-Fi, malicious actors perform 'DNS Spoofing' to redirect your traffic from the real bank to their fake webpage hosted locally (like on IP 192.168.x.x). The lack of 'HTTPS' means your login info is totally unprotected.",
+        "reveal": "This is an unencrypted (HTTP) IP address pretending to be a bank. It's a Threat."
+      },
+      {
+        "id": 5,
+        "format": "traffic_triage",
+        "difficulty": "beginner",
+        "gameName": "firewall",
+        "questionText": "You are the Firewall! Your job is to sort inbound network connections. Mark them as ALLOW (Safe) or BLOCK (Threat).",
+        "files": [
+          {
+            "id": "t1",
+            "name": "Local Home Printer (Port 631)",
+            "icon": "≡ƒû¿∩╕Å",
+            "isMalware": false
+          },
+          {
+            "id": "t2",
+            "name": "Unknown IP targeting Port 22 (SSH)",
+            "icon": "≡ƒîÉ",
+            "isMalware": true
+          },
+          {
+            "id": "t3",
+            "name": "Your Smart TV streaming Netflix (ESTABLISHED)",
+            "icon": "≡ƒô║",
+            "isMalware": false
+          },
+          {
+            "id": "t4",
+            "name": "Botnet attempting Default Password Login",
+            "icon": "≡ƒñû",
+            "isMalware": true
+          }
+        ],
+        "concept": "Firewall Rules & Triage",
+        "hint": "Printers and established TV streamers are safe local traffic. Unknown IPs trying to remotely log into your router (SSH) or brute force it are malicious.",
+        "explain": "Firewalls block malicious outside traffic while allowing legitimate local connections to function. Blocking unwanted remote access (like Port 22 SSH) is a crucial perimeter defense against botnets.",
+        "reveal": "You successfully dropped the malicious inbound SSH attempts and the botnet, while allowing your TV and Printer to communicate normally!"
+      }
+    ]
+  }
+}

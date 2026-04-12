@@ -30,8 +30,8 @@ export function incrementDailyProgress() {
     let count = getTodayProgress();
     const newCount = count + 1;
     
-    const wasAlreadyReached = count >= 1;
-    const isNowReached = newCount >= 1;
+    const wasAlreadyReached = count >= 10;
+    const isNowReached = newCount >= 10;
 
     localStorage.setItem("cyberduo_daily_progress", JSON.stringify({
         date: today,
@@ -75,7 +75,7 @@ export function resetDailyIfNeeded() {
 }
 
 export function isGoalReached() {
-    return getTodayProgress() >= 1;
+    return getTodayProgress() >= 10;
 }
 
 export function awardBonusXP() {

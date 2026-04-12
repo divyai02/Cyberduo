@@ -1,0 +1,472 @@
+/* =====================================================
+   CERTIFICATE MODAL CSS - CyberDuo Elite Edition
+   ===================================================== */
+
+.cert-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.96);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 10000;
+    padding: 20px;
+    backdrop-filter: blur(12px);
+    animation: certOverlayFadeIn 0.4s ease;
+}
+
+@keyframes certOverlayFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.cert-modal-content {
+    background: #0a0a1a;
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    box-shadow: 0 0 80px rgba(0, 255, 157, 0.08), 0 0 0 1px rgba(0,255,157,0.05);
+    border-radius: 16px;
+    width: 95%;
+    max-width: 1100px;
+    height: auto;
+    max-height: 92vh;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    padding: 40px;
+    overflow-y: auto;
+    opacity: 0;
+    transform: scale(0.92) translateY(20px);
+    transition: opacity 0.5s ease, transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.cert-modal-content.cert-revealed {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+}
+
+.cert-close-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: none;
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    color: #00FF9D;
+    font-size: 1.2rem;
+    cursor: pointer;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
+    z-index: 10;
+}
+
+.cert-close-btn:hover {
+    background: rgba(0, 255, 157, 0.1);
+    transform: rotate(90deg);
+    box-shadow: 0 0 10px rgba(0, 255, 157, 0.3);
+}
+
+/* ---- Certificate Frame ---- */
+.cert-frame {
+    width: 100%;
+    aspect-ratio: 1.414 / 1;
+    background: linear-gradient(135deg, #050510 0%, #080818 50%, #050510 100%);
+    padding: 28px;
+    border: 8px double #00FF9D;
+    position: relative;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #e0e0e0;
+    overflow: hidden;
+}
+
+/* Glowing background radial */
+.cert-frame::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60%;
+    height: 60%;
+    background: radial-gradient(circle, rgba(0, 255, 157, 0.04) 0%, transparent 70%);
+    pointer-events: none;
+}
+
+/* Corner SVG ornaments */
+.cert-corner {
+    position: absolute;
+    width: 40px;
+    height: 40px;
+    border-color: rgba(0, 255, 157, 0.5);
+    border-style: solid;
+}
+.cert-corner-tl { top: 12px; left: 12px; border-width: 2px 0 0 2px; }
+.cert-corner-tr { top: 12px; right: 12px; border-width: 2px 2px 0 0; }
+.cert-corner-bl { bottom: 12px; left: 12px; border-width: 0 0 2px 2px; }
+.cert-corner-br { bottom: 12px; right: 12px; border-width: 0 2px 2px 0; }
+
+.cert-inner-border {
+    width: 100%;
+    height: 100%;
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.cert-content {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: center;
+    padding: 24px 40px;
+}
+
+/* ---- Header ---- */
+.cert-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.cert-logo {
+    width: 50px;
+    height: 50px;
+    margin-bottom: 4px;
+}
+
+.cert-logo-container {
+    margin-bottom: 4px;
+}
+
+.cert-academy-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    letter-spacing: 6px;
+    color: #00FF9D;
+}
+
+.cert-division {
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+
+/* ---- Title ---- */
+.cert-title-container {
+    margin: 8px 0;
+}
+
+.cert-main-title {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 2.4rem;
+    margin: 0;
+    background: linear-gradient(to bottom, #ffffff 0%, #00FF9D 100%);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 10px;
+}
+
+.cert-sub-title {
+    font-size: 0.85rem;
+    letter-spacing: 8px;
+    margin-top: 6px;
+    opacity: 0.7;
+    color: #fff;
+}
+
+/* ---- Body ---- */
+.cert-body {
+    padding: 0 40px;
+}
+
+.cert-intro {
+    font-size: 0.75rem;
+    margin-bottom: 10px;
+    letter-spacing: 3px;
+    opacity: 0.6;
+    text-transform: uppercase;
+}
+
+.cert-user-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 3rem;
+    color: #fff;
+    margin: 8px 0;
+    text-transform: uppercase;
+    text-shadow: 0 0 30px rgba(255, 255, 255, 0.15);
+    border-bottom: 2px solid rgba(0, 255, 157, 0.4);
+    display: inline-block;
+    padding: 0 40px 8px;
+}
+
+.cert-accomplishment {
+    font-size: 0.85rem;
+    line-height: 1.8;
+    max-width: 750px;
+    margin: 10px auto;
+    opacity: 0.85;
+}
+
+.cert-accomplishment strong {
+    color: #00FF9D;
+    font-weight: 600;
+}
+
+/* ---- Domain Badges ---- */
+.cert-domains {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin: 10px 0;
+}
+
+.cert-domain-badge {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.25);
+    border-radius: 20px;
+    padding: 4px 12px;
+    font-size: 0.7rem;
+    letter-spacing: 1px;
+    color: rgba(255,255,255,0.8);
+}
+
+/* ---- Elite Rank ---- */
+.cert-rank {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.1rem;
+    color: #fbbf24;
+    letter-spacing: 3px;
+    margin-top: 10px;
+    text-shadow: 0 0 15px rgba(251, 191, 36, 0.4);
+}
+
+/* ---- Footer ---- */
+.cert-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.cert-signature-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.cert-sig-box {
+    width: 220px;
+    position: relative;
+    text-align: left;
+}
+
+.cert-sig-box--right {
+    text-align: right;
+}
+
+.cert-sig-line {
+    border-top: 1px solid rgba(0, 255, 157, 0.4);
+    margin-bottom: 6px;
+}
+
+.cert-sig-label {
+    font-size: 0.6rem;
+    letter-spacing: 2px;
+    opacity: 0.5;
+    text-transform: uppercase;
+}
+
+.cert-sig-handwriting {
+    font-family: 'Brush Script MT', cursive;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.85);
+    margin-bottom: 4px;
+    display: block;
+}
+
+.cert-date {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.9rem;
+    margin-bottom: 6px;
+    opacity: 0.9;
+}
+
+/* ---- Seal ---- */
+.cert-seal {
+    width: 80px;
+    height: 80px;
+}
+
+.cert-seal-outer {
+    width: 100%;
+    height: 100%;
+    border: 2px dashed #00FF9D;
+    border-radius: 50%;
+    padding: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    animation: spin-slow 20s linear infinite;
+}
+
+.cert-seal-inner {
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid #00FF9D;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #00FF9D;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 0.55rem;
+    letter-spacing: 1px;
+}
+
+.cert-id-badge {
+    font-size: 0.65rem;
+    opacity: 0.45;
+    letter-spacing: 2px;
+}
+
+.cert-id-value {
+    color: #00FF9D;
+    font-family: monospace;
+}
+
+@keyframes spin-slow {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+/* ---- Action Buttons ---- */
+.cert-actions {
+    margin-top: 24px;
+    text-align: center;
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.cert-btn-print {
+    background: #00FF9D;
+    color: #000;
+    border: none;
+    padding: 14px 36px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.3);
+    transition: 0.3s;
+}
+
+.cert-btn-print:hover {
+    background: #fff;
+    box-shadow: 0 0 30px rgba(255, 255, 255, 0.4);
+    transform: translateY(-2px);
+}
+
+.cert-btn-share {
+    background: transparent;
+    color: #00FF9D;
+    border: 1px solid rgba(0, 255, 157, 0.5);
+    padding: 14px 36px;
+    border-radius: 8px;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: bold;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.cert-btn-share:hover {
+    background: rgba(0, 255, 157, 0.1);
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.2);
+    transform: translateY(-2px);
+}
+
+.cert-hint {
+    margin-top: 12px;
+    font-size: 0.75rem;
+    opacity: 0.4;
+    text-align: center;
+}
+
+/* ---- Print Overrides ---- */
+@media print {
+    body * { visibility: hidden; }
+    .cert-overlay, .cert-overlay * { visibility: visible; }
+    .cert-overlay {
+        position: absolute;
+        left: 0; top: 0;
+        padding: 0; margin: 0;
+        background: none !important;
+        backdrop-filter: none !important;
+    }
+    .cert-modal-content {
+        width: 100%;
+        max-width: none;
+        height: auto;
+        max-height: none;
+        border: none;
+        padding: 0;
+        margin: 0;
+        box-shadow: none;
+        opacity: 1 !important;
+        transform: none !important;
+    }
+    #printable-certificate {
+        width: 100vw;
+        height: 100vh;
+        border: 12px double #000 !important;
+        background: white !important;
+        color: black !important;
+    }
+    .cert-inner-border { border: 2px solid #000 !important; }
+    .cert-main-title {
+        -webkit-text-fill-color: black !important;
+        background: none !important;
+        color: black !important;
+    }
+    .cert-academy-name, .cert-rank, .cert-id-value { color: #333 !important; }
+    .cert-user-name {
+        color: black !important;
+        border-bottom: 3px solid black !important;
+        text-shadow: none !important;
+    }
+    .cert-sig-line { border-top: 1px solid black !important; }
+    .cert-sig-handwriting { color: #333 !important; }
+    .cert-seal-outer { border: 2px dashed black !important; animation: none !important; }
+    .cert-seal-inner { background: none !important; border: 2px solid black !important; color: black !important; }
+    .cert-domain-badge { border-color: #333 !important; color: #333 !important; background: none !important; }
+    .cert-accomplishment strong { color: #333 !important; }
+    .cert-actions, .cert-close-btn, .cert-hint { display: none !important; }
+    .cert-corner { border-color: #333 !important; }
+}

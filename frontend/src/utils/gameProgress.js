@@ -1,11 +1,11 @@
 // src/utils/gameProgress.js
 
 const DEFAULT_GAMES = {
-    phishing: { completed: false, questionsDone: 0, totalQuestions: 5, name: "Phishing Frenzy", icon: "🎣" },
-    password: { completed: false, questionsDone: 0, totalQuestions: 5, name: "Password Protector", icon: "🔑" },
-    malware: { completed: false, questionsDone: 0, totalQuestions: 5, name: "Malware Mayhem", icon: "🦠" },
-    firewall: { completed: false, questionsDone: 0, totalQuestions: 5, name: "Firewall Defender", icon: "🛡️" },
-    scams: { completed: false, questionsDone: 0, totalQuestions: 5, name: "Scam Spotter", icon: "🕵️" },
+    phishing: { completed: false, questionsDone: 0, totalQuestions: 25, name: "Phishing Frenzy", icon: "🎣" },
+    password: { completed: false, questionsDone: 0, totalQuestions: 25, name: "Password Protector", icon: "🔑" },
+    malware: { completed: false, questionsDone: 0, totalQuestions: 25, name: "Malware Mayhem", icon: "🦠" },
+    firewall: { completed: false, questionsDone: 0, totalQuestions: 25, name: "Firewall Defender", icon: "🛡️" },
+    scams: { completed: false, questionsDone: 0, totalQuestions: 25, name: "Scam Spotter", icon: "🕵️" },
 };
 
 const DEFAULT_PROGRESS = {
@@ -18,7 +18,16 @@ export function getGameProgress() {
     try {
         const stored = localStorage.getItem("cyberduo_game_progress");
         if (stored) {
-            return JSON.parse(stored);
+            let parsed = JSON.parse(stored);
+            // Force update all totalQuestions to 25 to ensure old caches update properly
+            ['beginner', 'medium', 'hard'].forEach(level => {
+                if (parsed[level]) {
+                    Object.keys(parsed[level]).forEach(gameKey => {
+                        parsed[level][gameKey].totalQuestions = 25;
+                    });
+                }
+            });
+            return parsed;
         }
     } catch (e) {
         console.error("Failed to parse game progress", e);
@@ -188,8 +197,8 @@ export function calculateSkillRadar(progress) {
         const hardDone = progress.hard?.[skill.key]?.questionsDone || 0;
         
         const totalDone = beginnerDone + mediumDone + hardDone;
-        // Total possible per skill across 3 levels: 5 + 5 + 5 = 15
-        const maxQuestions = 15; 
+        // Total possible per skill across 3 levels: 25 + 25 + 25 = 75
+        const maxQuestions = 75; 
         const percentage = Math.round((totalDone / maxQuestions) * 100);
         
         // Set colors based on percentage
@@ -274,41 +283,76 @@ export function checkAndUnlockBadges() {
         const progress = getGameProgress();
         const streakData = getStreakData();
         const earned = JSON.parse(localStorage.getItem('cyberduo_earned_badges') || '[]');
-        
-        // We can't import JSON directly in this util easily if it's called from where imports aren't setup
-        // But since we are in a React environment, we'll fetch it or the calling component will provide it.
-        // For simplicity and reliability in this specific project structure, I will define the logic
-        // and assume the badges data is available or hardcode the logic for these 8 badges.
-        
+
         const badgesMetadata = [
-            { id: 'phishing_rookie', type: 'completeGame', val: 'phishing' },
-            { id: 'password_apprentice', type: 'completeGame', val: 'password' },
-            { id: 'malware_hunter', type: 'completeGame', val: 'malware' },
-            { id: 'firewall_novice', type: 'completeGame', val: 'firewall' },
-            { id: 'scam_spotter', type: 'completeGame', val: 'scams' },
-            { id: 'seven_day_warrior', type: 'streakDays', val: 7 },
-            { id: 'five_hundred_xp_club', type: 'totalXP', val: 500 },
-            { id: 'beginner_completionist', type: 'completeLevel', val: 'beginner' }
+            // ---- Game completion (any level) ----
+            { id: 'phishing_rookie',       type: 'completeGame',     val: 'phishing' },
+            { id: 'password_apprentice',   type: 'completeGame',     val: 'password' },
+            { id: 'malware_hunter',        type: 'completeGame',     val: 'malware' },
+            { id: 'firewall_novice',       type: 'completeGame',     val: 'firewall' },
+            { id: 'scam_spotter',          type: 'completeGame',     val: 'scams' },
+            // ---- Level completionist ----
+            { id: 'beginner_completionist',type: 'completeLevel',    val: 'beginner' },
+            { id: 'medium_completionist',  type: 'completeLevel',    val: 'medium' },
+            { id: 'hard_completionist',    type: 'completeLevel',    val: 'hard' },
+            // ---- Streak ----
+            { id: 'seven_day_warrior',     type: 'streakDays',       val: 7 },
+            { id: 'fourteen_day_champion', type: 'streakDays',       val: 14 },
+            { id: 'thirty_day_legend',     type: 'streakDays',       val: 30 },
+            // ---- XP milestones ----
+            { id: 'five_hundred_xp_club',  type: 'totalXP',          val: 500 },
+            { id: 'thousand_xp_breaker',   type: 'totalXP',          val: 1000 },
+            { id: 'two_five_hundred_xp_titan', type: 'totalXP',      val: 2500 },
+            { id: 'five_k_xp_overlord',    type: 'totalXP',          val: 5000 },
+            // ---- Two-level game mastery ----
+            { id: 'phishing_master',       type: 'twoLevelsGame',    val: 'phishing' },
+            { id: 'password_guardian',     type: 'twoLevelsGame',    val: 'password' },
+            // ---- Specific hard level game completion ----
+            { id: 'malware_architect',     type: 'completeLevelGame', val: { level: 'hard', game: 'malware' } },
+            { id: 'firewall_commander',    type: 'completeLevelGame', val: { level: 'hard', game: 'firewall' } },
+            { id: 'scam_investigator',     type: 'completeLevelGame', val: { level: 'hard', game: 'scams' } },
+            // ---- Meta achievements ----
+            { id: 'all_domains_cleared',   type: 'allGamesOnce',     val: true },
+            { id: 'academy_graduate',      type: 'fullMastery',      val: true },
         ];
 
+        const gamesOrder = ['phishing', 'password', 'malware', 'firewall', 'scams'];
         let newlyEarned = [];
 
         badgesMetadata.forEach(badge => {
             if (earned.includes(badge.id)) return;
 
             let met = false;
+
             if (badge.type === 'completeGame') {
-                // Check if any level of this game is completed
-                met = progress.beginner[badge.val].completed || 
-                      progress.medium[badge.val].completed || 
-                      progress.hard[badge.val].completed;
+                met = ['beginner', 'medium', 'hard'].some(l => progress[l]?.[badge.val]?.completed);
+
+            } else if (badge.type === 'completeLevel') {
+                const games = Object.values(progress[badge.val] || {});
+                met = games.length >= 5 && games.every(g => g.completed);
+
+            } else if (badge.type === 'streakDays') {
+                met = (streakData.currentStreak || 0) >= badge.val;
+
             } else if (badge.type === 'totalXP') {
                 met = xp >= badge.val;
-            } else if (badge.type === 'streakDays') {
-                met = streakData.currentStreak >= badge.val;
-            } else if (badge.type === 'completeLevel') {
-                const games = Object.values(progress[badge.val]);
-                met = games.every(g => g.completed);
+
+            } else if (badge.type === 'twoLevelsGame') {
+                const beg = progress.beginner?.[badge.val]?.completed;
+                const med = progress.medium?.[badge.val]?.completed;
+                met = beg && med;
+
+            } else if (badge.type === 'completeLevelGame') {
+                met = progress[badge.val.level]?.[badge.val.game]?.completed;
+
+            } else if (badge.type === 'allGamesOnce') {
+                met = gamesOrder.every(g =>
+                    ['beginner', 'medium', 'hard'].some(l => progress[l]?.[g]?.completed)
+                );
+
+            } else if (badge.type === 'fullMastery') {
+                const all = ['beginner', 'medium', 'hard'].flatMap(l => Object.values(progress[l] || {}));
+                met = all.length >= 15 && all.every(g => g.completed);
             }
 
             if (met) {
@@ -320,17 +364,14 @@ export function checkAndUnlockBadges() {
         if (newlyEarned.length > 0) {
             localStorage.setItem('cyberduo_earned_badges', JSON.stringify(earned));
             newlyEarned.forEach(id => {
-                const medalName = id.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-                // Simple celebration alert as requested
+                const medalName = id.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
                 alert(`🏆 New Badge Unlocked: ${medalName}!`);
-                
-                // Dispatch event for UI components
                 if (typeof window !== 'undefined') {
                     window.dispatchEvent(new CustomEvent('badgeUnlocked', { detail: { id } }));
                 }
             });
         }
     } catch (e) {
-        console.error("Failed to check badges", e);
+        console.error('Failed to check badges', e);
     }
 }

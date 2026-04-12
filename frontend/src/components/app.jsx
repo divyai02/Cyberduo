@@ -3,6 +3,7 @@ import { initBackground } from "./background.js";
 import AvatarSelection from "./AvatarSelection.jsx";
 import ModeSelection from "./ModeSelection.jsx";
 import Dashboard from "./Dashboard.jsx";
+import AdminDashboard from "./AdminDashboard.jsx";
 import { getGameProgress } from "../utils/gameProgress.js";
 
 const API_BASE_URL = "http://localhost:5000";
@@ -444,11 +445,31 @@ function SignInForm({ onSuccess }) {
         if (!email || !password) { setError("Please fill in all fields."); return; }
         setError("");
         setLoading(true);
-        // Simulate API call — replace with real axios call
-        setTimeout(() => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/auth/login`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password })
+            });
+            const data = await res.json();
+            if (!res.ok) {
+                setError(data.detail || "Login failed");
+                setLoading(false);
+                return;
+            }
             setLoading(false);
-            onSuccess && onSuccess({ username: email.split("@")[0], email });
-        }, 900);
+            onSuccess && onSuccess({
+                username: data.username,
+                email: email,
+                userId: data.user_id,
+                avatarId: data.avatar,
+                role: data.role,
+                mode: data.mode
+            });
+        } catch (err) {
+            setError("Server connection failed.");
+            setLoading(false);
+        }
     };
 
     return (
@@ -505,7 +526,8 @@ function SignUpForm({ onSuccess }) {
     const [confirm, setConfirm] = useState("");
     const [background, setBackground] = useState("");
     const [profession, setProfession] = useState("");
-    const [role, setRole] = useState("");
+    const [accountType, setAccountType] = useState("user"); 
+    const [techRole, setTechRole] = useState(""); 
     const [interests, setInterests] = useState([]);
     const [ageGroup, setAgeGroup] = useState("");
     const [reason, setReason] = useState("");
@@ -539,6 +561,23 @@ function SignUpForm({ onSuccess }) {
                     <PasswordStrength password={password} />
                     <FloatInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm}
                         error={confirm && confirm !== password ? "Passwords don't match" : ""} />
+
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
+                        {[
+                            { id: "user", label: "🛡️ OPERATIVE", c: "#00FF9D" },
+                            { id: "admin", label: "📡 COMMAND", c: "#4D9EFF" },
+                        ].map(b => (
+                            <button key={b.id} type="button" onClick={() => setAccountType(b.id)} style={{
+                                padding: "12px 0", borderRadius: 10, cursor: "pointer",
+                                border: `1px solid ${accountType === b.id ? b.c : "rgba(255,255,255,0.1)"}`,
+                                background: accountType === b.id ? `${b.c}15` : "rgba(10,15,31,0.6)",
+                                color: accountType === b.id ? b.c : "#B0B8CC",
+                                fontWeight: 700, fontSize: 12, transition: "all 0.2s",
+                                boxShadow: accountType === b.id ? `0 0 15px ${b.c}44` : "none",
+                            }}>{b.label}</button>
+                        ))}
+                    </div>
+
                     <NeonButton onClick={() => setStep(2)}>NEXT →</NeonButton>
                 </div>
             )}
@@ -590,7 +629,7 @@ function SignUpForm({ onSuccess }) {
                     {background === "tech" && (
                         <>
                             <div style={{ color: "#B0B8CC", fontSize: 13, marginBottom: 8 }}>Your role?</div>
-                            <SelectGrid items={TECH_ROLES} selected={role} onSelect={setRole} />
+                            <SelectGrid items={TECH_ROLES} selected={techRole} onSelect={setTechRole} />
 
                             <div style={{ color: "#B0B8CC", fontSize: 13, marginBottom: 8 }}>Areas of interest?</div>
                             <SelectGrid items={INTERESTS} selected={interests} onSelect={setInterests} multi />
@@ -649,12 +688,51 @@ function SignUpForm({ onSuccess }) {
                     </div>
 
                     <NeonButton
-                        onClick={() => {
-                            setDone(true);
-                            setTimeout(() => onSuccess && onSuccess({
-                                username: username || name.toLowerCase().replace(/\s/g, "_"),
-                                email,
-                            }), 1400);
+                        onClick={async () => {
+                            if (!email || !password || !name) { setError("Please fill all required fields in Step 1."); return; }
+                            setLoading(true);
+                            const finalUsername = username || name.toLowerCase().replace(/\s/g, "_");
+                            try {
+                                const res = await fetch(`${API_BASE_URL}/auth/signup`, {
+                                    method: "POST",
+                                    headers: { "Content-Type": "application/json" },
+                                    body: JSON.stringify({
+                                        username: finalUsername,
+                                        email: email,
+                                        password: password,
+                                        name: name,
+                                        background: background,
+                                        profession: profession,
+                                        role: accountType, // accountType (admin/user) goes here
+                                        techRole: techRole, 
+                                        interests: interests,
+                                        ageGroup: ageGroup,
+                                        reason: reason,
+                                        howHeard: howHeard
+                                    })
+                                });
+                                const data = await res.json();
+                                setLoading(false);
+                                if (!res.ok) {
+                                    // If data.detail is a list (Pydantic), stringify it
+                                    const errMsg = Array.isArray(data.detail) 
+                                        ? data.detail[0].msg 
+                                        : (data.detail || "Signup failed");
+                                    setError(errMsg);
+                                    setLoading(false);
+                                    return;
+                                }
+                                setDone(true);
+                                setTimeout(() => onSuccess && onSuccess({
+                                    username: finalUsername,
+                                    email,
+                                    userId: data.user_id,
+                                    role: accountType
+                                }), 1400);
+                            } catch (err) {
+                                setError("Server connection failed.");
+                                setLoading(false);
+                            }
                         }}
                         gradient="linear-gradient(90deg,#00FF9D,#9D4DFF)"
                     >
@@ -697,6 +775,7 @@ export default function CyberDuo({ onLoginSuccess }) {
     // screen: "login" | "avatar" | "mode" | "dashboard"
     const [screen, setScreen] = useState(initialData ? "dashboard" : "login");
     const [userId, setUserId] = useState(initialData?.user_id || null);
+    const [userRole, setUserRole] = useState(initialData?.role || "user");
     const [avatarId, setAvatarId] = useState(initialData?.avatarId || null);
     const [gameMode, setGameMode] = useState(initialData?.mode || null);
     const [username, setUsername] = useState(initialData?.username || "");
@@ -714,11 +793,42 @@ export default function CyberDuo({ onLoginSuccess }) {
     };
 
     // Auth success → go to avatar selection
-    const handleAuthSuccess = useCallback(({ username: u, email: e } = {}) => {
+    const handleAuthSuccess = useCallback(async ({ username: u, email: e, userId, avatarId, role, mode } = {}) => {
         if (u) setUsername(u);
         if (e) setUserEmail(e);
-        persistUser({ username: u, email: e });
-        setScreen("avatar");
+        if (userId) setUserId(userId);
+        if (role) setUserRole(role);
+        
+        persistUser({ username: u, email: e, user_id: userId, avatarId, role, mode });
+
+        if (userId) {
+            try {
+                const res = await fetch(`${API_BASE_URL}/user/sync/${userId}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data.sync_data) {
+                        Object.keys(data.sync_data).forEach(key => {
+                            localStorage.setItem(key, data.sync_data[key]);
+                        });
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to sync progress on login:", err);
+            }
+        }
+
+        if (role === "admin") {
+            setScreen("dashboard");
+        } else if (avatarId && mode) {
+            setAvatarId(avatarId);
+            setGameMode(mode);
+            setScreen("dashboard");
+        } else if (avatarId && !mode) {
+            setAvatarId(avatarId);
+            setScreen("mode");
+        } else {
+            setScreen("avatar");
+        }
     }, []);
 
     // Avatar confirmed → go to mode selection
@@ -738,7 +848,7 @@ export default function CyberDuo({ onLoginSuccess }) {
         const userData = getInitialData();
         if (userData && userData.user_id) {
             try {
-                await fetch('http://localhost:8000/auth/save-avatar', {
+                await fetch(`${API_BASE_URL}/auth/save-avatar`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userData.user_id, avatar: id })
@@ -768,7 +878,7 @@ export default function CyberDuo({ onLoginSuccess }) {
         const userData = getInitialData();
         if (userData && userData.user_id) {
             try {
-                await fetch('http://localhost:8000/auth/save-mode', {
+                await fetch(`${API_BASE_URL}/auth/save-mode`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userData.user_id, mode: mode })
@@ -813,6 +923,21 @@ export default function CyberDuo({ onLoginSuccess }) {
 
     if (screen === "avatar") return <AvatarSelection onContinue={handleAvatarDone} />;
     if (screen === "mode") return <ModeSelection avatarId={avatarId} onContinue={handleModeDone} />;
+    
+    // Redirect Admin to specialized Dashboard
+    if (screen === "dashboard" && userRole === "admin") {
+        return <AdminDashboard onLogout={async () => {
+            localStorage.removeItem("cyberduo_user_data");
+            setScreen("login");
+            setUserId(null);
+            setUserRole("user");
+            setAvatarId(null);
+            setGameMode(null);
+            setUsername("");
+            setUserEmail("");
+        }} />;
+    }
+
     if (screen === "dashboard") return (
         <Dashboard
             avatarId={avatarId}
@@ -836,7 +961,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                         if (val) syncData[k] = val;
                     });
                     try {
-                        await fetch('http://localhost:8000/user/sync', {
+                        await fetch(`${API_BASE_URL}/user/sync`, {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({ user_id: userData.user_id, sync_data: syncData })

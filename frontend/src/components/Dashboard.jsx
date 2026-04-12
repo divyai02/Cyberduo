@@ -15,6 +15,7 @@ import Badges from "./Badges.jsx";
 import DailyGoal from "./DailyGoal.jsx";
 import EditProfileModal from "./EditProfileModal.jsx";
 import SettingsModal from "./SettingsModal.jsx";
+import CertificateModal from "./CertificateModal.jsx";
 import { AVATARS } from "./AvatarSelection.jsx";
 import "../styles/dashboard.css";
 import "../styles/home.css";
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
     { id: "alerts", icon: "⚠️", label: "Cyber Alert News" },
     { id: "leaderboard", icon: "🏆", label: "Leaderboard" },
     { id: "streak", icon: "🔥", label: "Streak" },
+    { id: "certificate", icon: "🎓", label: "My Certificate" },
 ];
 
 
@@ -84,6 +86,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     // New states for modals
     const [showEditModal, setShowEditModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
+    const [showCertModal, setShowCertModal] = useState(false);
 
     const [activeGame, setActiveGame] = useState(null);
     const [selectedMission, setSelectedMission] = useState(null);
@@ -101,12 +104,76 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     const allMissionsArr = Object.values(progress).flatMap(levelObj => Object.values(levelObj));
     const solvedMissions = allMissionsArr.filter(m => m.completed).length;
     const currentMissions = allMissionsArr.filter(m => !m.completed);
+    
+    // Check for 100% Mastery (5 games × 3 levels = 15 entries, all completed)
+    const isMasteryAchieved = allMissionsArr.length === 15 && allMissionsArr.every(m => m.completed);
+
+    // Auto-pop certificate on first-ever mastery
+    useEffect(() => {
+        if (isMasteryAchieved) {
+            const alreadySeen = localStorage.getItem('cyberduo_cert_seen');
+            if (!alreadySeen) {
+                // Small delay so the dashboard renders first
+                const t = setTimeout(() => {
+                    setShowCertModal(true);
+                    localStorage.setItem('cyberduo_cert_seen', 'true');
+                }, 800);
+                return () => clearTimeout(t);
+            }
+        }
+    }, [isMasteryAchieved]);
 
     useEffect(() => {
         const initialProgress = getGameProgress();
         setProgress(initialProgress || {});
         updateStreak();
-    }, []);
+        
+        // Setup initial daily progress from DB
+        async function syncDaily() {
+            if (userId) {
+                try {
+                    const res = await fetch(`${API_BASE_URL}/user/dashboard/${userId}`);
+                    const data = await res.json();
+                    if (data.xp !== undefined) {
+                        localStorage.setItem("userXP", data.xp);
+                        // Trigger a storage event to update other components if needed
+                        window.dispatchEvent(new Event('storage'));
+                    }
+
+                    if (data.daily_questions_done !== undefined) {
+                        const today = new Date().toISOString().split('T')[0];
+                        const local = JSON.parse(localStorage.getItem("cyberduo_daily_progress") || '{}');
+                        
+                        // ONLY overwrite if server is ahead or local is wrong date
+                        if (local.date !== today || data.daily_questions_done > (local.count || 0)) {
+                            localStorage.setItem("cyberduo_daily_progress", JSON.stringify({
+                                date: today,
+                                count: data.daily_questions_done,
+                                rewardClaimed: data.daily_questions_done >= 10
+                            }));
+                            window.dispatchEvent(new Event('dailyGoalUpdated'));
+                        }
+                    }
+                } catch (e) {
+                    console.error("Failed to sync daily goal from DB", e);
+                }
+            }
+        }
+        syncDaily();
+
+        // ⚡ REAL-TIME STREAK SYNC
+        if (userId) {
+            const streakData = JSON.parse(localStorage.getItem('cyberduo_streak_data') || '{"currentStreak": 0}');
+            fetch(`${API_BASE_URL}/user/update-streak`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    user_id: userId,
+                    reported_streak: streakData.currentStreak 
+                })
+            }).catch(e => console.error("Streak sync failed", e));
+        }
+    }, [userId]);
 
     const avatar = AVATAR_MAP[avatarId] || DEFAULT_AVATAR;
     const displayName = username || "Operative";
@@ -132,9 +199,22 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     }, [dropdownOpen]);
 
     const handleNavClick = (id) => {
+        if (id === "certificate") {
+            if (!isMasteryAchieved) {
+                alert('🔒 Certificate locked! Complete all 15 modules (5 games × 3 levels) to unlock your certificate.');
+                return;
+            }
+            setShowCertModal(true);
+            setSidebarExpanded(false);
+            return;
+        }
         setActiveNav(id);
         if (id === "home") {
             setActiveGame(null);
+        }
+        // ✅ When opening leaderboard, always get fresh scores from DB
+        if (id === "leaderboard") {
+            window.dispatchEvent(new Event('leaderboardRefresh'));
         }
         setSidebarExpanded(false);
     };
@@ -159,61 +239,32 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
         if (activeGame) {
             return (
                 <GameScreen 
+                    userId={userId}
                     gameKey={activeGame.key}
                     gameName={activeGame.name} 
                     level={activeGame.level} 
                     onComplete={async (earnedXP, earnedScore) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
-                        updateUserXP(earnedXP); // Store locally for instant UI update
-                        incrementDailyProgress(); 
+                        incrementDailyProgress();
                         setProgress(newProg);
-                        
-                        // Save specific match score directly into DB
-                        if (userId) {
-                            try {
-                                await fetch('http://localhost:8000/game/save-result', {
-                                    method: 'POST',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({
-                                        user_id: userId,
-                                        game_key: activeGame.key,
-                                        level: activeGame.level,
-                                        xp_earned: earnedXP,
-                                        score: earnedScore || 0
-                                    })
-                                });
-                            } catch (e) {
-                                console.error("Failed to upload game match score to DB", e);
-                            }
-                        }
-
                         setActiveGame(null);
                         setSelectedMission(null);
-
-                        // Save to backend
-                        if (userId) {
-                            try {
-                                await fetch(`${API_BASE_URL}/game/save-result`, {
-                                    method: "POST",
-                                    headers: { "Content-Type": "application/json" },
-                                    body: JSON.stringify({
-                                        user_id: userId,
-                                        game_key: activeGame.key,
-                                        level: activeGame.level,
-                                        score: 100, // Missions are binary complete in this UI
-                                        xp_earned: earnedXP
-                                    })
-                                });
-                            } catch (err) {
-                                console.error("Failed to save game result:", err);
-                            }
-                        }
+                        setActiveNav("home");
+                        // ✅ Trigger leaderboard re-fetch with latest DB scores
+                        window.dispatchEvent(new Event('leaderboardRefresh'));
+                        window.dispatchEvent(new Event('xpUpdated'));
                     }}
                     onProgressUpdate={(completedQuestions) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, completedQuestions);
                         setProgress(newProg);
                     }}
-                    onBack={() => setActiveGame(null)} 
+                    onBack={() => {
+                        setActiveGame(null);
+                        setActiveNav("home");
+                        // ✅ Refresh leaderboard even on mid-game abort
+                        window.dispatchEvent(new Event('leaderboardRefresh'));
+                        window.dispatchEvent(new Event('xpUpdated'));
+                    }} 
                 />
             );
         }
@@ -307,6 +358,22 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                     </div>
                 </div>
 
+                {/* Mastery Banner */}
+                {isMasteryAchieved && (
+                    <div className="db-mastery-banner">
+                        <div className="db-mb-content">
+                            <span className="db-mb-icon">🎖️</span>
+                            <div className="db-mb-text">
+                                <strong>ACADEMY MASTERY ACHIEVED</strong>
+                                <span>You have secured all 15 operational sectors. Your commendation certificate is ready.</span>
+                            </div>
+                        </div>
+                        <button className="db-mb-btn" onClick={() => setShowCertModal(true)}>
+                            CLAIM CERTIFICATE
+                        </button>
+                    </div>
+                )}
+
                 {/* Game Circles Layout */}
                 <div className="db-games-section">
                     <div className="db-section-header">
@@ -331,6 +398,37 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                             Loading Progress...
                         </div>
                     )}
+                </div>
+
+                {/* Certificate Card — always visible, locked or active */}
+                <div className={`db-cert-card ${isMasteryAchieved ? 'db-cert-card--active' : 'db-cert-card--locked'}`}>
+                    <div className="db-cert-card-left">
+                        <div className="db-cert-card-icon">{isMasteryAchieved ? '🎓' : '🔒'}</div>
+                        <div className="db-cert-card-info">
+                            <div className="db-cert-card-title">
+                                {isMasteryAchieved ? '⛜️ ELITE OPERATIVE CERTIFICATE' : 'CERTIFICATE OF MASTERY'}
+                            </div>
+                            <div className="db-cert-card-sub">
+                                {isMasteryAchieved
+                                    ? 'All 15 modules completed — Your certificate is ready to claim!'
+                                    : `Complete all 15 modules to unlock — ${solvedMissions} / 15 done`
+                                }
+                            </div>
+                            {!isMasteryAchieved && (
+                                <div className="db-cert-progress-bar">
+                                    <div className="db-cert-progress-fill" style={{ width: `${(solvedMissions / 15) * 100}%` }} />
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                    <button
+                        className="db-cert-obtain-btn"
+                        onClick={() => isMasteryAchieved && setShowCertModal(true)}
+                        disabled={!isMasteryAchieved}
+                        title={isMasteryAchieved ? 'Click to claim your certificate' : `${15 - solvedMissions} more modules to go`}
+                    >
+                        {isMasteryAchieved ? '🎓 OBTAIN CERTIFICATE' : `🔒 LOCKED (${solvedMissions}/15)`}
+                    </button>
                 </div>
             </div>
 
@@ -434,6 +532,12 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                                         <span className="db-dd-item-icon">⚙️</span> Settings
                                     </button>
 
+                                    {isMasteryAchieved && (
+                                        <button className="db-dd-item" onClick={() => { setDropdownOpen(false); setShowCertModal(true); }}>
+                                            <span className="db-dd-item-icon">🎓</span> View Certificate
+                                        </button>
+                                    )}
+
                                     <div className="db-dd-divider" />
 
                                     <button
@@ -474,17 +578,23 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
 
                     {/* Nav items */}
                     <div className="db-sidebar-nav">
-                        {NAV_ITEMS.map(item => (
-                            <div
-                                key={item.id}
-                                className={`db-nav-item${activeNav === item.id ? " active" : ""}`}
-                                onClick={() => handleNavClick(item.id)}
-                                title={!sidebarExpanded ? item.label : undefined}
-                            >
-                                <span className="db-nav-icon">{item.icon}</span>
-                                <span className="db-nav-label">{item.label}</span>
-                            </div>
-                        ))}
+                        {NAV_ITEMS.map(item => {
+                            const isCertLocked = item.id === 'certificate' && !isMasteryAchieved;
+                            return (
+                                <div
+                                    key={item.id}
+                                    className={`db-nav-item${activeNav === item.id ? ' active' : ''}${isCertLocked ? ' db-nav-item--locked' : ''}`}
+                                    onClick={() => handleNavClick(item.id)}
+                                    title={isCertLocked ? `🔒 Complete all 15 modules to unlock (${solvedMissions}/15 done)` : (!sidebarExpanded ? item.label : undefined)}
+                                >
+                                    <span className="db-nav-icon">{isCertLocked ? '🔒' : item.icon}</span>
+                                    <span className="db-nav-label">
+                                        {item.label}
+                                        {isCertLocked && <span style={{ fontSize: '0.65rem', opacity: 0.5, marginLeft: '6px' }}>({solvedMissions}/15)</span>}
+                                    </span>
+                                </div>
+                            );
+                        })}
                     </div>
 
                     {/* Sidebar Widgets (Visible when expanded) */}
@@ -510,6 +620,14 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                 onClose={() => setShowSettingsModal(false)}
                 currentMode={mode}
                 onSave={handleSaveSettings}
+            />
+
+            <CertificateModal 
+                isOpen={showCertModal}
+                onClose={() => setShowCertModal(false)}
+                userName={displayName}
+                userId={userId}
+                date={new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}
             />
         </div>
     );

@@ -20,6 +20,7 @@ class SignupRequest(BaseModel):
     ageGroup: Optional[str] = None
     reason: Optional[str] = None
     howHeard: Optional[str] = None
+    techRole: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: str
@@ -58,6 +59,7 @@ def signup(data: SignupRequest):
         "ageGroup": data.ageGroup,
         "reason": data.reason,
         "howHeard": data.howHeard,
+        "tech_role": data.techRole,
         "avatar": None,
         "mode": None,
         "created_at": datetime.utcnow()
@@ -91,6 +93,7 @@ def login(data: LoginRequest):
         "username": user["username"],
         "user_id": str(user["_id"]),
         "avatar": user.get("avatar"),
+        "role": user.get("role", "user"),  # Added role for frontend routing
         "mode": user.get("mode")
     }
 

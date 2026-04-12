@@ -103,6 +103,11 @@
     display: flex;
     justify-content: center;
     align-items: center;
+    width: 100%;
+}
+
+.gs-format {
+    width: 100%;
 }
 
 /* Options for spot_fake */
@@ -1401,3 +1406,1112 @@
 .gs-btn-reset-router:hover {
     background: rgba(255, 176, 32, 0.1);
 }
+
+/* New Phishing Formats Styles */
+
+/* Deepfake Detection */
+.gs-deepfake {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    width: 100%;
+}
+
+.gs-deepfake-visual {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.gs-video-placeholder {
+    width: 100%;
+    height: 250px;
+    background: #000;
+    border: 2px solid #00FF9D;
+    border-radius: 12px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.gs-audio-wave {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    height: 100px;
+}
+
+.gs-wave-bar {
+    width: 8px;
+    height: 20px;
+    background: #00FF9D;
+    border-radius: 4px;
+    animation: wave-anim 1s ease-in-out infinite alternate;
+}
+
+@keyframes wave-anim {
+    from { height: 20px; opacity: 0.5; }
+    to { height: 80px; opacity: 1; }
+}
+
+.gs-glitch-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(rgba(0,0,0,0) 50%, rgba(0,255,157,0.1) 50%);
+    background-size: 100% 4px;
+    pointer-events: none;
+    animation: glitch-anim 2s linear infinite;
+}
+
+@keyframes glitch-anim {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(4px); }
+}
+
+.gs-transcript {
+    background: rgba(0, 255, 157, 0.05);
+    padding: 15px;
+    border-left: 4px solid #00FF9D;
+    border-radius: 4px;
+    font-style: italic;
+    color: #e0e0e0;
+}
+
+/* SVG Code Inspection */
+.gs-svg-inspection {
+    width: 100%;
+}
+
+.gs-code-block {
+    background: #0a0a1a;
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    border-radius: 8px;
+    padding: 20px;
+    overflow-x: auto;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.gs-code-line {
+    display: flex;
+    gap: 15px;
+    padding: 5px 10px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.gs-code-line:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gs-code-line.highlighted {
+    background: rgba(0, 255, 157, 0.1);
+    box-shadow: inset 3px 0 0 #00FF9D;
+}
+
+.gs-line-num {
+    color: #444;
+    min-width: 30px;
+    text-align: right;
+}
+
+.gs-instruction-mini {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 0.9rem;
+    color: #888;
+}
+
+/* Spot the Difference */
+.gs-spot-diff {
+    width: 100%;
+}
+
+.gs-diff-cards {
+    display: flex;
+    gap: 20px;
+}
+
+.gs-diff-card {
+    flex: 1;
+    background: #fff;
+    color: #333;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.gs-card-header {
+    font-weight: bold;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #666;
+}
+
+.gs-card-url {
+    font-size: 0.8rem;
+    font-family: monospace;
+    background: #f4f4f4;
+    padding: 4px 8px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.gs-login-form-mock {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.gs-input-mock {
+    height: 35px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.8rem;
+    color: #999;
+}
+
+.gs-btn-mock {
+    height: 35px;
+    background: #0067b8;
+    color: #fff;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.9rem;
+    font-weight: bold;
+}
+
+/* Digital Whodunnit */
+.gs-whodunnit {
+    width: 100%;
+}
+
+.gs-header-table {
+    background: rgba(20, 25, 45, 0.8);
+    border: 1px solid rgba(0, 255, 157, 0.3);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.gs-table-head, .gs-table-row {
+    display: grid;
+    grid-template-columns: 2fr 1fr 1fr;
+    padding: 12px 20px;
+}
+
+.gs-table-head {
+    font-weight: bold;
+    color: #00FF9D;
+    background: rgba(0, 255, 157, 0.1);
+    border-bottom: 1px solid rgba(0, 255, 157, 0.2);
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+}
+
+.gs-table-row {
+    cursor: pointer;
+    transition: background 0.2s;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.gs-table-row:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.gs-table-row.selected {
+    background: rgba(0, 255, 157, 0.15);
+    border-color: #00FF9D;
+}
+
+/* Escape Room */
+.gs-escape-room {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    width: 100%;
+    align-items: center;
+}
+
+.gs-cipher-box {
+    background: #000;
+    border: 4px double #00FF9D;
+    padding: 30px;
+    border-radius: 8px;
+    text-align: center;
+    width: 100%;
+    max-width: 400px;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.2);
+}
+
+.gs-cipher-display {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 2.5rem;
+    color: #00FF9D;
+    letter-spacing: 5px;
+    margin-bottom: 15px;
+}
+
+.gs-cipher-tip {
+    font-size: 0.8rem;
+    color: #ffb020;
+    text-transform: uppercase;
+}
+
+.gs-terminal-input {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    width: 100%;
+    max-width: 500px;
+    background: #0a0a1a;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #00FF9D;
+}
+
+.gs-prompt {
+    color: #00FF9D;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.5rem;
+}
+
+.gs-terminal-field {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 1.2rem;
+    outline: none;
+    text-transform: uppercase;
+}
+
+/* MCQ Extensions */
+.gs-scenario-text {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid #ffb020;
+    line-height: 1.5;
+}
+
+.gs-imposter-chat {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.gs-imposter-chat .gs-chat-bubble {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.gs-imposter-chat .gs-chat-bubble.selected {
+    background: rgba(255, 107, 107, 0.15);
+    border: 1px solid #ff6b6b;
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.2);
+}
+
+.gs-options-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+}
+
+/* Quishing Drills */
+.gs-quishing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+.gs-qr-scanner {
+    width: 250px;
+    background: #1a1a1a;
+    border-radius: 30px;
+    border: 8px solid #333;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.gs-qr-code-placeholder {
+    aspect-ratio: 1/1;
+    background: #fff;
+    background-image: 
+        radial-gradient(#000 20%, transparent 20%),
+        radial-gradient(#000 20%, transparent 20%);
+    background-size: 15px 15px;
+    background-position: 0 0, 7.5px 7.5px;
+    border-radius: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-qr-overlay {
+    position: absolute;
+    width: 100%;
+    height: 4px;
+    background: rgba(0, 255, 157, 0.8);
+    box-shadow: 0 0 15px #00FF9D;
+    top: 0;
+    animation: scan-qr 2s linear infinite;
+}
+
+@keyframes scan-qr {
+    0% { top: 0; }
+    100% { top: 100%; }
+}
+
+.gs-scanned-result {
+    background: #000;
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #444;
+}
+
+.gs-res-label {
+    display: block;
+    font-size: 0.75rem;
+    color: #888;
+    margin-bottom: 5px;
+}
+
+.gs-decoded-url {
+    font-family: monospace;
+    font-size: 0.85rem;
+    color: #ffb020;
+    word-break: break-all;
+}
+
+/* Adversary Roleplay */
+.gs-adversary {
+    width: 100%;
+}
+
+.gs-adversary-hud {
+    display: flex;
+    justify-content: space-around;
+    background: rgba(0, 255, 157, 0.05);
+    border: 1px solid rgba(0, 255, 157, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 25px;
+}
+
+.gs-hud-stat {
+    text-align: center;
+}
+
+.gs-hud-stat .gs-label {
+    display: block;
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.6);
+    letter-spacing: 1px;
+}
+
+.gs-hud-stat .gs-value {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 1.5rem;
+    color: #00FF9D;
+    font-weight: bold;
+}
+
+.gs-asset-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.gs-asset-card {
+    background: rgba(20, 25, 45, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s;
+}
+
+.gs-asset-card:hover {
+    border-color: #00FF9D;
+    background: rgba(0, 255, 157, 0.05);
+    transform: translateY(-3px);
+}
+
+.gs-asset-card.selected {
+    background: rgba(0, 255, 157, 0.15);
+    border-color: #00FF9D;
+    box-shadow: 0 0 15px rgba(0, 255, 157, 0.3);
+}
+
+.gs-asset-name {
+    font-weight: bold;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    color: #e0e0e0;
+}
+
+.gs-asset-meta {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    font-family: 'Share Tech Mono', monospace;
+    color: #888;
+}
+
+/* Threat Chains */
+.gs-threat-chain {
+    width: 100%;
+}
+
+.gs-chain-visual {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    padding: 20px;
+    background: rgba(10, 15, 31, 0.5);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gs-chain-channel {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.gs-channel-type {
+    min-width: 120px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.8rem;
+    color: #ffb020;
+    text-transform: uppercase;
+}
+
+.gs-channel-bubble {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px 20px;
+    border-radius: 20px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.gs-chain-part {
+    padding: 4px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 1px solid transparent;
+    font-family: 'Share Tech Mono', monospace;
+}
+
+.gs-chain-part:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.gs-chain-part.selected {
+    background: rgba(0, 255, 157, 0.2);
+    border-color: #00FF9D;
+}
+
+.gs-chain-part.malicious {
+    color: #ff6b6b;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.gs-chain-part.correct {
+    color: #00FF9D;
+    text-shadow: 0 0 5px #00FF9D;
+}
+
+.gs-chain-link {
+    color: #444;
+    font-size: 1.5rem;
+    margin: 5px 0 5px 150px;
+}
+
+/* =====================================================
+   🚀 VISUAL UPGRADE — PREMIUM ANIMATIONS & FORMAT UI
+   ===================================================== */
+
+/* --- Question Card Entrance Animation --- */
+@keyframes cardSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(28px) scale(0.97);
+        filter: blur(2px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        filter: blur(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 18px rgba(0, 255, 157, 0.25); }
+    50%       { box-shadow: 0 0 38px rgba(0, 255, 157, 0.55); }
+}
+
+@keyframes shakeWrong {
+    0%, 100% { transform: translateX(0); }
+    15%, 45%, 75% { transform: translateX(-6px); }
+    30%, 60%, 90% { transform: translateX(6px); }
+}
+
+@keyframes correctPop {
+    0%   { transform: scale(1); }
+    40%  { transform: scale(1.04); }
+    100% { transform: scale(1); }
+}
+
+@keyframes floatUp {
+    from { transform: translateY(5px); opacity: 0; }
+    to   { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes scanLine {
+    0%   { top: 0%; }
+    100% { top: 100%; }
+}
+
+.gs-question-card {
+    animation: cardSlideIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+/* --- Format Banner Header --- */
+.gs-format-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    margin-bottom: 4px;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    border: 1px solid;
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-format-banner::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, transparent 60%);
+    pointer-events: none;
+}
+
+.gs-format-banner .gs-banner-icon {
+    font-size: 1.4rem;
+    line-height: 1;
+    flex-shrink: 0;
+}
+
+.gs-format-banner .gs-banner-label {
+    flex: 1;
+    letter-spacing: 1.5px;
+}
+
+.gs-format-banner .gs-banner-tag {
+    font-size: 0.7rem;
+    padding: 3px 10px;
+    border-radius: 20px;
+    border: 1px solid currentColor;
+    opacity: 0.7;
+}
+
+/* Format colour themes */
+.gs-banner--phishing {
+    background: rgba(255, 82, 82, 0.08);
+    border-color: rgba(255, 82, 82, 0.4);
+    color: #ff6b7a;
+}
+.gs-banner--analysis {
+    background: rgba(77, 166, 255, 0.08);
+    border-color: rgba(77, 166, 255, 0.4);
+    color: #4da6ff;
+}
+.gs-banner--decision {
+    background: rgba(255, 176, 32, 0.08);
+    border-color: rgba(255, 176, 32, 0.4);
+    color: #ffb020;
+}
+.gs-banner--sort {
+    background: rgba(166, 77, 255, 0.08);
+    border-color: rgba(166, 77, 255, 0.4);
+    color: #c07aff;
+}
+.gs-banner--build {
+    background: rgba(0, 255, 157, 0.06);
+    border-color: rgba(0, 255, 157, 0.4);
+    color: #00FF9D;
+}
+.gs-banner--scan {
+    background: rgba(255, 140, 0, 0.08);
+    border-color: rgba(255, 140, 0, 0.4);
+    color: #ff8c00;
+}
+.gs-banner--investigate {
+    background: rgba(0, 220, 255, 0.08);
+    border-color: rgba(0, 220, 255, 0.4);
+    color: #00dcff;
+}
+
+/* --- Enhanced MCQ Cards with Letter Badges --- */
+.gs-mcq-card {
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-mcq-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    border-radius: inherit;
+}
+
+.gs-option-letter {
+    width: 34px;
+    height: 34px;
+    min-width: 34px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 0.85rem;
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.6);
+    transition: all 0.3s;
+    flex-shrink: 0;
+}
+
+.gs-mcq-card:hover .gs-option-letter {
+    background: rgba(0, 255, 157, 0.15);
+    border-color: rgba(0, 255, 157, 0.5);
+    color: #00FF9D;
+}
+
+.gs-mcq-card.selected .gs-option-letter {
+    background: #00FF9D;
+    border-color: #00FF9D;
+    color: #0a0f1f;
+    box-shadow: 0 0 12px rgba(0, 255, 157, 0.6);
+}
+
+.gs-mcq-card.selected {
+    animation: correctPop 0.3s ease;
+}
+
+.gs-mcq-card.wrong-answer {
+    animation: shakeWrong 0.5s ease;
+    border-color: #ff6b6b !important;
+    background: rgba(255, 107, 107, 0.1) !important;
+}
+
+.gs-mcq-card.correct-answer {
+    border-color: #00FF9D !important;
+    background: rgba(0, 255, 157, 0.15) !important;
+    animation: pulseGlow 1.5s ease infinite;
+}
+
+/* Option text */
+.gs-option-text {
+    flex: 1;
+    font-size: 1rem;
+    line-height: 1.5;
+    color: #e0e0e0;
+}
+
+/* Stagger entrance animation for MCQ cards */
+.gs-mcq-card:nth-child(1) { animation: fadeInUp 0.35s 0.05s both; }
+.gs-mcq-card:nth-child(2) { animation: fadeInUp 0.35s 0.12s both; }
+.gs-mcq-card:nth-child(3) { animation: fadeInUp 0.35s 0.19s both; }
+.gs-mcq-card:nth-child(4) { animation: fadeInUp 0.35s 0.26s both; }
+.gs-mcq-card:nth-child(5) { animation: fadeInUp 0.35s 0.33s both; }
+
+/* Decision Simulator Buttons — stagger */
+.gs-decision-sim .gs-option-btn:nth-child(1) { animation: fadeInUp 0.35s 0.05s both; }
+.gs-decision-sim .gs-option-btn:nth-child(2) { animation: fadeInUp 0.35s 0.13s both; }
+.gs-decision-sim .gs-option-btn:nth-child(3) { animation: fadeInUp 0.35s 0.21s both; }
+
+/* Decision option enhanced hover */
+.gs-option-btn {
+    position: relative;
+    overflow: hidden;
+    border-left: 3px solid transparent;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.gs-option-btn::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 0;
+    background: linear-gradient(90deg, rgba(0, 255, 157, 0.12), transparent);
+    transition: width 0.3s ease;
+    pointer-events: none;
+}
+
+.gs-option-btn:hover::before {
+    width: 100%;
+}
+
+.gs-option-btn:hover {
+    border-left-color: #00FF9D;
+    transform: translateX(4px);
+    padding-left: 22px;
+}
+
+.gs-option-btn.selected {
+    border-left-color: #00FF9D;
+    transform: translateX(4px);
+}
+
+/* --- Question Text polish --- */
+.gs-question-text {
+    background: linear-gradient(135deg, rgba(255,255,255,0.04) 0%, transparent 100%);
+    border-radius: 10px;
+    padding: 18px 22px;
+    border-left: 3px solid rgba(0, 255, 157, 0.4);
+    text-align: left;
+    font-size: 1.25rem;
+}
+
+/* --- Header Stats Enhanced --- */
+.gs-header {
+    background: linear-gradient(135deg, rgba(10,15,31,0.95) 0%, rgba(14,20,45,0.95) 100%);
+    border: 1px solid rgba(0, 255, 157, 0.25);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* Concept tag always visible above question */
+.gs-concept-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(0, 255, 157, 0.08);
+    border: 1px solid rgba(0, 255, 157, 0.25);
+    color: rgba(0, 255, 157, 0.8);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    letter-spacing: 0.5px;
+}
+
+/* Triage rows improved */
+.gs-triage-row {
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.gs-triage-row:hover {
+    transform: translateX(4px);
+    border-color: rgba(0, 255, 157, 0.5);
+    background: rgba(20, 30, 55, 0.95);
+}
+
+/* File triage items animation */
+.gs-triage-row:nth-child(1) { animation: fadeInUp 0.3s 0.06s both; }
+.gs-triage-row:nth-child(2) { animation: fadeInUp 0.3s 0.13s both; }
+.gs-triage-row:nth-child(3) { animation: fadeInUp 0.3s 0.20s both; }
+.gs-triage-row:nth-child(4) { animation: fadeInUp 0.3s 0.27s both; }
+
+/* Sequence items animation */
+.gs-sequence-item:nth-child(1) { animation: fadeInUp 0.3s 0.05s both; }
+.gs-sequence-item:nth-child(2) { animation: fadeInUp 0.3s 0.11s both; }
+.gs-sequence-item:nth-child(3) { animation: fadeInUp 0.3s 0.17s both; }
+.gs-sequence-item:nth-child(4) { animation: fadeInUp 0.3s 0.23s both; }
+.gs-sequence-item:nth-child(5) { animation: fadeInUp 0.3s 0.29s both; }
+
+/* Click-flags email parts animation */
+.gs-email-part:nth-child(1) { animation: fadeInUp 0.3s 0.04s both; }
+.gs-email-part:nth-child(2) { animation: fadeInUp 0.3s 0.09s both; }
+.gs-email-part:nth-child(3) { animation: fadeInUp 0.3s 0.14s both; }
+.gs-email-part:nth-child(4) { animation: fadeInUp 0.3s 0.19s both; }
+.gs-email-part:nth-child(5) { animation: fadeInUp 0.3s 0.24s both; }
+
+/* Submit button pulse when answer is selected */
+.gs-btn-submit.ready {
+    animation: pulseGlow 2s ease infinite;
+}
+
+/* Feedback panels polish */
+.gs-feedback.success {
+    animation: cardSlideIn 0.3s ease;
+}
+.gs-feedback.error {
+    animation: shakeWrong 0.45s ease;
+}
+
+/* --- Scavenger Hunt Objects hover --- */
+.gs-scavenger-object {
+    transition: transform 0.2s ease, filter 0.2s ease;
+}
+.gs-scavenger-object:hover {
+    transform: scale(1.08);
+    filter: drop-shadow(0 0 8px rgba(0, 255, 157, 0.6));
+    cursor: pointer;
+}
+
+/* --- QR Scanner Animation --- */
+@keyframes qrScan {
+    0%   { top: 8%; opacity: 0.9; }
+    100% { top: 88%; opacity: 0.9; }
+}
+
+.gs-qr-scanline {
+    position: absolute;
+    left: 5%;
+    width: 90%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, #00FF9D, transparent);
+    box-shadow: 0 0 8px #00FF9D;
+    animation: qrScan 1.5s ease-in-out infinite alternate;
+    pointer-events: none;
+}
+
+/* --- Digital Whodunnit table rows hover --- */
+.gs-table-row {
+    transition: all 0.2s ease;
+    cursor: pointer;
+}
+.gs-table-row:hover {
+    background: rgba(0, 255, 157, 0.08);
+    transform: translateX(3px);
+}
+
+/* --- Spot the Difference cards polish --- */
+.gs-diff-card {
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.gs-diff-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Neon timer warning --- */
+.gs-timer-badge.warning {
+    color: #ff6b6b;
+    border-color: rgba(255, 107, 107, 0.5);
+    box-shadow: 0 0 10px rgba(255, 107, 107, 0.3);
+    animation: pulseGlow 0.8s ease infinite;
+}
+
+/* --- Link inspector hover enhancement --- */
+.gs-link-container {
+    transition: transform 0.2s ease;
+}
+.gs-link-container:hover {
+    transform: scale(1.02);
+}
+
+.gs-hover-tooltip {
+    animation: floatUp 0.25s ease;
+}
+
+/* --- Spot fake cards distinct styling --- */
+.gs-spot-fake .gs-option-card {
+    border-left: 3px solid rgba(255, 176, 32, 0.3);
+    transition: all 0.25s ease;
+}
+.gs-spot-fake .gs-option-card.selected {
+    border-left-color: #00FF9D;
+    background: rgba(0, 255, 157, 0.1);
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.15), inset 0 0 20px rgba(0, 255, 157, 0.05);
+}
+.gs-spot-fake .gs-option-card:hover {
+    transform: translateY(-2px);
+    border-left-color: rgba(255, 176, 32, 0.7);
+}
+
+/* --- Password chip hover on builder --- */
+.gs-password-chip {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.gs-password-chip:hover:not(.personal-info) {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+.gs-password-chip.personal-info {
+    opacity: 0.6;
+    border-style: dashed !important;
+}
+.gs-password-chip.personal-info::after {
+    content: '⚠️';
+    margin-left: 4px;
+    font-size: 0.8rem;
+}
+
+/* =====================================================
+   NEW GAMIFIED UI COMPONENTS
+   ===================================================== */
+
+/* Kahoot Trivia Grid */
+.gs-kahoot {
+    margin-top: 20px;
+    perspective: 1000px;
+}
+
+.gs-kahoot-btn {
+    border: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+}
+
+.gs-kahoot-btn:hover {
+    transform: translateY(-5px) scale(1.02);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3) !important;
+}
+
+.gs-kahoot-btn:active {
+    transform: translateY(2px);
+}
+
+.gs-kahoot-btn.selected {
+    box-shadow: 0 0 25px rgba(255, 255, 255, 0.5) !important;
+    animation: pulseSelected 1.5s infinite;
+}
+
+@keyframes pulseSelected {
+    0% { transform: scale(1.02); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1.02); }
+}
+
+/* Traffic / Email Triage Rows */
+.gs-triage-row {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.3s ease;
+}
+
+.gs-triage-row:hover {
+    background: rgba(255, 255, 255, 0.06);
+    border-color: rgba(0, 255, 157, 0.2);
+    transform: translateX(5px);
+}
+
+.gs-triage-info {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.gs-triage-info strong {
+    color: #00FF9D;
+}
+
+.gs-triage-info span {
+    font-size: 0.9rem;
+    color: #aaa;
+}
+
+.gs-btn-keep, .gs-btn-delete {
+    transition: all 0.3s ease;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
+.gs-btn-keep:hover {
+    background: rgba(0, 255, 157, 0.1) !important;
+    transform: scale(1.05);
+}
+
+.gs-btn-delete:hover {
+    background: rgba(255, 107, 107, 0.1) !important;
+    transform: scale(1.05);
+}
+
+.gs-btn-keep.selected {
+    background: #00FF9D !important;
+    color: #000 !important;
+    box-shadow: 0 0 20px rgba(0, 255, 157, 0.4);
+}
+
+.gs-btn-delete.selected {
+    background: #ff6b6b !important;
+    color: #fff !important;
+    box-shadow: 0 0 20px rgba(255, 107, 107, 0.4);
+}
+
+/* Terminal / Escape Room */
+.gs-terminal-body {
+    box-shadow: inset 0 0 20px rgba(0, 255, 157, 0.1);
+    scrollbar-width: thin;
+    scrollbar-color: #333 transparent;
+}
+
+/* =====================================================
+   ELITE HARD LEVEL THEME
+   ===================================================== */
+.gs-banner--hard-elite {
+    background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(251, 191, 36, 0.1));
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.gs-banner--hard-elite .gs-banner-icon {
+    font-size: 1.5rem;
+    filter: drop-shadow(0 0 8px #fbbf24);
+}
+
+.gs-banner--hard-elite .gs-banner-label {
+    text-shadow: 0 0 10px rgba(251, 191, 36, 0.5);
+    letter-spacing: 2px;
+}
+
+.gs-banner--scam {
+    background: linear-gradient(135deg, rgba(255, 140, 0, 0.2), rgba(0, 0, 0, 0.4));
+    border: 1px solid rgba(255, 140, 0, 0.5);
+    color: #ff8c00;
+}
+
+/* =====================================================
+   END OF VISUAL UPGRADE
+   ===================================================== */

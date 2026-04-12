@@ -58,7 +58,7 @@ const Leaderboard = ({ compact = false }) => {
 
     const fetchLeaderboard = async () => {
         try {
-            const resp = await fetch(`${API_BASE_URL}/user/leaderboard`);
+            const resp = await fetch(`${API_BASE_URL}/user/leaderboard?_t=${Date.now()}`, { cache: 'no-store' });
             const data = await resp.json();
             if (resp.ok) {
                 // Map the avatar IDs to emojis
@@ -77,6 +77,14 @@ const Leaderboard = ({ compact = false }) => {
 
     useEffect(() => {
         fetchLeaderboard();
+
+        // Re-fetch leaderboard whenever user returns to the tab or XP is updated
+        const handleVisibility = () => { if (document.visibilityState === 'visible') fetchLeaderboard(); };
+        const handleXPUpdate = () => fetchLeaderboard();
+
+        document.addEventListener('visibilitychange', handleVisibility);
+        window.addEventListener('xpUpdated', handleXPUpdate);
+        window.addEventListener('leaderboardRefresh', handleXPUpdate);
         
         const updateFromStorage = () => {
             const stored = localStorage.getItem("cyberduo_user_data");
@@ -95,6 +103,9 @@ const Leaderboard = ({ compact = false }) => {
         window.addEventListener('storage', updateFromStorage);
         window.addEventListener('xpUpdated', updateFromStorage);
         return () => {
+            document.removeEventListener('visibilitychange', handleVisibility);
+            window.removeEventListener('xpUpdated', handleXPUpdate);
+            window.removeEventListener('leaderboardRefresh', handleXPUpdate);
             window.removeEventListener('storage', updateFromStorage);
             window.removeEventListener('xpUpdated', updateFromStorage);
         };

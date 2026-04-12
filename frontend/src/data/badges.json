@@ -1,66 +1,29 @@
 [
-  {
-    "id": "phishing_rookie",
-    "name": "Phishing Rookie",
-    "description": "Complete any 1 phishing game.",
-    "icon": "🎣",
-    "conditionType": "completeGame",
-    "conditionValue": "phishing"
-  },
-  {
-    "id": "password_apprentice",
-    "name": "Password Apprentice",
-    "description": "Complete any 1 password game.",
-    "icon": "🔐",
-    "conditionType": "completeGame",
-    "conditionValue": "password"
-  },
-  {
-    "id": "malware_hunter",
-    "name": "Malware Hunter",
-    "description": "Complete any 1 malware game.",
-    "icon": "🦠",
-    "conditionType": "completeGame",
-    "conditionValue": "malware"
-  },
-  {
-    "id": "firewall_novice",
-    "name": "Firewall Novice",
-    "description": "Complete any 1 firewall game.",
-    "icon": "🔥",
-    "conditionType": "completeGame",
-    "conditionValue": "firewall"
-  },
-  {
-    "id": "scam_spotter",
-    "name": "Scam Spotter",
-    "description": "Complete any 1 scams game.",
-    "icon": "💰",
-    "conditionType": "completeGame",
-    "conditionValue": "scams"
-  },
-  {
-    "id": "seven_day_warrior",
-    "name": "7-Day Warrior",
-    "description": "Maintain a 7-day streak.",
-    "icon": "🔥",
-    "conditionType": "streakDays",
-    "conditionValue": 7
-  },
-  {
-    "id": "five_hundred_xp_club",
-    "name": "500 XP Club",
-    "description": "Reach 500 total XP.",
-    "icon": "⭐",
-    "conditionType": "totalXP",
-    "conditionValue": 500
-  },
-  {
-    "id": "beginner_completionist",
-    "name": "Beginner Completionist",
-    "description": "Complete all 5 beginner games.",
-    "icon": "🏆",
-    "conditionType": "completeLevel",
-    "conditionValue": "beginner"
-  }
+  { "id": "phishing_rookie", "name": "Phishing Rookie", "description": "Complete any level of Phishing Frenzy.", "icon": "🎣", "conditionType": "completeGame", "conditionValue": "phishing" },
+  { "id": "password_apprentice", "name": "Password Apprentice", "description": "Complete any level of Password Protector.", "icon": "🔐", "conditionType": "completeGame", "conditionValue": "password" },
+  { "id": "malware_hunter", "name": "Malware Hunter", "description": "Complete any level of Malware Mayhem.", "icon": "🦠", "conditionType": "completeGame", "conditionValue": "malware" },
+  { "id": "firewall_novice", "name": "Firewall Novice", "description": "Complete any level of Firewall Defender.", "icon": "🔥", "conditionType": "completeGame", "conditionValue": "firewall" },
+  { "id": "scam_spotter", "name": "Scam Spotter", "description": "Complete any level of Scam Spotter.", "icon": "💰", "conditionType": "completeGame", "conditionValue": "scams" },
+
+  { "id": "beginner_completionist", "name": "Beginner Completionist", "description": "Complete all 5 Beginner level games.", "icon": "🏆", "conditionType": "completeLevel", "conditionValue": "beginner" },
+  { "id": "medium_completionist", "name": "Intermediate Operative", "description": "Complete all 5 Medium level games.", "icon": "🥈", "conditionType": "completeLevel", "conditionValue": "medium" },
+  { "id": "hard_completionist", "name": "Elite Cyber Warrior", "description": "Complete all 5 Hard (Elite) level games.", "icon": "⚜️", "conditionType": "completeLevel", "conditionValue": "hard" },
+
+  { "id": "seven_day_warrior", "name": "7-Day Warrior", "description": "Maintain a 7-day learning streak.", "icon": "🔥", "conditionType": "streakDays", "conditionValue": 7 },
+  { "id": "fourteen_day_champion", "name": "14-Day Champion", "description": "Maintain a 14-day learning streak.", "icon": "🌟", "conditionType": "streakDays", "conditionValue": 14 },
+  { "id": "thirty_day_legend", "name": "30-Day Legend", "description": "Maintain an incredible 30-day streak.", "icon": "👑", "conditionType": "streakDays", "conditionValue": 30 },
+
+  { "id": "five_hundred_xp_club", "name": "500 XP Club", "description": "Reach 500 total XP.", "icon": "⭐", "conditionType": "totalXP", "conditionValue": 500 },
+  { "id": "thousand_xp_breaker", "name": "1000 XP Breaker", "description": "Reach 1,000 total XP.", "icon": "💎", "conditionType": "totalXP", "conditionValue": 1000 },
+  { "id": "two_five_hundred_xp_titan", "name": "2500 XP Titan", "description": "Reach 2,500 total XP — a true cyber titan.", "icon": "🔱", "conditionType": "totalXP", "conditionValue": 2500 },
+  { "id": "five_k_xp_overlord", "name": "5K XP Overlord", "description": "Reach 5,000 XP. Absolute mastery of the academy.", "icon": "🏅", "conditionType": "totalXP", "conditionValue": 5000 },
+
+  { "id": "phishing_master", "name": "Phishing Master", "description": "Complete both Beginner and Medium Phishing levels.", "icon": "🎯", "conditionType": "twoLevelsGame", "conditionValue": "phishing" },
+  { "id": "password_guardian", "name": "Password Guardian", "description": "Complete both Beginner and Medium Password levels.", "icon": "🛡️", "conditionType": "twoLevelsGame", "conditionValue": "password" },
+  { "id": "malware_architect", "name": "Malware Architect", "description": "Complete the Hard Malware Mayhem level.", "icon": "☠️", "conditionType": "completeLevelGame", "conditionValue": { "level": "hard", "game": "malware" } },
+  { "id": "firewall_commander", "name": "Firewall Commander", "description": "Complete the Hard Firewall Defender level.", "icon": "🔒", "conditionType": "completeLevelGame", "conditionValue": { "level": "hard", "game": "firewall" } },
+  { "id": "scam_investigator", "name": "Master Investigator", "description": "Complete the Hard Scam Spotter level.", "icon": "🕵️", "conditionType": "completeLevelGame", "conditionValue": { "level": "hard", "game": "scams" } },
+
+  { "id": "all_domains_cleared", "name": "All Domains Cleared", "description": "Complete at least 1 level in all 5 game categories.", "icon": "🌐", "conditionType": "allGamesOnce", "conditionValue": true },
+  { "id": "academy_graduate", "name": "Academy Graduate", "description": "Complete all 15 modules across all levels — certified elite operative.", "icon": "🎓", "conditionType": "fullMastery", "conditionValue": true }
 ]
