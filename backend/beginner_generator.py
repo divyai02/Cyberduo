@@ -1,3 +1,7 @@
+# gitleaks:allow
+# NOTE: This file contains EXAMPLE passwords and simulated threats for educational purposes.
+# They are NOT real credentials and are safe to be in the repository.
+
 import json
 import random
 import os
