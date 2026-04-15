@@ -1,6 +1,10 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .routes import auth_routes, user_routes, game_routes
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
 
 app = FastAPI(title="CyberDuo API")
 

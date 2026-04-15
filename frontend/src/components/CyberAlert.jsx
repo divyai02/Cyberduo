@@ -8,32 +8,26 @@ export default function CyberAlert({ compact = false }) {
     const [chatInput, setChatInput] = useState('');
     const [chatLoading, setChatLoading] = useState(false);
 
-    const [alertsData, setAlertsData] = useState(localAlertsData); // ✅ Local-First Initialization
+    const [alertsData, setAlertsData] = useState(localAlertsData);
+    const [intelSource, setIntelSource] = useState('local'); // 'live', 'vault', or 'local'
 
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
-    // ... inside component:
-    useEffect(() => {
-        // Use newsdata.io API or fallback to our local data if the key is broken
+    const fetchLatestIntel = () => {
         const API_BASE_URL = "http://localhost:5000";
         const fetchUrl = `${API_BASE_URL}/user/alerts/news`;
-
-        if (!fetchUrl) {
-            setAlertsData(localAlertsData);
-            return;
-        }
 
         fetch(fetchUrl)
             .then(res => res.json())
             .then(data => {
-                // Handle the backend relay response which now matches NewsData structure
-                if (!data || data.status === 'error' || !data.results) {
-                    console.error("News Relay Error or No Results:", data?.results?.message || "Check Backend Logs");
-                    // Keep existing localAlertsData initialization
+                if (!data || data.status !== 'success' || !data.results) {
+                    setIntelSource('local');
+                    setAlertsData(localAlertsData);
                     return;
                 }
 
-                // STRICT Client-Side filtering to drop irrelevant news (e.g. general arrests, politics)
+                setIntelSource(data.source || 'live');
+
                 const validKeywords = ['cyber', 'hacker', 'phishing', 'malware', 'scam', 'fraud', 'breach', 'ransomware', 'digital arrest', 'otp', 'online', 'deepfake'];
                 const filteredResults = data.results.filter(article => {
                     const text = ((article.title || "") + " " + (article.description || "")).toLowerCase();
@@ -42,8 +36,7 @@ export default function CyberAlert({ compact = false }) {
 
                 const formatted = filteredResults.slice(0, 8).map((article, index) => {
                     const text = ((article.title || "") + " " + (article.description || "")).toLowerCase();
-                    
-                    let score = 4 + Math.floor(Math.random() * 2); // base 4-5
+                    let score = 4 + Math.floor(Math.random() * 2);
                     let domains = [];
                     let riskFactors = [];
 
@@ -74,21 +67,14 @@ export default function CyberAlert({ compact = false }) {
                     }
 
                     score = Math.min(10, score);
-                    let riskLevel = "medium";
-                    if (score >= 8) riskLevel = "high";
-                    else if (score >= 5) riskLevel = "medium";
-                    else riskLevel = "low";
+                    let riskLevel = score >= 8 ? "high" : score >= 5 ? "medium" : "low";
 
-                    // Smart Date Logic for Tactical Feel
                     const rawDate = article.pubDate?.split(" ")[0] || new Date().toISOString().split("T")[0];
                     const todayStr = new Date().toISOString().split("T")[0];
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
                     const yesterdayStr = yesterday.toISOString().split("T")[0];
 
-                    let displayDate = rawDate;
-                    if (rawDate === todayStr) displayDate = "TODAY";
-                    else if (rawDate === yesterdayStr) displayDate = "YESTERDAY";
+                    let displayDate = rawDate === todayStr ? "TODAY" : rawDate === yesterdayStr ? "YESTERDAY" : rawDate;
 
                     return {
                         id: index,
@@ -102,18 +88,193 @@ export default function CyberAlert({ compact = false }) {
                         domains: domains
                     };
                 });
-                // If it returned empty array, use local
+
                 if (formatted.length === 0) {
+                    setIntelSource('local');
                     setAlertsData(localAlertsData);
                 } else {
                     setAlertsData(formatted);
                 }
             })
             .catch(err => {
-                console.log("Fetch failed, using local data", err);
+                console.error("Intel fetch failed:", err);
+                setIntelSource('local');
                 setAlertsData(localAlertsData);
             });
+    };
+
+    useEffect(() => {
+        fetchLatestIntel();
     }, []);
+
+    const [trendData, setTrendData] = useState([40, 45, 42, 50, 48, 55, 60]); // Initial fallback
+    const [distData, setDistData] = useState([
+        { name: 'Phishing', val: 0, color: '#00FF9D' },
+        { name: 'Malware', val: 0, color: '#ff4d4d' },
+        { name: 'Breach', val: 0, color: '#ffb020' },
+        { name: 'Scam', val: 0, color: '#4d94ff' }
+    ]);
+    const [isLive, setIsLive] = useState(false); // Cleanup redundant
+
+    // ✅ Dynamic Data Aggregation Logic
+    useEffect(() => {
+        if (!alertsData || alertsData.length === 0) return;
+
+        // Check if data is from Local JSON fallback
+        const firstAlert = alertsData[0];
+        const looksLive = firstAlert.hasOwnProperty('headline') && !firstAlert.headline.includes("Demo Alert");
+        setIsLive(looksLive);
+
+        const counts = { Phishing: 0, Malware: 0, Breach: 0, Scam: 0 };
+        alertsData.forEach(alert => {
+            const text = ((alert.headline || "") + " " + (alert.description || "")).toLowerCase();
+            if (/phishing|link|spoof|impersonat|fake website/.test(text)) counts.Phishing++;
+            if (/malware|virus|ransomware|trojan|spyware/.test(text)) counts.Malware++;
+            if (/password|breach|leak|hack|credentials/.test(text)) counts.Breach++;
+            if (/scam|fraud|financial|steal|digital arrest/.test(text)) counts.Scam++;
+        });
+
+        const total = Object.values(counts).reduce((a, b) => a + b, 0) || 1;
+        const newDist = [
+            { name: 'Phishing', val: Math.round((counts.Phishing / total) * 100), color: '#00FF9D' },
+            { name: 'Malware', val: Math.round((counts.Malware / total) * 100), color: '#ff4d4d' },
+            { name: 'Breach', val: Math.round((counts.Breach / total) * 100), color: '#ffb020' },
+            { name: 'Scam', val: Math.round((counts.Scam / total) * 100), color: '#4d94ff' }
+        ];
+        setDistData(newDist);
+
+        // Simulated Dynamic Trend based on current total alerts volume
+        const baseLevel = 40 + (alertsData.length * 2);
+        const newTrend = Array.from({length: 7}, (_, i) => 
+            Math.min(100, Math.max(20, baseLevel + Math.floor(Math.random() * 20) - 10))
+        );
+        newTrend[6] = Math.min(100, Math.max(20, baseLevel + (counts.Phishing + counts.Malware) * 5));
+        setTrendData(newTrend);
+
+    }, [alertsData]);
+
+    const renderIndiaMap = () => {
+        // Using user-uploaded map image as background for the tactical display
+        return (
+            <div className="ca-india-map-container">
+                <img 
+                    src="/images/map.jpg" 
+                    alt="India Tactical Map" 
+                    className="ca-india-map-img"
+                    onError={(e) => {
+                        console.error("Map image failed to load, falling back to tactical placeholder");
+                        e.target.style.display = 'none';
+                    }}
+                />
+                <svg viewBox="0 0 450 514" className="ca-india-map-overlay">
+                    {/* Tactical Neon Markers correctly mapped over the image area */}
+                    <circle cx="210" cy="185" r="8" className="ca-map-point ca-point-delhi" />
+                    <circle cx="140" cy="385" r="8" className="ca-map-point ca-point-mumbai" />
+                    <circle cx="225" cy="485" r="8" className="ca-map-point ca-point-bengaluru" />
+                    <circle cx="395" cy="375" r="7" className="ca-map-point ca-point-kolkata" />
+                </svg>
+                <div className="ca-map-label">TACTICAL NATIONAL HEATMAP</div>
+            </div>
+        );
+    };
+
+    const renderThreatDashboard = () => {
+        const chartWidth = 400;
+        const chartHeight = 120;
+        const padding = 10;
+        
+        // Line chart path calculation
+        const points = trendData.map((val, i) => {
+            const x = padding + (i * (chartWidth - 2 * padding)) / (trendData.length - 1);
+            const y = chartHeight - padding - (val / 100) * (chartHeight - 2 * padding);
+            return { x, y };
+        });
+
+        const linePath = points.map((p, i) => (i === 0 ? `M ${p.x} ${p.y}` : `L ${p.x} ${p.y}`)).join(' ');
+        const areaPath = `${linePath} L ${points[points.length-1].x} ${chartHeight} L ${points[0].x} ${chartHeight} Z`;
+
+        return (
+            <div className="ca-dashboard">
+                <div className="ca-db-header">
+                    <div className="ca-db-title-wrap">
+                        <span className="ca-db-icon">🛰️</span>
+                        <div>
+                            <h3 className="ca-db-title">NATIONAL THREAT INTELLIGENCE</h3>
+                            <p className="ca-db-subtitle">India Surveillance & Tactical Analytics</p>
+                        </div>
+                    </div>
+                    <div className="ca-db-status">
+                        <div className={`ca-status-dot ${intelSource === 'live' ? 'live' : intelSource === 'vault' ? 'vault' : 'archive'}`}></div>
+                        {intelSource === 'live' ? 'LIVE NATIONAL INTEL' : intelSource === 'vault' ? 'SECURITY VAULT' : 'LOCAL ARCHIVE FEED'}
+                        <button className="ca-sync-btn" onClick={fetchLatestIntel} title="Sync Latest Intel">🔄</button>
+                    </div>
+                </div>
+
+                <div className="ca-db-grid">
+                    {/* India Map Section */}
+                    <div className="ca-db-card map-card">
+                        {renderIndiaMap()}
+                    </div>
+
+                    {/* Line Chart: Threat Volume Trend */}
+                    <div className="ca-db-card chart-card">
+                        <div className="ca-card-label">7D NATIONAL THREAT TREND</div>
+                        <div className="ca-line-chart-wrap">
+                            <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="ca-svg-line">
+                                <defs>
+                                    <linearGradient id="lineGrad" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#00FF9D" stopOpacity="0.3" />
+                                        <stop offset="100%" stopColor="#00FF9D" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                <path d={areaPath} fill="url(#lineGrad)" />
+                                <path d={linePath} fill="none" stroke="#00FF9D" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round" />
+                                {points.map((p, i) => (
+                                    <circle key={i} cx={p.x} cy={p.y} r="4" fill="#00FF9D" className="ca-chart-point" />
+                                ))}
+                            </svg>
+                        </div>
+                        <div className="ca-chart-labels">
+                            <span>6D AGO</span>
+                            <span>TODAY</span>
+                        </div>
+                    </div>
+
+                    {/* Bar Chart: Attack Distribution */}
+                    <div className="ca-db-card chart-card">
+                        <div className="ca-card-label">ATTACK VECTOR DISTRIBUTION (LIVE)</div>
+                        <div className="ca-bar-chart-wrap">
+                            {distData.map((d, i) => (
+                                <div key={i} className="ca-bar-row">
+                                    <span className="ca-bar-name">{d.name}</span>
+                                    <div className="ca-bar-bg">
+                                        <div className="ca-bar-fill" style={{ width: `${d.val}%`, backgroundColor: d.color }}></div>
+                                    </div>
+                                    <span className="ca-bar-val">{d.val}%</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Tactical Stats */}
+                    <div className="ca-db-card stats-card">
+                        <div className="ca-stat-item">
+                            <span className="ca-stat-label">SECURITY POSTURE</span>
+                            <span className="ca-stat-value" style={{ color: '#00FF9D' }}>ACTIVE</span>
+                        </div>
+                        <div className="ca-stat-item">
+                            <span className="ca-stat-label">DETECTED NODES</span>
+                            <span className="ca-stat-value" style={{ color: '#ff4d4d' }}>{alertsData.length * 42}</span>
+                        </div>
+                        <div className="ca-stat-item">
+                            <span className="ca-stat-label">SHIELD UPTIME</span>
+                            <span className="ca-stat-value" style={{ color: '#4d94ff' }}>99.9%</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    };
 
     const handleAskAIClick = () => {
         setChatOpen(true);
@@ -226,6 +387,8 @@ export default function CyberAlert({ compact = false }) {
                 <h1 className="ca-main-title">CYBER ALERTS</h1>
                 <p className="ca-subtitle">Real India News with Risk Meter Analysis</p>
             </div>
+
+            {renderThreatDashboard()}
 
             <div className="ca-list-wrapper">
                 {alertsData.map((alert, index) => (

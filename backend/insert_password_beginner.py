@@ -16,11 +16,11 @@ questions = [
         "local_id": 1, "format": "password_triage", "difficulty": "beginner",
         "gameName": "password", "game_key": "password", "level_name": "beginner",
         "concept": "Password Strength Basics",
-        "hint": "A strong password is LONG, RANDOM, and uses a MIX of uppercase, lowercase, numbers AND symbols.",
-        "explain": "Passwords are rated by how long they take to crack. Sequential numbers like '12345678' fall in under a second. Names combined with birth years are guessable in minutes. A random mix of unrelated words with symbols can take millions of years!",
-        "reveal": "Results: 12345678 = WEAK (sequential numbers, cracked instantly). jessica2003 = WEAK (real name + birth year, easily guessed). Blue-Tiger-99! = STRONG (random words + number + symbol = very hard to crack).",
+        "hint": "A strong password is LONG, RANDOM, and uses a MIX of uppercase, lowercase, numbers AND symbols. Dragging a password to DELETE removes it from consideration.",
+        "explain": "Passwords are rated by how long they take to crack. Sequential numbers like '12345678' fall in under a second. Names combined with birth years are guessable in minutes. A random mix of unrelated words with symbols can take millions of years! Only use the DELETE option if there is a clearly broken/empty entry.",
+        "reveal": "Results: 12345678 = WEAK (sequential numbers, cracked instantly). jessica2003 = WEAK (real name + birth year, easily guessed). Blue-Tiger-99! = STRONG (random words + number + symbol = very hard to crack). There is nothing to delete here — all three are real passwords being classified!",
         "correctAnswer": "WEAK: 12345678, WEAK: jessica2003, STRONG: Blue-Tiger-99!",
-        "questionText": "Strength Bin Challenge! Sort these 3 passwords — tap STRONG or WEAK for each one:",
+        "questionText": "Strength Bin Challenge! Drag each password into the STRONG or WEAK bin. Judge based on length, randomness, and character variety:",
         "passwords": [
             {"id": "pw1", "text": "12345678", "isStrong": False},
             {"id": "pw2", "text": "Blue-Tiger-99!", "isStrong": True},
@@ -87,11 +87,11 @@ questions = [
         "local_id": 5, "format": "password_builder", "difficulty": "beginner",
         "gameName": "password", "game_key": "password", "level_name": "beginner",
         "concept": "Building a Strong Passphrase",
-        "hint": "Pick 4 random words that form a funny mental image. Avoid your own name or birth year! Add a symbol or number to get full strength.",
-        "explain": "A passphrase combines random unrelated words into a long, memorable sequence. 'BlueTiger!EatingPizza' is 20 characters with uppercase, lowercase, a symbol — incredibly hard to crack yet easy to picture! Avoid using personal details like your own name.",
-        "reveal": "Perfect passphrase! Pieces like Blue, Tiger, Eating, Pizza, and 99! work great together — random, unrelated, and memorable. Avoid 'John' (personal name) and '2024' (predictable current year). Aim for 12 or more characters total!",
-        "correctAnswer": "Use random unrelated words + symbol/number pieces, avoid John (personal) and 2024 (year)",
-        "questionText": "Passphrase Story Builder! Drag word pieces to build a strong memorable passphrase. Aim to hit the highest strength score. Avoid the traps!",
+        "hint": "Pick 4 random unrelated words that form a funny mental image. Avoid your name or birth year! Add a symbol or number to boost strength.",
+        "explain": "A passphrase combines random unrelated words into a long, memorable sequence. 'BlueTiger!EatingPizza' is 20 characters with uppercase, lowercase, and a symbol — incredibly hard to crack yet easy to picture! Avoid using personal details like your own name or the current year.",
+        "reveal": "Great passphrase choices! Words like Blue, Tiger, Eating, Pizza, and 99! work brilliantly together — random, unrelated, and memorable. Avoid 'John' (it's a personal name) and '2024' (it's the current year hackers always try). Aim for 12 or more characters total!",
+        "correctAnswer": "Use random unrelated words + symbol/number pieces, avoid John (personal name) and 2024 (current year)",
+        "questionText": "Passphrase Story Builder! Drag word pieces into the password box to build a strong, memorable passphrase. Watch the strength meter and aim for the highest score. Avoid the red-flagged pieces!",
         "pieces": [
             {"id": "w1", "text": "Blue", "type": "word", "isPersonalInfo": False},
             {"id": "w2", "text": "Tiger", "type": "word", "isPersonalInfo": False},
@@ -109,15 +109,15 @@ questions = [
         "local_id": 6, "format": "adaptive_inbox", "difficulty": "beginner",
         "gameName": "password", "game_key": "password", "level_name": "beginner",
         "concept": "Multi-Factor Authentication (MFA)",
-        "hint": "Real logins come from YOUR devices in YOUR location. Anything foreign, unknown, or at 3AM is suspicious!",
-        "explain": "MFA is a second lock on your account. Even if a hacker has your password, they still need to approve a login notification on your phone. Learning to approve genuine logins and deny suspicious ones is a critical security skill everyone needs!",
-        "reveal": "Good gating! London logins from your own iPhone and office MacBook are clearly you — APPROVE. A login from North Korea at 3AM on an unknown Linux PC is definitely NOT you — DENY immediately and change your password!",
-        "correctAnswer": "APPROVE: familiar city + your own devices. DENY: North Korea 3AM unknown Linux PC",
-        "questionText": "MFA Gatekeeper! Login requests are arriving on your phone. Tap SAFE to APPROVE logins that look real, and PHISH to DENY the suspicious ones:",
+        "hint": "Real logins come from YOUR devices in YOUR location. Anything from a foreign country, at 3AM, or on an unknown device is suspicious and should be DENIED!",
+        "explain": "MFA is a second lock on your account. Even if a hacker has your password, they still need to approve a login notification on your phone. Learning to approve genuine logins and deny suspicious ones is a critical security skill.",
+        "reveal": "Correct! Logins from London on your own iPhone and office MacBook are clearly you — APPROVE. A login from North Korea at 3AM on an unknown Linux PC is definitely NOT you — DENY immediately and change your password!",
+        "correctAnswer": "APPROVE: familiar city and your own devices. DENY: North Korea 3AM unknown Linux PC",
+        "questionText": "MFA Gatekeeper! Three login requests are arriving on your phone. Tap APPROVE (🟢 SAFE) for logins that look like you, and DENY (🔴 PHISH) for suspicious ones:",
         "emails": [
-            {"id": "r1", "subject": "Login from London UK — your home city", "sender": "Your iPhone — Safari Browser", "isPhish": False},
-            {"id": "r2", "subject": "Login from North Korea at 3:00 AM", "sender": "Unknown Linux PC — never seen before", "isPhish": True},
-            {"id": "r3", "subject": "Login from London — your workplace", "sender": "Your office MacBook — Chrome Browser", "isPhish": False}
+            {"id": "r1", "subject": "New login — London UK (your home city)", "sender": "Device: Your iPhone, Safari Browser", "isPhish": False},
+            {"id": "r2", "subject": "New login — North Korea at 3:00 AM", "sender": "Device: Unknown Linux PC, never seen before", "isPhish": True},
+            {"id": "r3", "subject": "New login — London (your workplace)", "sender": "Device: Your office MacBook, Chrome Browser", "isPhish": False}
         ]
     },
 
@@ -274,15 +274,15 @@ questions = [
         "local_id": 15, "format": "cyber_snakes_ladders", "difficulty": "beginner",
         "gameName": "password", "game_key": "password", "level_name": "beginner",
         "concept": "Brute Force Attack Defence",
-        "hint": "A brute force attack tries EVERY possible combination. What single factor makes that take billions of years?",
+        "hint": "A brute force attack tries EVERY possible combination. What single factor makes that take billions of years instead of minutes?",
         "explain": "Brute force attacks work by trying every possible combination of characters. A 6-character password has about 19 billion possible combinations — crackable in minutes. A 16-character password has more combinations than atoms in the observable universe — mathematically impossible to crack in a human lifetime!",
-        "reveal": "Length is your number one defence against brute force! A 16-plus character password makes brute force computationally impossible even with the fastest supercomputers. Changing your password weekly does not help much — a hacker can crack a short password in minutes regardless of how often you change it!",
-        "questionText": "Cracker Tug-of-War Round 2! A hacker bot is running a 'Brute Force Attack' — it will try EVERY possible combination until it breaks in. What is your best defence?",
-        "scenario": "HACKER BOT ATTACK: Brute Force in progress — trying: a, b, c, ..., aa, ab, ..., Aa1!, Aa2! (billions of guesses per second!)",
+        "reveal": "Length is your number one defence against brute force! A 16+ character password makes brute force computationally impossible even with the fastest supercomputers. Changing your password every week does not help — a hacker can crack a short password in minutes regardless of how often you rotate it!",
+        "questionText": "Cracker Tug-of-War Round 2! A hacker bot is running a Brute Force Attack — it will try EVERY possible character combination until it breaks in. Choose your best defence:",
+        "scenario": "HACKER BOT: Brute Force in progress — testing: a, b, c, ..., Aa1!, Aa2! (billions of guesses per second!)",
         "options": [
-            "Use a short but complex-looking password like Ab#1! (only 5 characters)",
+            "Use a short but complex-looking password like Ab#1! (only 5 characters long)",
             "Use a VERY LONG password of 16 or more characters (e.g. BlueTigerEating!99Pizza) — length makes brute force mathematically impossible",
-            "Change your password every single week to stay ahead of the hacker"
+            "Change your password every single week to stay ahead of the hacker bot"
         ],
         "correctAnswer": "Use a VERY LONG password of 16 or more characters (e.g. BlueTigerEating!99Pizza) — length makes brute force mathematically impossible"
     },

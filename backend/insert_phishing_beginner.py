@@ -21,35 +21,38 @@ questions = [
         "level_name": "beginner",
         "concept": "Recognising Phishing Emails",
         "hint": "Check who actually SENT the email — not just what it says in the subject line.",
-        "explain": "Phishing emails pretend to be from trusted brands, banks or colleagues. The most reliable giveaway is always the sender's real email address. Legitimate companies always email from their own official domain.",
+        "explain": "Legitimate companies always email from their own official domain. Fake addresses like 'secure-alerts@google-verify.net' are clear signs of phishing.",
         "reveal": "✅ Correct! 'security@bankofamerica-alerts.xyz' is NOT a real Bank of America address. Real banks only contact you through their official domain (e.g. @bankofamerica.com). The '.xyz' domain is a major red flag!",
         "questionText": "🌅 Monday morning. Sort your inbox — swipe SAFE or flag as PHISH for each email!",
         "emails": [
-            {"id": "e1", "subject": "Your Amazon order #3421 has shipped! 📦", "sender": "shipping@amazon.com", "isPhish": False},
-            {"id": "e2", "subject": "URGENT: Your bank account has been locked", "sender": "security@bankofamerica-alerts.xyz", "isPhish": True},
-            {"id": "e3", "subject": "Team lunch agenda for Wednesday 🥗", "sender": "sarah@yourcompany.com", "isPhish": False}
+            {"id": "e1", "subject": "Your Google Security Code: 492103", "sender": "no-reply@accounts.google.com", "isPhish": False},
+            {"id": "e2", "subject": "🚨 URGENT: Your bank account has been locked", "sender": "security@bankofamerica-alerts.xyz", "isPhish": True},
+            {"id": "e3", "subject": "Netflix: Thank you for your payment", "sender": "info@mailer.netflix.com", "isPhish": False}
         ]
     },
 
-    # Q2 — link_inspector (Link Roulette #1)
+    # Q2 — sequence_builder (Reporting the Threat)
     {
         "local_id": 2,
-        "format": "link_inspector",
+        "format": "sequence_builder",
         "difficulty": "beginner",
         "gameName": "phishing",
         "game_key": "phishing",
         "level_name": "beginner",
-        "concept": "URL Inspection",
-        "hint": "Hover over the button to reveal the REAL destination URL — read it carefully!",
-        "explain": "A link button can display friendly text like 'Log in to PayPal' while secretly routing you to a completely different, dangerous website. Always hover to see the true URL before clicking anything.",
-        "reveal": "⚠️ Phishing! The button says 'PayPal Login' but the real URL was 'paypal-secure-login.fakesite.net' — a copycat page designed to steal your password. Real PayPal links always start with paypal.com.",
-        "questionText": "🎰 Link Roulette! An email has a button: 'Log in to PayPal'. Hover over it — where does it REALLY go?",
-        "displayedLink": "Log in to PayPal →",
-        "actualDestination": "http://paypal-secure-login.fakesite.net/account",
-        "correctAnswer": "Phishing"
+        "concept": "Incident Response",
+        "hint": "Think about what protecting yourself first, then reporting the danger to help others.",
+        "explain": "Following correct reporting steps prevents the attack from spreading to your colleagues. Always secure your own account first if you clicked something!",
+        "reveal": "🛡️ Great job! You secured your account, contacted the bank, then alerted IT and the authorities. This sequence ensures you are safe and the attacker is blocked from hurting others.",
+        "questionText": "🛡️ Incident Response! You accidentally clicked a suspicious link. Arrange the 4 steps you should take in the correct order:",
+        "steps": [
+            {"id": "s1", "text": "Immediately change your account password.", "correctOrder": 0},
+            {"id": "s2", "text": "Contact your bank to freeze any suspicious transactions.", "correctOrder": 1},
+            {"id": "s3", "text": "Report the email to your IT Security department.", "correctOrder": 2},
+            {"id": "s4", "text": "Delete the phishing email from your inbox.", "correctOrder": 3}
+        ]
     },
 
-    # Q3 — click_flags (Red Flag Scavenger Hunt #1)
+    # Q3 — click_flags (Package Arrival Scavenger Hunt)
     {
         "local_id": 3,
         "format": "click_flags",
@@ -57,17 +60,17 @@ questions = [
         "gameName": "phishing",
         "game_key": "phishing",
         "level_name": "beginner",
-        "concept": "Email Red Flags",
-        "hint": "Check the sender's email address AND look carefully for any spelling mistakes in the email body.",
-        "explain": "Every phishing email leaves clues! Attackers often use fake domains that look similar to real ones, and they frequently make spelling mistakes because they work fast. Train your eye to spot these signs instantly.",
-        "reveal": "🎯 Nice catch! 'support@netflix.co.xyz' is NOT Netflix's real domain, and 'Verify Mmebership' is a telltale typo. Real Netflix emails only come from @netflix.com and are spell-checked.",
-        "questionText": "🔍 Red Flag Hunt! This email claims to be from Netflix. Click ALL the suspicious parts to complete the mission!",
+        "concept": "Delivery Scams",
+        "hint": "Delivery companies use their real names (e.g., @fedex.com), not random Gmail accounts.",
+        "explain": "Fake 'Package Arrival' notifications are used to steal payment info for 'customs fees'. Always verify the tracking number directly on the official carrier's website.",
+        "reveal": "📦 Nice! 'fedex-delivery@gmail.com' is fake, and 'Customes Fee' is misspelled. Real delivery services use official portals and wouldn't use Gmail.",
+        "questionText": "📦 Package Warning! You receive an email about a missed delivery. Click ALL the red flags in this message!",
         "emailParts": [
-            {"id": "p1", "text": "From: support@netflix.co.xyz", "isFlag": True},
-            {"id": "p2", "text": "Subject: Action Required — Your Account", "isFlag": False},
-            {"id": "p3", "text": "Dear Valued Customer,", "isFlag": False},
-            {"id": "p4", "text": "Please click here to Verify Mmebership →", "isFlag": True},
-            {"id": "p5", "text": "Netflix Support Team", "isFlag": False}
+            {"id": "p1", "text": "From: fedex-delivery@gmail.com", "isFlag": True},
+            {"id": "p2", "text": "Subject: Your package could not be delivered", "isFlag": False},
+            {"id": "p3", "text": "Dear Customer, we tried to deliver your parcel today.", "isFlag": False},
+            {"id": "p4", "text": "Click here to pay £1.99 Customes Fee →", "isFlag": True},
+            {"id": "p5", "text": "FedEx Express Services", "isFlag": False}
         ],
         "correctFlags": ["p1", "p4"]
     },
@@ -100,19 +103,19 @@ questions = [
         "game_key": "phishing",
         "level_name": "beginner",
         "concept": "Anatomy of a Phishing Email",
-        "hint": "Think like a hacker: which combination would make someone panic and act fast without thinking?",
-        "explain": "Phishing works by combining a trusted identity (like your bank) with a scary, urgent message. By building a fake email yourself, you understand exactly how the psychology works — and you'll recognise it for life!",
-        "reveal": "🧪 Lab success! Combining an official-looking brand identity with extreme urgency ('account closes in 24 hours!') is the exact formula attackers use to trick millions of people every day. Now you know the recipe!",
-        "questionText": "🧪 Welcome to the Lure Lab! Build a convincing phishing email to understand how attackers think. Choose ONE lure and ONE urgency tactic:",
+        "hint": "Attackers love using 'Urgent' documents like salary reports or project updates to make you click without thinking.",
+        "explain": "Phishing works by combining a trusted identity with a scary or curious attachment like 'project.docx'. By building a fake email yourself, you understand exactly how the psychology works!",
+        "reveal": "🧪 Lab success! Attaching something like 'Urgent_Project_Update.docx' (which secretly has malware) combined with a tight deadline is how attackers trick smart people into making mistakes.",
+        "questionText": "🧪 Welcome to the Lure Lab! Build a convincing phishing email to understand how attackers think. Choose ONE lure and ONE attachment:",
         "lures": [
             {"text": "🏦 Impersonate the victim's own bank", "correct": True},
-            {"text": "📧 Send from a random Gmail address", "correct": False},
+            {"text": "🤝 Pretend to be a friendly colleague", "correct": True},
             {"text": "🛒 Pretend to be an unknown foreign shop", "correct": False}
         ],
         "urgencies": [
+            {"text": "📎 'Attached is the Project_Brief.docx — please review urgently.'", "correct": True},
             {"text": "⚠️ 'Your account will be permanently closed in 24 hours!'", "correct": True},
-            {"text": "📋 'We have updated our privacy policy.'", "correct": False},
-            {"text": "🎉 'You have received a newsletter subscription!'", "correct": False}
+            {"text": "📋 'We have updated our privacy policy.'", "correct": False}
         ]
     },
 
@@ -125,14 +128,14 @@ questions = [
         "game_key": "phishing",
         "level_name": "beginner",
         "concept": "Spotting Scam Emails",
-        "hint": "Real family emails come from people Grandma knows. Be suspicious of unexpected prizes or warnings!",
-        "explain": "Scammers frequently target older or less tech-savvy users with 'You won!' messages or fake computer warnings. These are almost always lies designed to scare or excite the reader into clicking something dangerous.",
-        "reveal": "💝 Well done! 'winprize@sweepstakes.xyz' is a scam — Grandma never entered any contest! Real prize emails always come from official, verifiable domains. The family photo email from daughter.mary@gmail.com is obviously safe.",
-        "questionText": "👵 Grandma called — her inbox is a mess! Help her sort which emails are safe to keep and which to DELETE as junk.",
+        "hint": "Be suspicious of unexpected prizes or warnings from strangers. Real family emails are always safe.",
+        "explain": "Scammers frequently target people with 'You won!' messages. These are almost always lies designed to scare or excite the reader into clicking something dangerous.",
+        "reveal": "💝 Well done! 'winprize@sweepstakes.xyz' is a scam — the other two are legitimate personal and service emails. Always delete messages that offer free money for no reason!",
+        "questionText": "👵 Grandma called — her inbox is a mess! Help her sort safe emails from junk. Which ONE is the threat?",
         "emails": [
-            {"id": "e1", "subject": "Photos from our Paris trip! 📸 Love you Mum!", "sender": "daughter.mary@gmail.com", "isPhish": False},
-            {"id": "e2", "subject": "🎉 YOU WON $5,000! Claim your prize NOW before it expires!", "sender": "winprize@sweepstakes-global.xyz", "isPhish": True},
-            {"id": "e3", "subject": "Your prescription is ready for pickup", "sender": "pharmacy@cvshealthcare.com", "isPhish": False}
+            {"id": "e1", "subject": "Photos from our Paris trip! 📸 Moms birthday!", "sender": "daughter.mary@gmail.com", "isPhish": False},
+            {"id": "e2", "subject": "🎉 YOU WON $5,000! Claim your prize NOW!", "sender": "winprize@sweepstakes-global.xyz", "isPhish": True},
+            {"id": "e3", "subject": "Your annual health checkup reminder", "sender": "appointments@healthcare-portal.com", "isPhish": False}
         ]
     },
 
@@ -231,7 +234,7 @@ questions = [
         "correctAnswer": "Advance Fee / Lottery Scam"
     },
 
-    # Q12 — scavenger_hunt (Social Media Snoop #1) — format maps to scavenger_hunt
+    # Q12 — scavenger_hunt (Social Media Snoop #1)
     {
         "local_id": 12,
         "format": "scavenger_hunt",
@@ -240,19 +243,19 @@ questions = [
         "game_key": "phishing",
         "level_name": "beginner",
         "concept": "Spear Phishing & OSINT",
-        "hint": "A phisher looks for information to make their fake email sound personal and convincing. Which details would they steal?",
-        "explain": "Spear phishing is targeted phishing where attackers research their victim on social media first. They use personal details — like your pet's name, where you work, or a recent trip — to make the scam email feel real and trustworthy.",
-        "reveal": "🕵️ You found it! 'Pet: Biscuit 🐶' and 'Works at: TechCorp' are exactly the kind of details a spear phisher would use. Example attack: 'Hi [Name], we noticed your dog Biscuit is registered at our TechCorp vet clinic — please verify your account.'",
-        "questionText": "🕵️ Social Media Snoop! You're looking at a mock public profile. Click the details a phisher would STEAL to craft a convincing personalised attack!",
+        "hint": "Phishers steal ANY personal info to make their fakes look real. This includes your location!",
+        "explain": "Spear phishing targets people using info found on social media. Even small details like your current city (Manchester) are red flags because attackers use them to personalize their trap.",
+        "reveal": "🕵️ You found them all! Location data ('Manchester') is just as valuable as your pet's name or your job. Attackers say: 'Since you're in Manchester, visit our local bank branch...' to lower your guard.",
+        "questionText": "🕵️ Social Media Snoop! You're looking at a public profile. Click the THREE details a phisher would STEAL to craft a convincing targeted attack!",
         "objects": [
             {"id": "o1", "icon": "🐶", "label": "Pet: Biscuit", "isRedFlag": True, "top": "15%", "left": "10%"},
             {"id": "o2", "icon": "🏢", "label": "Works at: TechCorp", "isRedFlag": True, "top": "15%", "left": "55%"},
-            {"id": "o3", "icon": "🎨", "label": "Hobbies: Painting", "isRedFlag": False, "top": "55%", "left": "10%"},
-            {"id": "o4", "icon": "📍", "label": "City: Manchester", "isRedFlag": False, "top": "55%", "left": "55%"}
+            {"id": "o4", "icon": "📍", "label": "City: Manchester", "isRedFlag": True, "top": "55%", "left": "55%"},
+            {"id": "o3", "icon": "🎨", "label": "Hobbies: Painting", "isRedFlag": False, "top": "55%", "left": "10%"}
         ]
     },
 
-    # Q13 — adaptive_inbox (Phish or Real? #2 — different scenario: HR/IT emails)
+    # Q13 — adaptive_inbox (Phish or Real? #2)
     {
         "local_id": 13,
         "format": "adaptive_inbox",
@@ -272,7 +275,7 @@ questions = [
         ]
     },
 
-    # Q14 — link_inspector (Link Roulette #2 — different: fake Microsoft link)
+    # Q14 — link_inspector (Link Roulette #2)
     {
         "local_id": 14,
         "format": "link_inspector",
@@ -290,7 +293,7 @@ questions = [
         "correctAnswer": "Phishing"
     },
 
-    # Q15 — the_imposter (The Report Race — find the real phish in Slack messages)
+    # Q15 — the_imposter (The Report Race)
     {
         "local_id": 15,
         "format": "the_imposter",
@@ -312,27 +315,22 @@ questions = [
         "correctAnswer": "David (Finance)"
     },
 
-    # Q16 — click_flags (Red Flag Scavenger Hunt #2 — different: fake DHL email)
+    # Q16 — link_inspector (Link Roulette #3)
     {
         "local_id": 16,
-        "format": "click_flags",
+        "format": "link_inspector",
         "difficulty": "beginner",
         "gameName": "phishing",
         "game_key": "phishing",
         "level_name": "beginner",
-        "concept": "Package Delivery Scams",
-        "hint": "Look at the sender address and the link text — delivery companies use their OWN domain, not free email services.",
-        "explain": "Package delivery scams are among the most common phishing attacks worldwide. Attackers send fake 'your parcel is delayed' emails with links to steal your card details under the guise of 'paying a customs fee'.",
-        "reveal": "📦 Well spotted! 'dhl-delivery@gmail.com' is obviously fake — DHL would never use Gmail. Also, 'Pay £1.45 customes fee!' contains a spelling error ('customes'). These are clear signs of a scam!",
-        "questionText": "📦 Scavenger Hunt Round 2! This email claims to be from DHL about your parcel. Find ALL the red flags!",
-        "emailParts": [
-            {"id": "p1", "text": "From: dhl-delivery@gmail.com", "isFlag": True},
-            {"id": "p2", "text": "Subject: Your parcel could not be delivered", "isFlag": False},
-            {"id": "p3", "text": "Dear Customer, we attempted to deliver your package today.", "isFlag": False},
-            {"id": "p4", "text": "Pay £1.45 customes fee to release your parcel →", "isFlag": True},
-            {"id": "p5", "text": "DHL Express Delivery Services", "isFlag": False}
-        ],
-        "correctFlags": ["p1", "p4"]
+        "concept": "Lookalike Domains",
+        "hint": "The domain is everything at the end of the URL before the first slash. Look for extra words!",
+        "explain": "Attackers add words like '-verify' or '-support' to a brand's name to make the link look official. A real link would never be 'amazon-support-account.com' — it would just be 'amazon.com'.",
+        "reveal": "⚠️ Phishing! The domain was 'amazon-security-verify.net'. Real Amazon links for account security will always end in amazon.com (e.g., security.amazon.com). Trust the domain, not the prefix!",
+        "questionText": "🎰 Link Roulette Round 3! You received an alert about your Amazon account. Hover to see the real destination — is it safe to click?",
+        "displayedLink": "Review Account Activity →",
+        "actualDestination": "http://amazon-security-verify.net/session-check",
+        "correctAnswer": "Phishing"
     },
 
     # Q17 — deepfake_detection (CEO Whisperer #2 — but this time it's REAL)
@@ -375,7 +373,7 @@ questions = [
         ]
     },
 
-    # Q19 — build_phish (Lure Lab #2 — different scenario: colleague impersonation)
+    # Q19 — build_phish (Lure Lab #2)
     {
         "local_id": 19,
         "format": "build_phish",
@@ -421,7 +419,7 @@ questions = [
         "correctAnswer": "Lottery / Prize Phishing Scam"
     },
 
-    # Q21 — spot_the_difference (Spot the Clone #2 — Apple login page)
+    # Q21 — spot_the_difference (Spot the Clone #2)
     {
         "local_id": 21,
         "format": "spot_the_difference",
@@ -441,7 +439,7 @@ questions = [
         "correctAnswer": "The URL domain name"
     },
 
-    # Q22 — branching_narratives (Urgency Pressure Cooker #2 — HR scenario)
+    # Q22 — branching_narratives (Urgency Pressure Cooker #2)
     {
         "local_id": 22,
         "format": "branching_narratives",
@@ -462,7 +460,7 @@ questions = [
         "correctAnswer": "Ignore the email and go directly to the official HR portal by typing its address yourself."
     },
 
-    # Q23 — quishing_drills (Catch the Quish #2 — restaurant menu QR)
+    # Q23 — quishing_drills (Catch the Quish #2)
     {
         "local_id": 23,
         "format": "quishing_drills",
@@ -481,7 +479,7 @@ questions = [
         "options": ["Safe", "Phishing"]
     },
 
-    # Q24 — escape_rooms (Escape Room #2 — different word)
+    # Q24 — escape_rooms (Escape Room #2)
     {
         "local_id": 24,
         "format": "escape_rooms",
@@ -498,7 +496,7 @@ questions = [
         "correctAnswer": "PHISHING"
     },
 
-    # Q25 — cyber_snakes_ladders (Too Good to Be True #2 — job offer scam)
+    # Q25 — cyber_snakes_ladders (Too Good to Be True #2)
     {
         "local_id": 25,
         "format": "cyber_snakes_ladders",

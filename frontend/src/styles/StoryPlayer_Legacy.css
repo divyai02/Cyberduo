@@ -1,0 +1,526 @@
+/* ===================== PREMIUM DESIGN SYSTEM ===================== */
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Bangers&display=swap');
+
+:root {
+  --primary: #6366F1;
+  --secondary: #A855F7;
+  --accent: #F43F5E;
+  --success: #10B981;
+  --warning: #F59E0B;
+  --danger: #EF4444;
+  
+  --dark-bg: #0F172A;
+  --dark-card: #1E293B;
+  --glass: rgba(30, 41, 59, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
+  
+  --font-main: 'Outfit', sans-serif;
+  --font-comic: 'Bangers', cursive;
+  
+  --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.25);
+  --neon-shadow: 0 0 15px rgba(99, 102, 241, 0.4);
+}
+
+@keyframes cinematicZoom {
+  from { transform: scale(1.02); }
+  to { transform: scale(1.05); }
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-main);
+  background: var(--dark-bg);
+  color: #F8FAFC;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* ===================== APP LAYOUT ===================== */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, rgba(99, 102, 241, 0.1), transparent),
+              radial-gradient(circle at bottom left, rgba(168, 85, 247, 0.1), transparent);
+}
+
+.app-main {
+  flex: 1;
+  padding: 2rem 1rem;
+  max-width: 1000px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===================== HEADER ===================== */
+.app-header {
+  background: var(--glass);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--glass-border);
+  padding: 1rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.logo-text {
+  font-family: var(--font-comic);
+  font-size: 2rem;
+  background: linear-gradient(135deg, #FFF, #CBD5E1);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+.header-stats { display: flex; gap: 1rem; }
+.xp-counter, .progress-counter {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  padding: 0.5rem 1rem;
+  border-radius: 99px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+/* ===================== EPISODE LIST ===================== */
+.list-header { text-align: center; margin-bottom: 3rem; }
+.list-header h2 { font-size: 3rem; font-weight: 800; margin-bottom: 0.5rem; background: linear-gradient(90deg, #6366F1, #A855F7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.list-header p { color: #94A3B8; font-size: 1.1rem; }
+
+.episodes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.episode-card {
+  background: var(--dark-card);
+  border: 1px solid var(--glass-border);
+  border-radius: 24px;
+  padding: 1.5rem;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.episode-card:hover {
+  transform: translateY(-10px);
+  border-color: var(--primary);
+  box-shadow: var(--neon-shadow);
+}
+
+.card-topic-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 99px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+
+.card-emoji { font-size: 4rem; text-align: center; margin: 1rem 0; }
+.card-title { font-family: var(--font-comic); font-size: 1.5rem; margin-bottom: 0.5rem; }
+.card-character { color: #94A3B8; margin-bottom: 1rem; }
+
+/* ===================== COMIC VIEWER ===================== */
+.comic-viewer { max-width: 800px; margin: 0 auto; }
+
+.viewer-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1.5rem; }
+.back-btn { background: none; border: 1px solid var(--glass-border); color: #fff; padding: 0.5rem 1rem; border-radius: 12px; cursor: pointer; }
+
+.frame-progress { display: flex; gap: 0.5rem; width: 100%; margin: 1rem 0; }
+.progress-dot { flex: 1; height: 6px; border-radius: 3px; background: rgba(255,255,255,0.1); }
+.progress-dot.active { background: var(--primary); box-shadow: 0 0 10px var(--primary); }
+
+/* ===================== COMIC FRAME ===================== */
+.comic-frame {
+  background: var(--dark-card);
+  border-radius: 32px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--shadow);
+}
+
+.frame-scene {
+  height: 350px;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  animation: cinematicZoom 20s infinite alternate ease-in-out;
+}
+
+.frame-scene::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, transparent 60%, rgba(15, 23, 42, 0.9));
+}
+
+.character-container {
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 2;
+  text-align: center;
+}
+
+.character-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--glass);
+  border: 4px solid var(--primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 4rem;
+  box-shadow: 0 0 20px var(--primary);
+  margin-bottom: 0.5rem;
+  transition: transform 0.3s ease;
+}
+
+/* ===================== SIMULATION SPRITES ===================== */
+.sprite-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.simulation-sprite {
+  position: absolute;
+  font-size: 1.5rem;
+  filter: drop-shadow(0 0 5px rgba(255,255,255,0.5));
+}
+
+@keyframes moveAcross {
+  from { transform: translateX(-100px); }
+  to { transform: translateX(900px); }
+}
+
+@keyframes floatUpDown {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+/* ===================== GLITCH EFFECT ===================== */
+.glitch-active {
+  animation: glitch 0.3s cubic-bezier(.25,.46,.45,.94) both infinite;
+  text-shadow: 0.05em 0 0 rgba(255,0,0,.75),
+              -0.025em -0.05em 0 rgba(0,255,0,.75),
+              0.025em 0.05em 0 rgba(0,0,255,.75);
+}
+
+@keyframes glitch {
+  0% { transform: translate(0); }
+  20% { transform: translate(-2px, 2px); }
+  40% { transform: translate(-2px, -2px); }
+  60% { transform: translate(2px, 2px); }
+  80% { transform: translate(2px, -2px); }
+  100% { transform: translate(0); }
+}
+
+/* ===================== DIALOGUE AREA ===================== */
+.dialogue-area {
+  padding: 2rem;
+  background: var(--dark-card);
+  position: relative;
+}
+
+.speaker-tag {
+  background: var(--primary);
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  display: inline-block;
+  text-transform: uppercase;
+}
+
+.dialogue-bubble {
+  font-size: 1.2rem;
+  line-height: 1.6;
+  font-weight: 400;
+  color: #E2E8F0;
+}
+
+/* ===================== CHOICES ===================== */
+.choices-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.choice-btn {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--glass-border);
+  color: #E2E8F0;
+  padding: 1rem;
+  border-radius: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  text-align: left;
+  font-size: 1rem;
+}
+
+.choice-btn:hover { background: rgba(99, 102, 241, 0.1); border-color: var(--primary); }
+.choice-btn.correct { background: rgba(16, 185, 129, 0.15); border-color: var(--success); }
+.choice-btn.wrong { background: rgba(239, 68, 68, 0.15); border-color: var(--danger); }
+
+/* ===================== RESULT BOX ===================== */
+.result-box {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  border-radius: 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--glass-border);
+}
+
+/* ===================== EPISODE COMPLETE ===================== */
+.episode-complete-screen {
+  text-align: center;
+  padding: 4rem 2rem;
+}
+
+.complete-card {
+  background: var(--dark-card);
+  padding: 3rem;
+  border-radius: 40px;
+  border: 1px solid var(--glass-border);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.xp-earned {
+  font-family: var(--font-comic);
+  font-size: 3rem;
+  color: var(--warning);
+  text-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  border: none;
+  color: white;
+  padding: 1rem 2rem;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+/* ===================== TYPEWRITER EFFECT ===================== */
+.typewriter {
+  overflow: hidden;
+  display: inline-block;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.shake { animation: shake 0.2s ease-in-out 3; }
+/* ===================== FEATURED HERO STORY ===================== */
+.featured-story-hero {
+  max-width: 1000px;
+  margin: 2rem auto;
+  background: var(--dark-card);
+  border-radius: 40px;
+  overflow: hidden;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  position: relative;
+}
+
+.hero-content-grid {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  min-height: 500px;
+}
+
+.hero-poster {
+  position: relative;
+  cursor: pointer;
+  overflow: hidden;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.poster-bg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s ease;
+  opacity: 0.8;
+}
+
+.hero-poster:hover .poster-bg {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+.poster-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(15, 23, 42, 0.9) 0%, transparent 60%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 2rem;
+  z-index: 2;
+}
+
+.character-hints {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.hint-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  padding: 4px 12px 4px 4px;
+  border-radius: 99px;
+  backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.hint-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary);
+}
+
+.hint-pill span {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #fff;
+}
+
+.play-hint {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+}
+
+.play-button-circle {
+  width: 70px;
+  height: 70px;
+  background: var(--primary);
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  box-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.7); }
+  70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+}
+
+.hero-details {
+  padding: 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.episode-tag {
+  color: #6366F1;
+  font-weight: 800;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  margin-bottom: 0.5rem;
+}
+
+.hero-title {
+  font-family: var(--font-comic);
+  font-size: 3.5rem;
+  line-height: 1;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(135deg, #FFF, #C0C0C0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #94A3B8;
+  margin-bottom: 2rem;
+}
+
+.topics-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  margin-bottom: 2.5rem;
+}
+
+.topic-chip {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #E2E8F0;
+}
+
+.start-mission-btn {
+  background: #6366F1;
+  color: white;
+  border: none;
+  padding: 1.2rem 2.5rem;
+  border-radius: 16px;
+  font-weight: 800;
+  font-size: 1.1rem;
+  cursor: pointer;
+  letter-spacing: 1px;
+  box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+  margin-bottom: 1.5rem;
+}
+
+.mission-meta {
+  display: flex;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #475569;
+  letter-spacing: 1px;
+}
+
+/* Response for small screens */
+@media (max-width: 850px) {
+  .hero-content-grid { grid-template-columns: 1fr; }
+  .hero-poster { height: 300px; }
+  .hero-details { padding: 2.5rem; }
+  .hero-title { font-size: 2.5rem; }
+}

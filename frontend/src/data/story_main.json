@@ -1,0 +1,192 @@
+{
+  "story_id": "main_story",
+  "title": "The Day Everything Almost Broke",
+  "description": "Two college students, Arjun and Riya, prep for their big hackathon demo. But digital shadows are lurking...",
+  "scenes": [
+    {
+      "id": 1,
+      "speaker": "Arjun",
+      "dialogue": "Riya! You won't believe it. I just got an email. I've been shortlisted for that elite GlobalTech internship!",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right"
+    },
+    {
+      "id": 2,
+      "speaker": "Riya",
+      "dialogue": "Wait, seriously? That's amazing! But... let me see that. Didn't they say results would be out next week?",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    },
+    {
+      "id": 3,
+      "speaker": "Riya",
+      "dialogue": "The sender is 'internships@gl0bal-tech.co'. Arjun, take a close look at that address. What should we do?",
+      "type": "question",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left",
+      "question": "What's the safest first step with this email?",
+      "options": [
+        {"text": "Click 'Verify Account' immediately to protect your status.", "isCorrect": false, "feedback": "Too risky! Artificial urgency is a classic phishing tactic."},
+        {"text": "Forward the email to the IT department for analysis.", "isCorrect": false, "feedback": "While helpful, you should first check the sender's domain yourself."},
+        {"text": "Analyze the sender's domain (globaltech-internships.co) and compare it to the official site.", "isCorrect": true, "feedback": "Excellent! 'globaltech-internships.co' is a sophisticated typo-squatting domain."},
+        {"text": "Reply to the email asking for more details about the role.", "isCorrect": false, "feedback": "Engaging confirms your email is active. Never reply to unverified senders."}
+      ]
+    },
+    {
+      "id": 4,
+      "speaker": "Arjun",
+      "dialogue": "Whoa, good catch. Close one. Let's head to the cafe to finish our actual project demo. We need some fresh air.",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right"
+    },
+    {
+      "id": 5,
+      "speaker": "Riya",
+      "dialogue": "The cafe WiFi is acting up. There's a new network called 'Cafe_Free_Secure'. It's asking for a 'Security Certificate' installation to connect.",
+      "type": "question",
+      "background": "cafe",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left",
+      "question": "The cafe WiFi requires a 'Root Certificate Profile' installation to bypass an error. What should they do?",
+      "options": [
+        {"text": "Switch to a mobile hotspot or use a cellular data connection.", "isCorrect": true, "feedback": "Perfect. Never install unknown root profiles; they allow attackers to monitor all your encrypted traffic."},
+        {"text": "Install the profile; the UI says it's a 'Security Update'.", "isCorrect": false, "feedback": "Critical Error! Attackers often label malicious profiles as 'Security Updates'."},
+        {"text": "Connect but only browse websites that have an 'HTTPS' lock.", "isCorrect": false, "feedback": "If you installed the malicious profile, the lock icon can be faked!"},
+        {"text": "Try connecting using a guest account to isolate the risk.", "isCorrect": false, "feedback": "Isolation won't prevent network-level interception. Stick to trusted hotspots."}
+      ]
+    },
+    {
+      "id": 6,
+      "speaker": "Arjun",
+      "dialogue": "Hotspot it is. Okay, I'm logging into my university portal to push our latest code. I hope I still remember the password...",
+      "type": "dialogue",
+      "background": "cafe",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right"
+    },
+    {
+      "id": 7,
+      "speaker": "Riya",
+      "dialogue": "Arjun... is that the same password you use for your 'BattleArena' game? You know what they say about password reuse.",
+      "type": "dialogue",
+      "background": "cafe",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    },
+    {
+      "id": 8,
+      "speaker": "Arjun",
+      "dialogue": "Wait! I just got an MFA notification on my phone. 'Unrecognized login attempt in Mumbai'. But we're in Bangalore!",
+      "type": "question",
+      "background": "cafe",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right",
+      "question": "Arjun receives three back-to-back login notifications (MFA Fatigue). What's the protocol?",
+      "options": [
+        {"text": "Accept the third one so the phone stops vibrating.", "isCorrect": false, "feedback": "That's exactly what the attacker wants. Never yield to MFA fatigue!"},
+        {"text": "Immediately signal to the platform that 'This isn't me'.", "isCorrect": false, "feedback": "A good start, but you must also rotate your compromised password immediately."},
+        {"text": "Ignore it and put the phone in 'Do Not Disturb' mode.", "isCorrect": false, "feedback": "Ignoring it won't stop the attack. You need active password remediation."},
+        {"text": "Deny all requests and trigger a password reset for the account immediately.", "isCorrect": true, "feedback": "Exactly! Recurring pings mean they already have your password. Reset it now!"}
+      ]
+    },
+    {
+      "id": 9,
+      "speaker": "Riya",
+      "dialogue": "That was way too close. Someone definitely has your credentials. Let's get back to the lab. I feel like something is off today.",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    },
+    {
+      "id": 10,
+      "speaker": "Arjun",
+      "dialogue": "Look, someone left a USB drive on our desk. 'Project_Demo_FINAL_v2'. Maybe it belongs to Vikram from our team?",
+      "type": "question",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right",
+      "question": "The USB has a 'CS Dept. Official' label. Is it safe to use on a lab computer?",
+      "options": [
+        {"text": "Plug it in; lab computers are hardened against viruses.", "isCorrect": false, "feedback": "Hardware-level 'BadUSB' attacks can bypass most software hardening."},
+        {"text": "Connect it to a personal laptop first to check the files.", "isCorrect": false, "feedback": "Now your personal laptop is infected too! Never risk it."},
+        {"text": "Leave it alone. Report the found item to the Security Desk or IT Supervisor.", "isCorrect": true, "feedback": "Correct. Fake labels are a common way to bait users into plugging in malicious devices."},
+        {"text": "Format the drive using a 'Disk Utility' before opening any files.", "isCorrect": false, "feedback": "The infection can happen the millisecond the hardware is recognized, before you can format."}
+      ]
+    },
+    {
+      "id": 11,
+      "speaker": "Riya",
+      "dialogue": "Definitely don't touch that. I'll message Vikram on the official channel... wait, Arjun, look at your phone. You got a DM on SocialNet.",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    },
+    {
+      "id": 12,
+      "speaker": "Arjun",
+      "dialogue": "It's from a 'GlobalTech Recruiter'. They say they need a 6-digit code sent to my SMS to 'confirm my identity' for the internship. It just arrived!",
+      "type": "question",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right",
+      "question": "The 'Recruiter' asks for a code to 'Sync Security Clearances'. How should Arjun respond?",
+      "options": [
+        {"text": "Terminate contact immediately. Official recruiters never ask for codes via Social DMs.", "isCorrect": true, "feedback": "YES. Sharing that code would grant them access to your account or bypass your MFA."},
+        {"text": "Provide the code only after they verify their employee ID.", "isCorrect": false, "feedback": "Employee IDs can be easily faked or stolen. Never share OTPs."},
+        {"text": "Send the code so your internship status is synchronized.", "isCorrect": false, "feedback": "This is a direct phishing attack to hijack your secure session!"},
+        {"text": "Ask them to send the request via an encrypted email instead.", "isCorrect": false, "feedback": "Still risky. Just terminate all contact with suspicious accounts."}
+      ]
+    },
+    {
+      "id": 13,
+      "speaker": "Riya",
+      "dialogue": "Arjun, stop! That's a classic social engineering scam. This whole day has been one giant 'Security 101' test we didn't sign up for.",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    },
+    {
+      "id": 14,
+      "speaker": "Arjun",
+      "dialogue": "You're right. If I hadn't been careful (and if you hadn't nagged me), our project, my accounts, everything... it could have been gone.",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "right"
+    },
+    {
+      "id": 15,
+      "speaker": "Riya",
+      "dialogue": "Let's finish this demo on our own terms. We don't need shortcuts to succeed—we just need to be smart and secure. Ready?",
+      "type": "dialogue",
+      "background": "college",
+      "character_left": "riya",
+      "character_right": "arjun",
+      "active_side": "left"
+    }
+  ]
+}

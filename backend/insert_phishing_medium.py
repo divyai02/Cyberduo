@@ -77,21 +77,21 @@ questions = [
         "correctAnswer": "IT-Support@yourcompany-helpdesk.net"
     },
 
-    # Q5 — decision_simulator (Multi-Step Chain: stop before entering old password)
+    # Q5 — decision_simulator (Fake Login Page: what to do when URL looks wrong)
     {
         "local_id": 5, "format": "decision_simulator", "difficulty": "medium",
         "gameName": "phishing", "game_key": "phishing", "level_name": "medium",
-        "concept": "Multi-Step Phishing Chain — Old Password Credential Harvest",
-        "hint": "Legitimate password reset flows NEVER ask for your current or old password at any step. A 'Enter your current password to verify your identity' prompt during a password reset is ALWAYS a credential harvesting trap!",
-        "explain": "Multi-step phishing attacks are sophisticated because the first page may look completely legitimate. The trap appears at Step 2 — a request for your 'old password to verify the account transfer'. Real password reset systems use a time-limited token sent to your email or phone — they NEVER need your existing password to issue a new one. The old password is harvested and used immediately for account takeover.",
-        "reveal": "Click STOP immediately! No legitimate password reset system — not Google, Apple, Microsoft, your bank, or any employer — requires your existing password at any step of the reset process. Password reset flows use one-time tokens delivered to verified contact details. The 'verify with old password' step is the credential harvest. Stopping here and reporting saves your account.",
-        "questionText": "Multi-Step Chain! You clicked a 'Password Reset' email. Page 1 looked convincing. Now Page 2 appears: 'Security Step 2: Please enter your CURRENT password to verify your identity before setting the new one.' What do you do?",
+        "concept": "Suspicious Login Page — Acting on a Wrong URL",
+        "hint": "Your bank's real website is always yourbank.com — nothing added in front or after. If the address bar shows anything different, trust your gut and EXIT before entering anything!",
+        "explain": "Phishing pages often look pixel-perfect copies of real login pages. The ONLY reliable indicator is the URL in the browser address bar. If the domain is not exactly the bank's official root domain, the page is fake. Entering credentials even once is enough for the attacker to take over your account — because the fake page captures your input and relays it immediately.",
+        "reveal": "Close the tab immediately and go directly to your bank by typing the URL yourself! You spotted the wrong URL — that is the key skill. Calling the bank to report it adds an extra protective step so the fake site can be reported and taken down. Never enter any detail on a page where the URL does not exactly match the real company domain.",
+        "questionText": "Suspicious Login Page! You click a link in an email and a bank login page appears. It looks exactly like your bank — logo, colours, everything. But the address bar shows: 'lloyds-secure-login.net' instead of 'lloydsbank.co.uk'. What do you do?",
         "options": [
-            "Enter the current password — the system needs to verify your identity before issuing a new password",
-            "Click STOP immediately — no legitimate system asks for your current password during a reset flow",
-            "Enter a random word to test the page — if it rejects it, the verification must be genuine"
+            "Log in anyway — the page looks completely genuine and identical to the real one",
+            "Close the tab immediately, go directly to lloydsbank.co.uk by typing it yourself, and call the bank to report the fake page",
+            "Try entering just your username first — if the page rejects invalid names, it must be the real bank"
         ],
-        "correctAnswer": "Click STOP immediately — no legitimate system asks for your current password during a reset flow"
+        "correctAnswer": "Close the tab immediately, go directly to lloydsbank.co.uk by typing it yourself, and call the bank to report the fake page"
     },
 
     # Q6 — file_triage (Look-Alike Domain Sort #1: Safe vs Evil)
@@ -169,16 +169,16 @@ questions = [
         "local_id": 10, "format": "branching_narratives", "difficulty": "medium",
         "gameName": "phishing", "game_key": "phishing", "level_name": "medium",
         "concept": "Fake Shared Document Notification — Unexpected File Alert",
-        "hint": "The key question is always: did you EXPECT this file? If you did not request or arrange for this document to be shared, the safest action is to delete without opening and verify through a separate communication channel.",
-        "explain": "Shared document notifications (Google Drive, OneDrive, Dropbox) are spoofed daily by attackers because employees receive these routinely. Real notifications from genuine platforms come from verified platform domains. If you receive a sharing notification for an unexpected file — especially a confidential-sounding one — the link may go to a fake login page that harvests your Google or Microsoft credentials when you 'sign in to view'.",
-        "reveal": "Delete without opening, then contact Tim separately to verify! Unexpected file notifications are a top phishing vector. The link might not even go to Google Drive — it could go to a phishing page designed to look like Google sign-in. Even if Tim is real, his account may have been compromised and is now auto-sharing malware-laden documents to his contacts. Always verify through a separate channel (phone call, Slack message) before opening any unexpected shared file.",
-        "questionText": "'Shared Doc' Trap! A notification arrives: 'Tim_from_Finance shared a Google Doc: Q2_Salary_Review_CONFIDENTIAL.pdf — click to view.' You do NOT remember requesting or expecting any file from Tim. What do you do?",
+        "hint": "The key question is always: did you EXPECT this file? If not, the safest action is to NOT click the link at all — verify with the sender directly using a separate channel like Slack or a phone call.",
+        "explain": "Shared document notifications (Google Drive, OneDrive, Dropbox) are spoofed by attackers because employees receive them routinely. The link in the email may go to a fake Google sign-in page that harvests your credentials. Forwarding the email to your manager without verification does NOT protect you — you or your manager could still click the link. The correct action is to verify with Tim DIRECTLY using a separate channel, BEFORE touching the link.",
+        "reveal": "Delete without opening and contact Tim directly through a separate channel — like Slack, a phone call, or a new email! This is the complete safe action. Forwarding to your manager sounds helpful but still risks someone clicking the malicious link before Tim confirms. Even if Tim is real, his account may have been compromised and is auto-sharing malware to his contacts. Always direct-verify before clicking unexpected shared files.",
+        "questionText": "'Shared Doc' Trap! A notification arrives: 'Tim_from_Finance shared a Google Doc: Q2_Salary_Review_CONFIDENTIAL.pdf — click to view.' You do NOT remember requesting or expecting any file from Tim. What is the SAFEST response?",
         "options": [
             "Click the link — Tim is a real colleague and the file title sounds genuinely work-related",
-            "Delete without opening, then message or call Tim through a separate channel to verify he actually sent it",
-            "Forward it to your manager — if it is important they should know about it too"
+            "Delete without opening, then message or call Tim directly through a separate channel to confirm he sent it",
+            "Forward it to your manager so they can open it — if it's malicious, let IT deal with it"
         ],
-        "correctAnswer": "Delete without opening, then message or call Tim through a separate channel to verify he actually sent it"
+        "correctAnswer": "Delete without opening, then message or call Tim directly through a separate channel to confirm he sent it"
     },
 
     # Q11 — click_flags (Signature Match: find mismatching details vs Company Directory)

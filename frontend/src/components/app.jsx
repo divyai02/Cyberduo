@@ -940,6 +940,7 @@ export default function CyberDuo({ onLoginSuccess }) {
 
     if (screen === "dashboard") return (
         <Dashboard
+            userId={userId}
             avatarId={avatarId}
             username={username}
             email={userEmail}
@@ -955,11 +956,23 @@ export default function CyberDuo({ onLoginSuccess }) {
                         "cyberduo_earned_badges",
                         "cyberduo_daily_progress"
                     ];
+                    
                     const syncData = {};
+                    
+                    // 1. Collect standard keys
                     keysToSync.forEach(k => {
                         const val = localStorage.getItem(k);
                         if (val) syncData[k] = val;
                     });
+
+                    // 2. Collect ALL mid-game progress keys dynamically
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith("cyberduo_inprogress_")) {
+                            syncData[key] = localStorage.getItem(key);
+                        }
+                    }
+
                     try {
                         await fetch(`${API_BASE_URL}/user/sync`, {
                             method: 'POST',
@@ -971,13 +984,29 @@ export default function CyberDuo({ onLoginSuccess }) {
                     }
                 }
 
-                // Clear all relevant keys
-                localStorage.removeItem("cyberduo_user_data");
-                localStorage.removeItem("cyberduo_game_progress");
-                localStorage.removeItem("userXP");
-                localStorage.removeItem("cyberduo_streak_data");
-                localStorage.removeItem("cyberduo_earned_badges");
-                localStorage.removeItem("cyberduo_daily_progress");
+                // --- Thorough Cleanup ---
+                const keysToRemove = [
+                    "cyberduo_user_data",
+                    "cyberduo_game_progress",
+                    "userXP",
+                    "cyberduo_streak_data",
+                    "cyberduo_earned_badges",
+                    "cyberduo_daily_progress",
+                    "cyberduo_cert_seen"
+                ];
+
+                // Remove standard keys
+                keysToRemove.forEach(k => localStorage.removeItem(k));
+                
+                // Remove all dynamic inprogress keys
+                const dynamicKeys = [];
+                for (let i = 0; i < localStorage.length; i++) {
+                    const key = localStorage.key(i);
+                    if (key && key.startsWith("cyberduo_inprogress_")) {
+                        dynamicKeys.push(key);
+                    }
+                }
+                dynamicKeys.forEach(k => localStorage.removeItem(k));
 
                 setScreen("login");
                 setUserId(null);

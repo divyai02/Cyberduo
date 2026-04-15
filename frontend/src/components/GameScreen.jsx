@@ -34,14 +34,25 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
 
     useEffect(() => {
         if (currentIndex > 0 || score > 0 || xp > 0 || highestCompletedIndex > -1) {
-            localStorage.setItem(`cyberduo_inprogress_${gameKey}_${level}`, JSON.stringify({
-                currentIndex, score, xp, highestCompletedIndex
-            }));
+            const progressData = { currentIndex, score, xp, highestCompletedIndex };
+            const progKey = `cyberduo_inprogress_${gameKey}_${level}`;
+            
+            localStorage.setItem(progKey, JSON.stringify(progressData));
+
+            // ✅ CLOUD SYNC: Save to DB in real-time so it persists after logout
+            if (userId) {
+                const syncData = { [progKey]: JSON.stringify(progressData) };
+                fetch(`${API_BASE_URL}/user/sync`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: userId, sync_data: syncData })
+                }).catch(e => console.error("Real-time cloud sync failed", e));
+            }
         }
         if (onProgressUpdate) {
             onProgressUpdate(highestCompletedIndex + 1);
         }
-    }, [currentIndex, score, xp, highestCompletedIndex, gameKey, level]);
+    }, [currentIndex, score, xp, highestCompletedIndex, gameKey, level, userId]);
 
     const [timeLeft, setTimeLeft] = useState(45);
     const [hasAnswered, setHasAnswered] = useState(false);
@@ -155,7 +166,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                 <div className="gs-completion-screen">
                     <h1 className="gs-neon-title">Mission Complete!</h1>
                     <div className="gs-stats-box">
-                        <p>SCORE: {score} / 100</p>
+                        <p>SCORE: {score} / 500</p>
                         <p>XP EARNED: {xp}</p>
                     </div>
                     <button className="gs-btn-primary" onClick={() => {
@@ -532,19 +543,46 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             case 'scavenger_hunt':
                 return (
                     <div className="gs-format gs-scavenger-hunt">
-                        <div style={{ position: 'relative', width: '100%', height: '300px', background: '#111', border: '1px solid #444', borderRadius: '10px', overflow: 'hidden' }}>
-                            {currentQ.objects && currentQ.objects.length > 0 ? currentQ.objects.map((obj, i) => (
-                                <div key={obj.id} 
-                                    className={`gs-hunt-obj ${checkedFlags.includes(obj.id) ? 'highlighted' : ''}`}
-                                    style={{ position: 'absolute', top: obj.top, left: obj.left, padding: '10px', background: checkedFlags.includes(obj.id) ? 'rgba(255,107,107,0.9)' : 'rgba(34,34,34,0.9)', border: '2px dashed', borderColor: checkedFlags.includes(obj.id) ? '#ff6b6b' : '#00FF9D', borderRadius: '8px', cursor: 'pointer', color: '#fff', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
-                                    onClick={() => {
-                                        if (checkedFlags.includes(obj.id)) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
-                                        else setCheckedFlags([...checkedFlags, obj.id]);
-                                    }}>
-                                    <span style={{ fontSize: '1.5rem' }}>{obj.icon}</span> 
-                                    <span style={{ fontWeight: 'bold' }}>{obj.label}</span>
-                                </div>
-                            )) : <div style={{ color: '#ff6b6b', padding: '20px' }}>Loading environment targets...</div>}
+                        <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '12px', textAlign: 'center' }}>
+                            🖱️ Click every suspicious item you can find
+                        </p>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '12px',
+                            width: '100%'
+                        }}>
+                            {currentQ.objects && currentQ.objects.length > 0 ? currentQ.objects.map((obj) => {
+                                const isSelected = checkedFlags.includes(obj.id);
+                                return (
+                                    <div key={obj.id}
+                                        className={`gs-hunt-obj ${isSelected ? 'highlighted' : ''}`}
+                                        style={{
+                                            padding: '14px 16px',
+                                            background: isSelected ? 'rgba(255,107,107,0.15)' : 'rgba(20,20,35,0.9)',
+                                            border: `2px solid ${isSelected ? '#ff6b6b' : 'rgba(0,255,157,0.35)'}`,
+                                            borderRadius: '10px',
+                                            cursor: 'pointer',
+                                            color: '#fff',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '12px',
+                                            boxShadow: isSelected ? '0 0 12px rgba(255,107,107,0.3)' : '0 2px 8px rgba(0,0,0,0.4)',
+                                            transition: 'all 0.2s ease',
+                                            userSelect: 'none'
+                                        }}
+                                        onClick={() => {
+                                            if (isSelected) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
+                                            else setCheckedFlags([...checkedFlags, obj.id]);
+                                        }}>
+                                        <span style={{ fontSize: '1.6rem', flexShrink: 0, marginTop: '2px' }}>{obj.icon}</span>
+                                        <span style={{ fontWeight: '600', fontSize: '0.88rem', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                                            {obj.label}
+                                            {isSelected && <span style={{ display: 'block', color: '#ff6b6b', fontSize: '0.75rem', marginTop: '4px' }}>⚠ Flagged</span>}
+                                        </span>
+                                    </div>
+                                );
+                            }) : <div style={{ color: '#ff6b6b', padding: '20px', gridColumn: '1/-1' }}>Loading targets...</div>}
                         </div>
                     </div>
                 );
@@ -1046,19 +1084,46 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
             case 'capture_the_flag':
                 return (
                     <div className="gs-format gs-scavenger-hunt">
-                        <div style={{ position: 'relative', width: '100%', height: '300px', background: '#111', border: '1px solid #444', borderRadius: '10px', overflow: 'hidden' }}>
-                            {currentQ.objects.map((obj) => (
-                                <div key={obj.id} 
-                                    className={`gs-hunt-obj ${checkedFlags.includes(obj.id) ? 'highlighted' : ''}`}
-                                    style={{ position: 'absolute', top: obj.top, left: obj.left, padding: '10px', background: checkedFlags.includes(obj.id) ? 'rgba(255,107,107,0.9)' : 'rgba(34,34,34,0.9)', border: '2px dashed', borderColor: checkedFlags.includes(obj.id) ? '#ff6b6b' : '#00FF9D', borderRadius: '8px', cursor: 'pointer', color: '#fff', zIndex: 10, display: 'flex', alignItems: 'center', gap: '8px', minWidth: '100px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}
-                                    onClick={() => {
-                                        if (checkedFlags.includes(obj.id)) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
-                                        else setCheckedFlags([...checkedFlags, obj.id]);
-                                    }}>
-                                    <span style={{ fontSize: '1.5rem' }}>{obj.icon}</span> 
-                                    <span style={{ fontWeight: 'bold' }}>{obj.label}</span>
-                                </div>
-                            ))}
+                        <p style={{ color: '#aaa', fontSize: '0.85rem', marginBottom: '12px', textAlign: 'center' }}>
+                            🚩 Click every suspicious item to capture the flag
+                        </p>
+                        <div style={{
+                            display: 'grid',
+                            gridTemplateColumns: 'repeat(2, 1fr)',
+                            gap: '12px',
+                            width: '100%'
+                        }}>
+                            {currentQ.objects.map((obj) => {
+                                const isSelected = checkedFlags.includes(obj.id);
+                                return (
+                                    <div key={obj.id}
+                                        className={`gs-hunt-obj ${isSelected ? 'highlighted' : ''}`}
+                                        style={{
+                                            padding: '14px 16px',
+                                            background: isSelected ? 'rgba(255,107,107,0.15)' : 'rgba(20,20,35,0.9)',
+                                            border: `2px solid ${isSelected ? '#ff6b6b' : 'rgba(0,255,157,0.35)'}`,
+                                            borderRadius: '10px',
+                                            cursor: 'pointer',
+                                            color: '#fff',
+                                            display: 'flex',
+                                            alignItems: 'flex-start',
+                                            gap: '12px',
+                                            boxShadow: isSelected ? '0 0 12px rgba(255,107,107,0.3)' : '0 2px 8px rgba(0,0,0,0.4)',
+                                            transition: 'all 0.2s ease',
+                                            userSelect: 'none'
+                                        }}
+                                        onClick={() => {
+                                            if (isSelected) setCheckedFlags(checkedFlags.filter(id => id !== obj.id));
+                                            else setCheckedFlags([...checkedFlags, obj.id]);
+                                        }}>
+                                        <span style={{ fontSize: '1.6rem', flexShrink: 0, marginTop: '2px' }}>{obj.icon}</span>
+                                        <span style={{ fontWeight: '600', fontSize: '0.88rem', lineHeight: '1.4', wordBreak: 'break-word' }}>
+                                            {obj.label}
+                                            {isSelected && <span style={{ display: 'block', color: '#ff6b6b', fontSize: '0.75rem', marginTop: '4px' }}>⚠ Flagged</span>}
+                                        </span>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 );

@@ -13,6 +13,7 @@ import SkillRadar from "./SkillRadar.jsx";
 import Leaderboard from "./Leaderboard.jsx";
 import Badges from "./Badges.jsx";
 import DailyGoal from "./DailyGoal.jsx";
+import StoryPlayer from "./StoryPlayer.jsx";
 import EditProfileModal from "./EditProfileModal.jsx";
 import SettingsModal from "./SettingsModal.jsx";
 import CertificateModal from "./CertificateModal.jsx";
@@ -36,6 +37,7 @@ const NAV_ITEMS = [
     { id: "dailygoal", icon: "📅", label: "Daily Goal" },
     { id: "alerts", icon: "⚠️", label: "Cyber Alert News" },
     { id: "leaderboard", icon: "🏆", label: "Leaderboard" },
+    { id: "episodes", icon: "🎬", label: "STORYTELLING" },
     { id: "streak", icon: "🔥", label: "Streak" },
     { id: "certificate", icon: "🎓", label: "My Certificate" },
 ];
@@ -275,6 +277,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
         if (activeNav === "badges") return <Badges />;
         if (activeNav === "dailygoal") return <DailyGoal />;
         if (activeNav === "leaderboard") return <Leaderboard />;
+        if (activeNav === "episodes") return <StoryPlayer onBack={() => setActiveNav("home")} userId={userId} />;
         
         const meta = FEATURE_META[activeNav];
         const nav = NAV_ITEMS.find(n => n.id === activeNav);

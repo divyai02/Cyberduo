@@ -197,26 +197,75 @@ def get_all_users():
     
     return all_users
 
+CORTEX_NEWS_VAULT = [
+    {
+        "title": "Major UPI Phishing Campaign Detected targeting Mumbai Professionals",
+        "description": "Security researchers have identified a large-scale phishing ring impersonating bank officials to drain UPI accounts via malicious QR codes.",
+        "pubDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "source_id": "cortex_vault"
+    },
+    {
+        "title": "Deepfake Video Scam causes ripples in Delhi Financial Sector",
+        "description": "A sophisticated deepfake video of a CEO was used to authorize an emergency transfer of 5 Crores. Forensic investigation is underway.",
+        "pubDate": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "source_id": "cortex_vault"
+    },
+    {
+        "title": "Critical RCE Vulnerability found in popular Indian E-commerce Middleware",
+        "description": "A Remote Code Execution flaw could expose millions of customer records. A patch is being rolled out across major vendors today.",
+        "pubDate": (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"),
+        "source_id": "cortex_vault"
+    },
+    {
+        "title": "New 'Digital Arrest' Scam variant targeting Bengaluru Tech Workers",
+        "description": "Sophisticated scammers are posing as CBI officers in video calls, demanding exorbitant fees to 'clear' investigation records.",
+        "pubDate": (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"),
+        "source_id": "cortex_vault"
+    },
+    {
+        "title": "Ransomware Attack halts operations at Kolkata Logistics Firm",
+        "description": "The 'DarkByte' group has claimed responsibility for encrypting core server databases. No data leak reported yet.",
+        "pubDate": (datetime.now()).strftime("%Y-%m-%d %H:%M:%S"),
+        "source_id": "cortex_vault"
+    }
+]
+
 @router.get("/alerts/news")
 def get_news():
     news_key = os.getenv("NEWS_API_KEY")
     if not news_key:
-        print("NEWS_API_KEY not found in environment!")
-        return []
+        print("NEWS_API_KEY not found! Using CORTEX_NEWS_VAULT.")
+        return {"status": "success", "results": CORTEX_NEWS_VAULT, "source": "vault"}
     
-    # We use a broad search for Indian cyber threats
+    # Primary Search
     query = urllib.parse.quote('"cyber crime" OR cybercrime OR "online fraud" OR "digital arrest" OR hacker')
     url = f"https://newsdata.io/api/1/news?apikey={news_key}&q={query}&country=in&language=en"
     
-    try:
-        req = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0'})
-        with urllib.request.urlopen(req) as response:
-            data = json.loads(response.read().decode())
-            # Return the full object so frontend's .status and .results logic works
-            return data
-    except Exception as e:
-        print(f"News API Relay Error: {e}")
-        return {"status": "error", "results": []}
+    def fetch_data(target_url):
+        try:
+            req = urllib.request.Request(target_url, headers={'User-Agent': 'Mozilla/5.0'})
+            with urllib.request.urlopen(req, timeout=10) as response:
+                return json.loads(response.read().decode())
+        except Exception as e:
+            print(f"News Fetch Error ({target_url[:20]}...): {e}")
+            return None
+
+    data = fetch_data(url)
+    
+    # Fallback Logic: Broader search
+    if not data or data.get("status") == "error" or not data.get("totalResults", 0):
+        print("Broadening search due to zero results...")
+        broad_query = urllib.parse.quote('cyber OR digital OR technology OR security')
+        url = f"https://newsdata.io/api/1/news?apikey={news_key}&q={broad_query}&country=in&language=en"
+        data = fetch_data(url)
+
+    if data and data.get("status") == "success" and data.get("totalResults", 0) > 0:
+        data["source"] = "live"
+        return data
+    
+    # FINAL FORCEFUL FALLBACK: Vault
+    print("API Failed or Empty. Using CORTEX_NEWS_VAULT to ensure visibility.")
+    return {"status": "success", "results": CORTEX_NEWS_VAULT, "source": "vault"}
 
 # ✅ SYNC DAILY MISSION PROGRESS
 class SyncDaily(BaseModel):
