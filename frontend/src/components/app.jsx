@@ -552,6 +552,12 @@ function SignUpForm({ onSuccess }) {
                 ))}
             </div>
 
+            {error && (
+                <div style={{ color: "#FF4D4D", fontSize: 13, textAlign: "center", marginBottom: 16, animation: "fadeSlideIn 0.3s ease", background: "rgba(255,77,77,0.1)", padding: "8px", borderRadius: "8px", border: "1px solid rgba(255,77,77,0.3)" }}>
+                    ⚠ {error}
+                </div>
+            )}
+
             {/* ── Step 1 : Basic info ─────────────────────── */}
             {step === 1 && (
                 <div style={{ animation: "fadeSlideIn 0.35s ease" }}>
