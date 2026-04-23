@@ -28,7 +28,8 @@ export default function CertificateModal({ isOpen, onClose, userName, date, user
                     hash |= 0;
                 }
                 const certId = `CD-CERT-${Math.abs(hash).toString(16).toUpperCase()}-${new Date().getFullYear()}`;
-                fetch('http://localhost:5000/user/save-certificate', {
+                const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
+                fetch(`${API_BASE_URL}/user/save-certificate`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ user_id: userId, certificate_id: certId, issue_date: date || new Date().toLocaleDateString() })

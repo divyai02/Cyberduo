@@ -34,7 +34,7 @@ export default function StoryPlayer({ onBack, userId }) {
   const [selectedChoice, setSelectedChoice] = useState(null);
   const [feedback, setFeedback] = useState(null);
   const [isTyping, setIsTyping] = useState(true);
-  const API_BASE_URL = "http://localhost:5000";
+  const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
   if (!story || !story.scenes) return <div style={{ color: 'white', padding: '100px', textAlign: 'center' }}>[SYSTEM ERROR] FAILED TO LOAD NARRATIVE DATA.</div>;
 

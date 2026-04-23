@@ -1,20 +1,20 @@
-from dotenv import load_dotenv
 import os
-load_dotenv()
+from dotenv import load_dotenv
 from pymongo import MongoClient
 
+load_dotenv('backend/.env')
 client = MongoClient(os.getenv('MONGO_URI'))
 col = client['cyberduo']['questions']
 
 # Clear any existing scam beginner questions
-col.delete_many({'game_key': 'scam', 'level_name': 'beginner'})
+col.delete_many({'game_key': {'$in': ['scam', 'scams']}, 'level_name': 'beginner'})
 
 questions = [
 
     # Q1 — decision_simulator (Sense of Urgency Freeze)
     {
         "local_id": 1, "format": "decision_simulator", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Urgency = Scam Red Flag",
         "hint": "The more urgent and panicked a message feels, the MORE suspicious you should be — not less. Real account problems do not disappear in 10 seconds. Scams do!",
         "explain": "Extreme urgency ('10 seconds!', 'RIGHT NOW!', 'IMMEDIATELY!') is the #1 psychological weapon used by all scammers. It is designed to bypass your thinking brain and force a panicked reaction. Real companies NEVER send countdown threats about deleting accounts. The golden rule: the more urgent a message feels, the slower and more careful you should act.",
@@ -31,7 +31,7 @@ questions = [
     # Q2 — spot_fake (Hype Slide-Rule)
     {
         "local_id": 2, "format": "spot_fake", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Recognising Overhyped Money-Making Scam Ads",
         "hint": "Count the impossible promises. Real job opportunities pay realistic wages, require real skills, and never use countdown timers. If every line sounds too amazing — that is your answer!",
         "explain": "Every element of this ad is a scam signal. '$5,000 EVERY DAY' — unrealistic and unverifiable. 'No experience needed' — real skilled work pays for skills. '100% guaranteed success' — no investment can guarantee returns. 'ONLY 3 SPOTS LEFT' — fake scarcity. These are the exact psychological pressure tactics taught in scammer training manuals, designed to override your common sense with excitement.",
@@ -48,7 +48,7 @@ questions = [
     # Q3 — deepfake_detection (Deepfake Ear Test: AI cloned nephew)
     {
         "local_id": 3, "format": "deepfake_detection", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "AI Voice Cloning — Family Emergency Scam",
         "hint": "Real family members in genuine emergencies NEVER ask for gift card payments or demand you keep it secret from other family members. If you are unsure — hang up and call them directly on their saved number!",
         "explain": "AI can clone a person's voice from just 10-20 seconds of audio taken from social media. Scammers use this to call relatives pretending to be a family member in distress. Key red flags: refuses to video call, demands untraceable payment (gift cards / Cash App), insists on secrecy, and creates extreme urgency. Always verify by hanging up and calling the person on their REAL saved number.",
@@ -68,7 +68,7 @@ questions = [
     # Q4 — scavenger_hunt (Profile Scraper: What scammer steals from social media)
     {
         "local_id": 4, "format": "scavenger_hunt", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Social Media Oversharing and Scammer Data Mining",
         "hint": "Scammers look for personal details that answer typical security questions or prove identity. Pet names, schools, and birthdays are the magic three that unlock accounts and build believable fake emergencies!",
         "explain": "Scammers research their targets on social media before attacking — this is called OSINT (Open Source Intelligence). They look for: pet names (common security question: 'What is your pet's name?'), schools (common security question: 'What secondary school did you attend?'), and birthdays (used to verify identity when calling your bank pretending to be you). With these three, a scammer can reset your passwords, impersonate you, or craft a perfectly personalised phishing message about you!",
@@ -87,7 +87,7 @@ questions = [
     # Q5 — link_inspector (Ghost URL #1: Amazon login fake button)
     {
         "local_id": 5, "format": "link_inspector", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Hidden Scam Links Behind Friendly Button Text",
         "hint": "Hover over the button to reveal where it REALLY goes. Look carefully — a zero '0' replacing the letter 'o', plus a '.ru' Russian domain instead of '.com', are massive red flags!",
         "explain": "This technique is called URL masking — the button displays friendly text ('Log in to Amazon') while secretly pointing to a completely different scam website. The real URL 'amaz0n-account-secure.ru' has two deliberate disguises: a zero (0) where there should be the letter 'o', and a Russian '.ru' domain. Amazon would never host their login page on a foreign domain like '.ru', '.xyz', or '.net'!",
@@ -101,7 +101,7 @@ questions = [
     # Q6 — scenario_mcq (Too Good Price Tag: $10 laptop scam)
     {
         "local_id": 6, "format": "scenario_mcq", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Spotting Unrealistically Cheap Prices as Scam Bait",
         "hint": "A 98% discount from a seller with zero reviews is not a bargain — it is a trap. Real discounts from real sellers are usually 5–30% off, not 98% off. If the price makes you gasp, slow down!",
         "explain": "The '$10 laptop' scam works because our brains focus on the discount and not on the danger. The scammer takes your $10 payment, ships you nothing (or a broken brick in a box!), and then disappears. Scam platforms rely on people betting that the deal might just be real. Real bargains exist — but they come from established verified retailers with histories and reviews, not brand-new zero-review accounts selling luxury items for pennies.",
@@ -118,7 +118,7 @@ questions = [
     # Q7 — branching_narratives (Marketplace Bait & Switch #1)
     {
         "local_id": 7, "format": "branching_narratives", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Staying Inside Official Marketplace Platforms for Safety",
         "hint": "Legitimate sellers WANT to stay on the official platform — it protects them too! The moment someone asks you to move off-platform, they are trying to escape the buyer protection that would catch them if they scam you.",
         "explain": "Moving transactions off official marketplace platforms (eBay, Amazon, Facebook Marketplace) to private messaging apps removes ALL buyer protection. eBay and PayPal have buyer guarantee programs — but only for purchases made entirely within their system. The 'bigger discount' offered outside is 100% fake — it is just the lure to get you somewhere unprotected where you are easy to scam with zero recourse.",
@@ -135,7 +135,7 @@ questions = [
     # Q8 — click_flags (Charity Truth Serum: Find all red flags in fake charity appeal)
     {
         "local_id": 8, "format": "click_flags", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Identifying Fake Charity Appeals and Donation Scams",
         "hint": "Real registered charities have an official registration number, accept secure card or bank payments, use their own email domain, and never put a countdown timer on donations. Find all four red flags!",
         "explain": "Charity fraud spikes after every natural disaster because scammers know the public reacts emotionally and quickly. Warning signs: no charity registration number (all legitimate charities are registered with a government regulator), accepting only untraceable payment methods, fake 24-hour deadline urgency, and a personal Gmail address instead of an official organisation email. Always check the charity register before donating!",
@@ -155,7 +155,7 @@ questions = [
     # Q9 — select_all (Gift Card Shredder: Why gift cards = always a scam)
     {
         "local_id": 9, "format": "select_all", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Gift Card Payment Scam Awareness",
         "hint": "No legitimate boss, government agency, IT department, or prize giver will EVER ask you to buy gift cards as payment. This is a universal, no-exceptions rule. Select ALL the reasons why!",
         "explain": "The 'Boss Gift Card Scam' (also CEO Fraud or Business Email Compromise) is devastatingly effective because it creates a believable authority scenario with urgency and secrecy. Once you share a gift card code, the money is gone instantly — codes work like cash and cannot be reversed. Companies NEVER buy awards, pay taxes, or settle debts with retail gift cards. This is 100% a scam format with zero exceptions.",
@@ -183,7 +183,7 @@ questions = [
     # Q10 — the_imposter (Secret Messenger: Find the fake friend asking for money)
     {
         "local_id": 10, "format": "the_imposter", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Identifying Fake Friend Money Request Scams",
         "hint": "The scam message combines three elements: a new or hacked account explanation, a fake emergency, AND an urgent request for untraceable money. Real friends in trouble call you first — they do not create new social media accounts and immediately ask for money!",
         "explain": "The 'friend hacked account' scam works by creating a believable story (old account was hacked, using a new one), adding a personal emergency (card blocked, stuck somewhere), and making the request feel private and urgent. Scammers compromise contact lists and target every person on it. Always verify money requests by calling your friend on their actual phone number — NOT by replying to the suspicious DM.",
@@ -201,7 +201,7 @@ questions = [
     # Q11 — sequence_builder (Verify a Suspicious Online Seller — correct steps in order)
     {
         "local_id": 11, "format": "sequence_builder", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Safe Online Marketplace Buying Process",
         "hint": "Start with the fastest and most powerful check — seller reviews. Then research further, confirm details, use protected payment, and keep a paper trail. Each step protects the next one!",
         "explain": "Safe online shopping follows a clear verification chain. Seller reviews are free and take 30 seconds — a new account with 0 reviews is an instant red flag. Googling the seller name reveals known scammers quickly. Confirming item details catches bait-and-switch attempts. Official platform payments include buyer protection. Keeping records provides evidence if you need to file a dispute later.",
@@ -219,7 +219,7 @@ questions = [
     # Q12 — spot_fake (Tech Support Pop-up Panic)
     {
         "local_id": 12, "format": "spot_fake", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Fake Tech Support Scareware Pop-up Alerts",
         "hint": "This pop-up is just a scary webpage — it is NOT a real security alert. Real viruses are not detected by websites! The only safe exit is to force-close the entire browser without clicking ANYTHING shown in the pop-up.",
         "explain": "Scareware pop-ups are fake virus alerts displayed as webpages. They CANNOT actually scan your computer — they are designed to look like real alerts to trick you into panicking. Clicking 'Clean Now' downloads actual malware. Calling the number connects you to scammers (often called 'tech support scammers') who charge hundreds to 'fix' a problem that does not exist. The only correct response: force-close the browser without touching anything inside the pop-up.",
@@ -237,7 +237,7 @@ questions = [
     # Q13 — scenario_mcq (Stranger Danger Map: Geographic Inconsistency Tells)
     {
         "local_id": 13, "format": "scenario_mcq", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Identifying Romance Scam Geographic Deception",
         "hint": "Time zones do not lie! Someone claiming to be in London but sending messages at 3-4AM London time is almost certainly not in London. Ask yourself: where in the world is it 8-9AM when it is 3-4AM in London?",
         "explain": "Geographic deception is a core romance scam technique. Scammers operate from countries far away but claim to be local to build closeness. They cannot meet in person (excuses: travel, overseas work, military posting), they have professional-looking photos (often stolen from real people's accounts), and their messages arrive at times completely inconsistent with their claimed location. Time zone mismatches are the most reliable and hardest to fake red flag.",
@@ -255,7 +255,7 @@ questions = [
     # Q14 — decision_simulator (Overpayment Math Puzzle: Reject or refund the cheque)
     {
         "local_id": 14, "format": "decision_simulator", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Recognising and Refusing Overpayment Scams",
         "hint": "Here is what always happens: the cheque is counterfeit and bounces 2-3 weeks later. But the money you transferred back is already gone — and YOU are liable. The bank takes YOUR real money back. Reject any overpayment from a stranger!",
         "explain": "The Overpayment Scam is one of the oldest and most successful online selling frauds. The cheque IS fake. Banks clear cheques quickly but do not always detect sophisticated forgeries immediately. The scammer gets you to transfer real cash before the fraud is detected. When the cheque bounces weeks later, the bank recovers it from your real account — but your transfer to the scammer is already gone and almost impossible to trace or recover.",
@@ -272,7 +272,7 @@ questions = [
     # Q15 — scavenger_hunt (Official Logo Match: Find the fake government agency logo)
     {
         "local_id": 15, "format": "scavenger_hunt", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Detecting Fake Official Authority Logos in Scam Letters",
         "hint": "Real government logos are professionally designed, registered, and have been in use for decades. Any logo with a silly element, a brand-new or unrecognisable agency name, or missing an official government seal is suspicious. Does this agency actually exist?",
         "explain": "Scammers create fake government-looking logos to make their fraud letters look legitimate and scare victims into paying. Common tactics: invent a convincing authority-sounding name, use eagles, official-looking fonts, and government colours. But real agencies have verifiable logos on their official government websites. Always search the agency name online before responding to any letter that demands payment or personal information!",
@@ -291,7 +291,7 @@ questions = [
     # Q16 — link_inspector (Ghost URL #2: PayPal fake verify button)
     {
         "local_id": 16, "format": "link_inspector", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "URL Spoofing — Fake Secure Payment Page Links",
         "hint": "Hover to see the REAL destination. PayPal's real website is ONLY ever at paypal.com. Look for the subtle number '1' replacing the letter 'l' in paypa1 — and the wrong '.net' domain instead of '.com'!",
         "explain": "Typosquatting is when scammers register domain names that look almost identical to real websites by changing one character — 'paypa1.net' instead of 'paypal.com'. They combine this with URL masking (showing friendly button text to hide the real address) to trick people into entering their payment credentials on a fake page. PayPal email links should NEVER be clicked — always type paypal.com directly into your browser instead.",
@@ -305,7 +305,7 @@ questions = [
     # Q17 — file_triage (Sort scam vs real messages in your inbox)
     {
         "local_id": 17, "format": "file_triage", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Quickly Sorting Scam Messages from Real Notifications",
         "hint": "Real messages come from official verified domains and mention your specific account details. Scam messages use random numbers, suspicious domains (.xyz, .net for tax agencies), prize announcements, or ask for personal data by email or text.",
         "explain": "Scam texts and emails are designed to look like official notifications from trusted organisations. Key differences: real notifications come from official short codes or verified registered domains; real messages reference your actual known account details; fake ones have suspicious domains, urgency, prize announcements, or requests for personal data. HMRC (UK tax) and IRS (US tax) NEVER email or text you requesting your bank details — they always write formal letters.",
@@ -323,7 +323,7 @@ questions = [
     # Q18 — deepfake_detection (CEO Voice Test Round 2: This one is REAL)
     {
         "local_id": 18, "format": "deepfake_detection", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Distinguishing Real Authority Calls from AI Voice Scams",
         "hint": "Real business calls reference actual scheduled events, make no unusual financial or secretive request, and have a clearly normal purpose. It is the NATURE of the request — not just the voice — that reveals a scam!",
         "explain": "Not every call from an authority figure is a scam — and over-reacting to all of them creates unnecessary panic. The difference between a real call and a deepfake scam is always in the REQUEST, not just who appears to be calling. Real executive calls reference real known events, ask for nothing unusual, and have zero financial or secrecy components. Scam calls always manufacture emergencies, demand unusual action, and require secrecy.",
@@ -343,7 +343,7 @@ questions = [
     # Q19 — branching_narratives (Grandparent Verifier: What to do with the jail call)
     {
         "local_id": 19, "format": "branching_narratives", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Verifying Family Emergency Calls Before Sending Money",
         "hint": "The safest response to ANY urgent money call from family is always to hang up and call them directly on the phone number you already have saved. Scammers cannot intercept that call — and if your grandchild is genuinely fine, the mystery is solved in 30 seconds!",
         "explain": "The 'Grandparent Emergency Scam' specifically targets older people because scammers know grandparents react with immediate emotional generosity to grandchildren in distress. They use AI voice cloning (trained on social media posts), scripted emergencies, demands for secrecy, and untraceable payment methods. The single most effective defence: hang up and call the person directly on their already-saved number. This takes 30 seconds and cannot be faked or intercepted.",
@@ -360,7 +360,7 @@ questions = [
     # Q20 — click_flags (Ad Red Flag Hunt: Work-from-home scam ad)
     {
         "local_id": 20, "format": "click_flags", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Spotting Every Red Flag in a Classic Work-From-Home Scam Ad",
         "hint": "Count the red flags: guaranteed huge income + no experience needed + fake limited spots + upfront registration fee + no verifiable company details = five red flags in one ad. Real jobs have NONE of these!",
         "explain": "Legitimate remote jobs exist — but they are never advertised with ALL of these elements together. Real job listings state realistic pay rates, do not have countdown timers, use real employee photos, NEVER charge you to start working, and are from registered companies with verifiable physical addresses and registration numbers. When every element of an ad screams too-good-to-be-true — it is!",
@@ -380,7 +380,7 @@ questions = [
     # Q21 — the_imposter (Romance Scammer: Find the fake in a community chat group)
     {
         "local_id": 21, "format": "the_imposter", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Identifying Classic Romance Scam Profile Tactics",
         "hint": "The romance scammer's intro follows a very specific script: high-status profession, currently overseas (explains no in-person meeting), widowed with a child (generates maximum sympathy), and introduces romantic interest in the very FIRST message to a stranger.",
         "explain": "Romance scammers follow a documented playbook. The 'military officer/engineer/doctor posted overseas' profile is the single most common romance scam persona globally — it explains unavailability for video calls or meetings (operational security), generates admiration and trust (high status career), and creates a sympathy hook (widow, child needing a mother figure). Real community members introduce themselves normally — not romantically and with their entire tragic backstory in the first message!",
@@ -398,7 +398,7 @@ questions = [
     # Q22 — select_all (Online Shopping Scam Warning Signs: multi-select all red flags)
     {
         "local_id": 22, "format": "select_all", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Recognising All Red Flags of a Fake Online Shopping Site",
         "hint": "Real brand websites use their own official domain, accept secure card payments with buyer protection, have realistic pricing, have verifiable business contact details, own their product photography, and have organic reviews built over time. Any site missing several of these is suspicious!",
         "explain": "Fake designer goods websites are extremely common. They steal real product images from official brand sites, create lookalike domain names, and set prices just low enough to seem like a sale. When you order: you either receive a terrible counterfeit or nothing at all. Payment by bank transfer or cryptocurrency makes money recovery virtually impossible. Three or more of these red flags together = close the tab immediately.",
@@ -426,7 +426,7 @@ questions = [
     # Q23 — sequence_builder (Safely Donate to Charity: correct step-by-step verification)
     {
         "local_id": 23, "format": "sequence_builder", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Safe Step-by-Step Charity Donation Verification",
         "hint": "Start with the most powerful verification tool — the official government charity register. If a charity is not registered there, do not donate. Each step protects and confirms the next one!",
         "explain": "Charity fraud spikes after every major disaster because scammers know the public wants to help immediately. The verification chain protects your donation at every stage: the official register confirms legitimacy, checking the domain prevents lookalike site fraud, reviewing accounts shows efficiency, donating directly avoids phishing, and keeping a receipt creates a proof trail for your own records.",
@@ -444,7 +444,7 @@ questions = [
     # Q24 — adaptive_inbox (Quick-sort scam vs real messages)
     {
         "local_id": 24, "format": "adaptive_inbox", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Rapid Safe vs Scam Message Classification",
         "hint": "Real notifications come from official verified domains and reference real accounts. Prize messages from random numbers with countdown timers, and 'official' messages using personal Gmail addresses, are always scams!",
         "explain": "Quick scam detection is a trainable skill. The fastest checks are: Does the sender domain match the real organisation? Does the message reference a specific real account action? Does it contain a prize, urgent payment, or request for personal details you did not initiate? Once you train your eye to spot these patterns, recognising scam messages takes just seconds.",
@@ -460,7 +460,7 @@ questions = [
     # Q25 — digital_whodunnit (Overpayment Scam Timeline: find the critical mistake)
     {
         "local_id": 25, "format": "digital_whodunnit", "difficulty": "beginner",
-        "gameName": "scam", "game_key": "scam", "level_name": "beginner",
+        "gameName": "scam", "game_key": "scams", "level_name": "beginner",
         "concept": "Tracing the Critical Moment in an Overpayment Scam",
         "hint": "The mistake happened BEFORE any money moved. The critical decision point was the moment Maria agreed to the overpayment arrangement — not the moment she transferred, not when the cheque appeared to clear!",
         "explain": "By Day 2 when the cheque appeared to 'clear', it was already too late. Banks show funds as available quickly but can take weeks to detect sophisticated counterfeit cheques. The 'cleared' balance was provisional credit, not confirmed real funds. The correct response at Day 1, 11AM was simply: 'I cannot accept that — please send exactly £150.' If the buyer refused, they were never a genuine buyer.",
@@ -482,6 +482,10 @@ questions = [
     }
 
 ]
+
+# Ensure game_key is consistently 'scams'
+for q in questions:
+    q['game_key'] = 'scams'
 
 result = col.insert_many(questions)
 count = col.count_documents({'game_key': 'scam', 'level_name': 'beginner'})

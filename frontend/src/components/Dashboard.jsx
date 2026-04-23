@@ -75,7 +75,7 @@ const BRIEFING_TEXTS = {
 };
 
 // ============================================
-const API_BASE_URL = "http://localhost:5000";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 export default function Dashboard({ userId, avatarId, username, email, mode, updateUserData, onLogout }) {
     const canvasRef = useRef(null);
@@ -84,7 +84,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     const [sidebarExpanded, setSidebarExpanded] = useState(false);
     const [activeNav, setActiveNav] = useState("home");
     const [dropdownOpen, setDropdownOpen] = useState(false);
-    
+
     // New states for modals
     const [showEditModal, setShowEditModal] = useState(false);
     const [showSettingsModal, setShowSettingsModal] = useState(false);
@@ -101,12 +101,12 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     });
 
     const [progress, setProgress] = useState({});
-    
+
     // Flatten all missions for count and current display
     const allMissionsArr = Object.values(progress).flatMap(levelObj => Object.values(levelObj));
     const solvedMissions = allMissionsArr.filter(m => m.completed).length;
     const currentMissions = allMissionsArr.filter(m => !m.completed);
-    
+
     // Check for 100% Mastery (5 games × 3 levels = 15 entries, all completed)
     const isMasteryAchieved = allMissionsArr.length === 15 && allMissionsArr.every(m => m.completed);
 
@@ -129,7 +129,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
         const initialProgress = getGameProgress();
         setProgress(initialProgress || {});
         updateStreak();
-        
+
         // Setup initial daily progress from DB
         async function syncDaily() {
             if (userId) {
@@ -145,7 +145,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                     if (data.daily_questions_done !== undefined) {
                         const today = new Date().toISOString().split('T')[0];
                         const local = JSON.parse(localStorage.getItem("cyberduo_daily_progress") || '{}');
-                        
+
                         // ONLY overwrite if server is ahead or local is wrong date
                         if (local.date !== today || data.daily_questions_done > (local.count || 0)) {
                             localStorage.setItem("cyberduo_daily_progress", JSON.stringify({
@@ -169,9 +169,9 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
             fetch(`${API_BASE_URL}/user/update-streak`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
+                body: JSON.stringify({
                     user_id: userId,
-                    reported_streak: streakData.currentStreak 
+                    reported_streak: streakData.currentStreak
                 })
             }).catch(e => console.error("Streak sync failed", e));
         }
@@ -240,11 +240,11 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
     const renderMain = () => {
         if (activeGame) {
             return (
-                <GameScreen 
+                <GameScreen
                     userId={userId}
                     gameKey={activeGame.key}
-                    gameName={activeGame.name} 
-                    level={activeGame.level} 
+                    gameName={activeGame.name}
+                    level={activeGame.level}
                     onComplete={async (earnedXP, earnedScore) => {
                         const newProg = updateGameProgress(activeGame.level, activeGame.key, activeGame.totalQuestions);
                         incrementDailyProgress();
@@ -266,7 +266,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                         // ✅ Refresh leaderboard even on mid-game abort
                         window.dispatchEvent(new Event('leaderboardRefresh'));
                         window.dispatchEvent(new Event('xpUpdated'));
-                    }} 
+                    }}
                 />
             );
         }
@@ -278,7 +278,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
         if (activeNav === "dailygoal") return <DailyGoal />;
         if (activeNav === "leaderboard") return <Leaderboard />;
         if (activeNav === "episodes") return <StoryPlayer onBack={() => setActiveNav("home")} userId={userId} />;
-        
+
         const meta = FEATURE_META[activeNav];
         const nav = NAV_ITEMS.find(n => n.id === activeNav);
         return (
@@ -293,11 +293,11 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
 
     const renderGameCircle = (levelStr, gameKey, gameData, index) => {
         if (!progress) return null;
-        
+
         const isLocked = !checkUnlockStatus(mode, progress, levelStr, gameKey);
         const { questionsDone, totalQuestions, name, icon } = gameData;
         const progressPercent = (questionsDone / totalQuestions) * 100;
-        
+
         const radius = 65;
         const circumference = 2 * Math.PI * radius;
         const strokeDashoffset = circumference - (progressPercent / 100) * circumference;
@@ -315,8 +315,8 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
         };
 
         return (
-            <div 
-                className={`db-game-circle-wrapper db-node-${index} ${isLocked ? "locked" : ""}`} 
+            <div
+                className={`db-game-circle-wrapper db-node-${index} ${isLocked ? "locked" : ""}`}
                 key={gameKey}
                 onClick={handleGameClick}
                 title={name}
@@ -324,8 +324,8 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                 <div className="db-game-circle">
                     <svg className="db-progress-ring">
                         <circle className="db-progress-ring-bg" cx="75" cy="75" r={radius} />
-                        <circle 
-                            className="db-progress-ring-path" 
+                        <circle
+                            className="db-progress-ring-path"
                             cx="75" cy="75" r={radius}
                             strokeDasharray={circumference}
                             strokeDashoffset={strokeDashoffset}
@@ -389,7 +389,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                                     <div className="db-level-title">{levelStr.toUpperCase()} LEVEL</div>
                                     <div className="db-circles-row">
                                         <div className="db-path-line"></div>
-                                        {Object.entries(progress[levelStr] || {}).map(([gameKey, gameData], index) => 
+                                        {Object.entries(progress[levelStr] || {}).map(([gameKey, gameData], index) =>
                                             renderGameCircle(levelStr, gameKey, gameData, index)
                                         )}
                                     </div>
@@ -446,7 +446,7 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
                         <div className="db-bp-desc">
                             {BRIEFING_TEXTS[selectedMission.key] || "Classified mission parameters. Prepare for deployment."}
                         </div>
-                        
+
                         <div className="db-bp-progress">
                             <div className="db-bp-prog-text">
                                 MISSION PROGRESS <span>{selectedMission.questionsDone} / {selectedMission.totalQuestions}</span>
@@ -611,21 +611,21 @@ export default function Dashboard({ userId, avatarId, username, email, mode, upd
             </div>
 
             {/* Modals */}
-            <EditProfileModal 
-                isOpen={showEditModal} 
+            <EditProfileModal
+                isOpen={showEditModal}
                 onClose={() => setShowEditModal(false)}
                 userData={{ username, email, avatarId }}
                 onSave={handleSaveProfile}
             />
-            
-            <SettingsModal 
-                isOpen={showSettingsModal} 
+
+            <SettingsModal
+                isOpen={showSettingsModal}
                 onClose={() => setShowSettingsModal(false)}
                 currentMode={mode}
                 onSave={handleSaveSettings}
             />
 
-            <CertificateModal 
+            <CertificateModal
                 isOpen={showCertModal}
                 onClose={() => setShowCertModal(false)}
                 userName={displayName}

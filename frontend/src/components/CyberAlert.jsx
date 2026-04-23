@@ -14,7 +14,7 @@ export default function CyberAlert({ compact = false }) {
     const GEMINI_API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 
     const fetchLatestIntel = () => {
-        const API_BASE_URL = "http://localhost:5000";
+        const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
         const fetchUrl = `${API_BASE_URL}/user/alerts/news`;
 
         fetch(fetchUrl)

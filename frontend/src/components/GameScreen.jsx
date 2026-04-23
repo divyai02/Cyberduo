@@ -6,7 +6,7 @@ import { incrementDailyProgress } from '../utils/dailyprogress.js';
 
 export default function GameScreen({ gameKey = "phishing", gameName, level, onComplete, onProgressUpdate, onBack, userId }) {
     const [questions, setQuestions] = useState([]);
-    const API_BASE_URL = "http://localhost:5000";
+    const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
     // ✅ ALL STATE HOOKS MUST BE DECLARED BEFORE ANY EARLY RETURNS (React rules)
     const [loadingError, setLoadingError] = useState(false);
@@ -518,6 +518,7 @@ export default function GameScreen({ gameKey = "phishing", gameName, level, onCo
                         </div>
                     </div>
                 );
+            case 'omni_threat_chains':
             case 'omni_threat_chain':
                 return (
                     <div className="gs-format gs-omni-chain" style={{ display: 'flex', gap: '20px' }}>
