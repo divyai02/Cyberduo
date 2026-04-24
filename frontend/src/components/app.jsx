@@ -207,13 +207,13 @@ function IntroWizard({ onDone }) {
                         </svg>
                     </div>
                     <div style={{
-                        fontSize: "clamp(32px, 8vw, 52px)", fontWeight: 900, letterSpacing: "clamp(4px, 2vw, 10px)",
+                        fontSize: "clamp(28px, 6vw, 42px)", fontWeight: 900, letterSpacing: "clamp(4px, 2vw, 10px)",
                         background: "linear-gradient(90deg,#00FF9D,#4D9EFF,#9D4DFF,#00FF9D)",
                         backgroundSize: "300%",
                         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                         animation: "gradientFlow 3s linear infinite",
                     }}>CYBERDUO</div>
-                    <div style={{ color: "#B0B8CC", fontSize: "clamp(13px, 4vw, 17px)", marginTop: 16, minHeight: 28, letterSpacing: 1 }}>
+                    <div style={{ color: "#B0B8CC", fontSize: "clamp(12px, 3vw, 15px)", marginTop: 16, minHeight: 28, letterSpacing: 1 }}>
                         {typed}
                         <span style={{ animation: "blink 0.7s infinite", color: "#00FF9D" }}>|</span>
                     </div>
@@ -228,7 +228,7 @@ function IntroWizard({ onDone }) {
 // ═══════════════════════════════════════════════════════════
 
 /** Floating-label input / password field */
-function FloatInput({ label, type = "text", value, onChange, error }) {
+function FloatInput({ label, type = "text", value, onChange, error, autoComplete }) {
     const [focused, setFocused] = useState(false);
     const [show, setShow] = useState(false);
     const isPass = type === "password";
@@ -249,6 +249,7 @@ function FloatInput({ label, type = "text", value, onChange, error }) {
             <input
                 type={isPass ? (show ? "text" : "password") : type}
                 value={value}
+                autoComplete={autoComplete}
                 onChange={e => onChange(e.target.value)}
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
@@ -561,11 +562,11 @@ function SignUpForm({ onSuccess }) {
             {/* ── Step 1 : Basic info ─────────────────────── */}
             {step === 1 && (
                 <div style={{ animation: "fadeSlideIn 0.35s ease" }}>
-                    <FloatInput label="Full Name" value={name} onChange={setName} />
-                    <FloatInput label="Email" type="email" value={email} onChange={setEmail} />
-                    <FloatInput label="Password" type="password" value={password} onChange={setPassword} />
+                    <FloatInput label="Full Name" value={name} onChange={setName} autoComplete="name" />
+                    <FloatInput label="Email" type="email" value={email} onChange={setEmail} autoComplete="email" />
+                    <FloatInput label="Password" type="password" value={password} onChange={setPassword} autoComplete="new-password" />
                     <PasswordStrength password={password} />
-                    <FloatInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm}
+                    <FloatInput label="Confirm Password" type="password" value={confirm} onChange={setConfirm} autoComplete="new-password"
                         error={confirm && confirm !== password ? "Passwords don't match" : ""} />
 
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 20 }}>
@@ -1098,7 +1099,7 @@ export default function CyberDuo({ onLoginSuccess }) {
 
                         <GlitchText text="WELCOME, RECRUIT" style={{
                             display: "block",
-                            fontSize: "clamp(16px, 5vw, 22px)", fontWeight: 900, letterSpacing: "clamp(2px, 1vw, 5px)",
+                            fontSize: "clamp(15px, 4vw, 20px)", fontWeight: 900, letterSpacing: "clamp(2px, 1vw, 5px)",
                             background: "linear-gradient(90deg,#00FF9D,#4D9EFF,#9D4DFF,#00FF9D)",
                             backgroundSize: "300%",
                             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
