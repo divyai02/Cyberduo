@@ -210,10 +210,10 @@ export default function StoryPlayer({ onBack, userId }) {
 
         <div className="character-stage">
           <div className={`character-wrapper ${currentScene.active_side === 'left' || isQuestion ? 'active' : 'inactive'}`}>
-            <img src={charImages.Arjun} alt="Arjun" className="character-img" />
+            <img src={charImages.Riya} alt="Riya" className="character-img riya" />
           </div>
           <div className={`character-wrapper ${currentScene.active_side === 'right' || isQuestion ? 'active' : 'inactive'}`}>
-            <img src={charImages.Riya} alt="Riya" className="character-img riya" />
+            <img src={charImages.Arjun} alt="Arjun" className="character-img" />
           </div>
         </div>
 
