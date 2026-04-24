@@ -490,8 +490,19 @@ button {
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 520px) {
     .login-card {
-        padding: 1.5rem;
+        padding: 1.5rem 1rem;
         border-radius: 20px;
+        width: 100%;
+    }
+
+    .neon-btn {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    .tab-btn {
+        font-size: 15px;
+        padding: 8px;
     }
 
     .select-grid {

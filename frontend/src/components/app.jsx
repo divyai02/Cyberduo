@@ -207,13 +207,13 @@ function IntroWizard({ onDone }) {
                         </svg>
                     </div>
                     <div style={{
-                        fontSize: 52, fontWeight: 900, letterSpacing: 10,
+                        fontSize: "clamp(32px, 8vw, 52px)", fontWeight: 900, letterSpacing: "clamp(4px, 2vw, 10px)",
                         background: "linear-gradient(90deg,#00FF9D,#4D9EFF,#9D4DFF,#00FF9D)",
                         backgroundSize: "300%",
                         WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
                         animation: "gradientFlow 3s linear infinite",
                     }}>CYBERDUO</div>
-                    <div style={{ color: "#B0B8CC", fontSize: 17, marginTop: 16, minHeight: 28, letterSpacing: 1 }}>
+                    <div style={{ color: "#B0B8CC", fontSize: "clamp(13px, 4vw, 17px)", marginTop: 16, minHeight: 28, letterSpacing: 1 }}>
                         {typed}
                         <span style={{ animation: "blink 0.7s infinite", color: "#00FF9D" }}>|</span>
                     </div>
@@ -812,10 +812,25 @@ export default function CyberDuo({ onLoginSuccess }) {
                 const res = await fetch(`${API_BASE_URL}/user/sync/${userId}`);
                 if (res.ok) {
                     const data = await res.json();
-                    if (data.sync_data) {
+                    if (data.sync_data && Object.keys(data.sync_data).length > 0) {
                         Object.keys(data.sync_data).forEach(key => {
                             localStorage.setItem(key, data.sync_data[key]);
                         });
+                    } else {
+                        const keysToRemove = [
+                            "cyberduo_game_progress", "userXP", "cyberduo_streak_data",
+                            "cyberduo_earned_badges", "cyberduo_daily_progress"
+                        ];
+                        keysToRemove.forEach(k => localStorage.removeItem(k));
+                        
+                        const dynamicKeys = [];
+                        for (let i = 0; i < localStorage.length; i++) {
+                            const key = localStorage.key(i);
+                            if (key && key.startsWith("cyberduo_inprogress_")) {
+                                dynamicKeys.push(key);
+                            }
+                        }
+                        dynamicKeys.forEach(k => localStorage.removeItem(k));
                     }
                 }
             } catch (err) {
@@ -1083,7 +1098,7 @@ export default function CyberDuo({ onLoginSuccess }) {
 
                         <GlitchText text="WELCOME, RECRUIT" style={{
                             display: "block",
-                            fontSize: 22, fontWeight: 900, letterSpacing: 5,
+                            fontSize: "clamp(16px, 5vw, 22px)", fontWeight: 900, letterSpacing: "clamp(2px, 1vw, 5px)",
                             background: "linear-gradient(90deg,#00FF9D,#4D9EFF,#9D4DFF,#00FF9D)",
                             backgroundSize: "300%",
                             WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent",
@@ -1091,7 +1106,7 @@ export default function CyberDuo({ onLoginSuccess }) {
                             fontFamily: "'Orbitron', monospace",
                         }} />
 
-                        <div style={{ color: "#B0B8CC", fontSize: 12, marginTop: 8, letterSpacing: 2 }}>
+                        <div style={{ color: "#B0B8CC", fontSize: "clamp(10px, 3vw, 12px)", marginTop: 8, letterSpacing: 2 }}>
                             BEGIN YOUR CYBERSECURITY JOURNEY
                         </div>
                     </div>
