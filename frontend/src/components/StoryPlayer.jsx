@@ -26,6 +26,12 @@ const Typewriter = ({ text, onComplete }) => {
   return <span className="dialogue-render">{displayedText}</span>;
 };
 
+// Character Mapping
+const charImages = {
+  Arjun: '/images/arjun.png',
+  Riya: '/images/riya.png'
+};
+
 export default function StoryPlayer({ onBack, userId }) {
   const [isStoryStarted, setIsStoryStarted] = useState(false);
   const [story] = useState(storyData);
@@ -67,6 +73,19 @@ export default function StoryPlayer({ onBack, userId }) {
       }).catch(e => console.error("Cloud XP sync failed", e));
     }
   };
+
+  // Intercept Android Hardware Back Button
+  useEffect(() => {
+    window.history.pushState({ storyOpen: true }, '');
+    const handlePopState = (e) => {
+      e.preventDefault();
+      onBack();
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [onBack]);
 
   const handleNext = () => {
     if (isTyping) {
@@ -187,6 +206,22 @@ export default function StoryPlayer({ onBack, userId }) {
             onError={(e) => { e.target.src = '/images/library.png'; }}
           />
           <div className="story-overlay"></div>
+        </div>
+
+        <div className="character-stage">
+          <div className={`character-wrapper ${currentScene.active_side === 'left' || isQuestion ? 'active' : 'inactive'}`}>
+            <img src={charImages.Arjun} alt="Arjun" className="character-img" />
+          </div>
+          <div className={`character-wrapper ${currentScene.active_side === 'right' || isQuestion ? 'active' : 'inactive'}`}>
+            <img src={charImages.Riya} alt="Riya" className="character-img riya" />
+          </div>
+        </div>
+
+        <div className="table-overlay">
+          <div className="table-objects">
+            <span className="table-object">💻</span>
+            <span className="table-object">☕</span>
+          </div>
         </div>
 
         <div className="progress-bar">

@@ -182,3 +182,15 @@
 @media (max-width: 900px) {
     .dg-content-grid { grid-template-columns: 1fr; }
 }
+
+@media (max-width: 600px) {
+    .dg-page-container { padding: 16px; }
+    .dg-glass-layout { padding: 20px; box-sizing: border-box; }
+    .dg-main-title { font-size: 1.8rem; letter-spacing: 2px; }
+    .dg-content-grid { gap: 30px; }
+    .dg-gauge-wrap { width: 200px; height: 200px; }
+    .dg-gauge-top-val { font-size: 3.5rem; }
+    .dg-gauge-bot-val { font-size: 0.8rem; }
+    .dg-footer-stats { flex-direction: column; gap: 15px; }
+    .dg-page-header { margin-bottom: 24px; }
+}

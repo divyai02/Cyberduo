@@ -247,6 +247,7 @@ function FloatInput({ label, type = "text", value, onChange, error, autoComplete
             }}>{label}</label>
 
             <input
+                className="auth-input"
                 type={isPass ? (show ? "text" : "password") : type}
                 value={value}
                 autoComplete={autoComplete}
@@ -254,7 +255,7 @@ function FloatInput({ label, type = "text", value, onChange, error, autoComplete
                 onFocus={() => setFocused(true)}
                 onBlur={() => setFocused(false)}
                 style={{
-                    width: "100%", padding: "16px 44px 16px 16px",
+                    width: "100%", 
                     background: "rgba(10,15,31,0.85)",
                     border: `1px solid ${error ? "#FF4D4D" : focused ? "#00FF9D" : "rgba(255,255,255,0.1)"}`,
                     borderRadius: 12, color: "#fff", fontSize: 15,

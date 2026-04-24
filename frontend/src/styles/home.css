@@ -269,8 +269,41 @@
         width: 100%;
         transform: none;
         margin: 40px auto;
-        max-width: 400px;
+        max-width: 100%;
         pointer-events: auto;
+    }
+}
+@media (max-width: 600px) {
+    .db-home-right {
+        margin: 20px 0;
+    }
+    .db-briefing-panel {
+        padding: 20px;
+        box-sizing: border-box;
+    }
+    .db-bp-title {
+        font-size: 22px;
+    }
+    .db-bp-desc {
+        font-size: 14px;
+        padding: 12px;
+    }
+    .db-game-circle {
+        width: 120px;
+        height: 120px;
+    }
+    .db-progress-ring {
+        width: 120px;
+        height: 120px;
+    }
+    .db-game-icon {
+        font-size: 42px;
+    }
+    .db-circles-row {
+        gap: 20px;
+    }
+    .db-game-name {
+        font-size: 18px;
     }
 }
 

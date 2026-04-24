@@ -487,21 +487,26 @@ button {
     pointer-events: none;
 }
 
+.auth-input {
+    padding: 16px 44px 16px 16px;
+}
+
 /* ── Responsive ───────────────────────────────────── */
 @media (max-width: 520px) {
     .login-card {
-        padding: 1.5rem 1rem;
+        padding: 1.2rem 1rem;
         border-radius: 20px;
         width: 100%;
+        box-sizing: border-box;
     }
 
     .neon-btn {
-        padding: 14px;
-        font-size: 16px;
+        padding: 12px;
+        font-size: 14px;
     }
 
     .tab-btn {
-        font-size: 15px;
+        font-size: 14px;
         padding: 8px;
     }
 
@@ -515,5 +520,10 @@ button {
 
     .hud-status {
         display: none;
+    }
+
+    .auth-input {
+        padding: 12px 36px 12px 12px !important;
+        font-size: 14px !important;
     }
 }
