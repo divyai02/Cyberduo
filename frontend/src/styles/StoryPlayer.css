@@ -566,4 +566,52 @@
   .hero-poster { height: 300px; }
   .hero-details { padding: 2.5rem; }
   .hero-title { font-size: 2.5rem; }
+  
+  /* Story Gameplay Mobile Layout */
+  .story-player-container {
+    width: 100vw;
+    height: 100vh;
+    max-height: none;
+    border-radius: 0;
+  }
+  .character-stage {
+    padding-bottom: 300px; /* Space for stacked dialogue */
+    margin: 0;
+  }
+  .character-wrapper {
+    width: 50%;
+    margin-bottom: 0;
+  }
+  .character-img {
+    width: 100%;
+    max-width: 250px;
+  }
+  .dialogue-box-container {
+    bottom: 20px !important;
+    left: 5% !important;
+    right: 5% !important;
+    width: 90% !important;
+    transform: none !important;
+    min-height: auto;
+    padding: 20px;
+  }
+  .dialogue-box-container::after {
+    display: none !important; /* Hide speech pointer */
+  }
+  .dialogue-text {
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+  }
+  .choices-container {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  .speaker-label {
+    top: -12px;
+    left: 15px;
+    font-size: 0.8rem;
+  }
+  .table-overlay {
+    height: 80px;
+  }
 }
